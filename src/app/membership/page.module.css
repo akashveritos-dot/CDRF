@@ -824,6 +824,16 @@
   .formGrid { grid-template-columns: 1fr; }
   .fieldFull { grid-column: span 1; }
   
+  .title {
+    font-size: 28px;
+    line-height: 1.2;
+  }
+  
+  .subtitle {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  
   .compareTitle {
     font-size: 22px;
     text-align: left;
@@ -840,26 +850,152 @@
     display: block;
     margin-bottom: 72px;
   }
+  
+  /* Tier cards mobile adjustments */
+  .tierCard {
+    margin-bottom: 16px;
+  }
+  
+  .tierIconWrap {
+    width: 40px;
+    height: 40px;
+    margin: 16px 16px 0;
+  }
+  
+  .tierMeta {
+    padding: 12px 16px 0;
+  }
+  
+  .tierName {
+    font-size: 10px;
+    letter-spacing: 1px;
+  }
+  
+  .price {
+    font-size: 26px;
+  }
+  
+  .priceSub {
+    font-size: 10px;
+  }
+  
+  .tierDivider {
+    margin: 14px 16px;
+  }
+  
+  .featureList {
+    padding: 0 16px;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  
+  .featItem {
+    font-size: 11px;
+  }
+  
+  .featCheck {
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+  }
+  
+  .featCheck svg {
+    width: 9px;
+    height: 9px;
+  }
+  
+  .cardAction {
+    margin: 16px 16px 16px;
+    padding: 10px 14px;
+    font-size: 12px;
+    border-radius: 8px;
+  }
+  
+  .popularBadge {
+    font-size: 8px;
+    padding: 3px 32px;
+    top: 18px;
+  }
 }
 
 @media (max-width: 480px) {
   .page { padding: 40px 16px; }
-  .networksBox { padding: 24px; }
-  .formSec { padding: 24px 16px; }
-  .formTitle { font-size: 22px; }
+  
+  .header {
+    margin-bottom: 40px;
+  }
+  
+  .title {
+    font-size: 24px;
+  }
+  
+  .subtitle {
+    font-size: 13px;
+  }
+  
+  .tiersGrid {
+    gap: 16px;
+    margin-bottom: 56px;
+  }
+  
+  .networksBox { 
+    padding: 24px 20px;
+    margin-bottom: 56px;
+  }
+  
+  .networksTitle {
+    font-size: 18px;
+  }
+  
+  .networksSub {
+    font-size: 12px;
+  }
+  
+  .networkChip {
+    font-size: 11px;
+    padding: 5px 12px;
+  }
+  
+  .formSec { 
+    padding: 24px 16px; 
+  }
+  
+  .formTitle { 
+    font-size: 20px;
+    margin-bottom: 8px;
+  }
+  
+  .formSubtitle {
+    font-size: 12px;
+    margin-bottom: 24px;
+  }
+  
+  .compareTitle {
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
   
   .mobileTierCard {
-    padding: 20px;
+    padding: 20px 16px;
+    margin-bottom: 16px;
+    border-radius: 14px;
   }
   
   .mobileTierHeader {
     margin-bottom: 16px;
-    padding-bottom: 12px;
+    padding-bottom: 14px;
+    gap: 10px;
   }
   
   .mobileTierIcon {
     width: 36px;
     height: 36px;
+    border-radius: 8px;
+  }
+  
+  .mobileTierIcon svg {
+    width: 18px;
+    height: 18px;
   }
   
   .mobileTierName {
@@ -868,6 +1004,51 @@
   
   .mobileFeatureItem {
     font-size: 12px;
-    padding: 6px 0;
+    padding: 10px 0;
+    gap: 10px;
+  }
+  
+  .mobileFeatureCheck {
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+  }
+  
+  .mobileFeatureCheck svg {
+    width: 10px;
+    height: 10px;
+  }
+  
+  .mobileFeatureLabel {
+    line-height: 1.4;
+    font-size: 11.5px;
+  }
+  
+  .tierIconWrap {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+  
+  .tierIconWrap svg {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .price {
+    font-size: 24px;
+  }
+  
+  .priceSub {
+    font-size: 9.5px;
+  }
+  
+  .featItem {
+    font-size: 10.5px;
+  }
+  
+  .cardAction {
+    font-size: 11px;
+    padding: 9px 12px;
   }
 }
