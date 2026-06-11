@@ -4,6 +4,7 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Prevent horizontal scroll on all elements */
@@ -15,6 +16,21 @@
 img, svg, video, canvas, iframe {
   max-width: 100%;
   height: auto;
+}
+
+/* Remove default focus outlines on touch devices, keep for keyboard nav */
+@media (hover: none) and (pointer: coarse) {
+  *:focus {
+    outline: none !important;
+  }
+}
+
+/* Keep focus visible for keyboard users */
+@media (hover: hover) and (pointer: fine) {
+  *:focus-visible {
+    outline: 2px solid var(--gold-primary);
+    outline-offset: 2px;
+  }
 }
 
 :root {
