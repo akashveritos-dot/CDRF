@@ -82,13 +82,19 @@ export default function DonutChart() {
                 animationDuration={1500}
                 onClick={handleClick}
                 activeIndex={activeIndex !== null ? activeIndex : undefined}
-                activeShape={{
-                  outerRadius: 75,
-                  filter: 'brightness(1.15)',
-                }}
               >
                 {lossShare.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={entry.color} 
+                    stroke="none"
+                    style={{
+                      filter: activeIndex === index ? 'brightness(1.15)' : 'none',
+                      transform: activeIndex === index ? 'scale(1.05)' : 'scale(1)',
+                      transformOrigin: 'center',
+                      transition: 'all 0.3s ease',
+                    }}
+                  />
                 ))}
               </Pie>
             </PieChart>
