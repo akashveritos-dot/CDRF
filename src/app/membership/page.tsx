@@ -222,6 +222,8 @@ export default function MembershipPage() {
       {/* ── Comparison Table ───────────────────────────────────────────── */}
       <ScrollReveal direction="up">
         <h2 className={styles.compareTitle}>Benefit Comparison</h2>
+        
+        {/* Desktop Table View */}
         <div className={styles.tableWrapper}>
           <table className={styles.table}>
             <thead>
@@ -275,6 +277,44 @@ export default function MembershipPage() {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Card View */}
+        <div className={styles.mobileComparisonView}>
+          {membershipTiers.map((tier) => {
+            const cfg = TIER_CONFIG[tier.name as keyof typeof TIER_CONFIG];
+            return (
+              <div key={tier.name} className={styles.mobileTierCard}>
+                <div className={styles.mobileTierHeader}>
+                  <div
+                    className={styles.mobileTierIcon}
+                    style={{ background: cfg.accentPale, color: cfg.accentColor, border: `1px solid ${cfg.badgeBorder}` }}
+                  >
+                    {cfg.icon}
+                  </div>
+                  <h3 className={styles.mobileTierName} style={{ color: cfg.accentColor }}>
+                    {tier.name}
+                  </h3>
+                </div>
+                <ul className={styles.mobileFeatureList}>
+                  {membershipFeatures.map((feat) => {
+                    const has = tier.features[feat];
+                    return (
+                      <li key={feat} className={styles.mobileFeatureItem}>
+                        <span
+                          className={styles.mobileFeatureCheck}
+                          style={has ? { background: cfg.accentPale, color: cfg.accentColor } : { background: 'var(--bg-surface-alt)', color: 'var(--text-muted)' }}
+                        >
+                          {has ? <Check size={12} strokeWidth={3} /> : <Minus size={12} />}
+                        </span>
+                        <span className={styles.mobileFeatureLabel}>{feat}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            );
+          })}
         </div>
       </ScrollReveal>
 

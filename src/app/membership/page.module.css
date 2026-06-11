@@ -729,85 +729,9 @@
 }
 
 /* ─── Responsive ─────────────────────────────────────────────────── */
-@media (max-width: 1024px) {
-  .tiersGrid { grid-template-columns: repeat(2, 1fr); }
-  
-  .tableWrapper {
-    display: none;
-  }
-  
-  .mobileComparisonView {
-    display: block;
-  }
-}
-
-@media (max-width: 768px) {
-  .page { padding: 60px 24px; }
-  .tiersGrid { grid-template-columns: 1fr; }
-  .formSec { padding: 32px 24px; }
-  .formGrid { grid-template-columns: 1fr; }
-  .fieldFull { grid-column: span 1; }
-  
-  .compareTitle {
-    font-size: 22px;
-    text-align: left;
-    padding: 0 8px;
-  }
-  
-  .tableWrapper {
-    border-radius: 12px;
-    margin: 0 -8px 60px -8px;
-  }
-  
-  .table {
-    font-size: 13px;
-    min-width: 600px;
-  }
-  
-  .thFeature {
-    padding: 14px 16px;
-    font-size: 10px;
-    min-width: 180px;
-  }
-  
-  .thTier {
-    min-width: 100px;
-  }
-  
-  .thInner {
-    padding: 14px 12px;
-    font-size: 11px;
-    gap: 6px;
-  }
-  
-  .tdFeature {
-    padding: 12px 16px;
-    font-size: 12px;
-    min-width: 180px;
-  }
-  
-  .tdCheck {
-    padding: 12px 12px;
-    min-width: 100px;
-  }
-  
-  .checkPill {
-    width: 22px;
-    height: 22px;
-  }
-}
-
-@media (max-width: 480px) {
-  .page { padding: 40px 16px; }
-  .networksBox { padding: 24px; }
-  .formSec { padding: 24px 16px; }
-  .formTitle { font-size: 22px; }
-}
-
 /* Mobile Comparison Cards */
 .mobileComparisonView {
   display: none;
-  margin-bottom: 72px;
 }
 
 .mobileTierCard {
@@ -817,6 +741,12 @@
   padding: 24px;
   margin-bottom: 20px;
   box-shadow: var(--shadow-sm);
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+.mobileTierCard:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .mobileTierHeader {
@@ -842,6 +772,7 @@
   font-size: 18px;
   font-weight: 700;
   color: var(--text-default);
+  font-family: var(--font-display);
 }
 
 .mobileFeatureList {
@@ -849,16 +780,16 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0;
 }
 
 .mobileFeatureItem {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   font-size: 13px;
   color: var(--text-default);
-  padding: 8px 0;
+  padding: 12px 0;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
@@ -878,5 +809,65 @@
 
 .mobileFeatureLabel {
   flex: 1;
-  line-height: 1.4;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+@media (max-width: 1024px) {
+  .tiersGrid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .page { padding: 60px 24px; }
+  .tiersGrid { grid-template-columns: 1fr; }
+  .formSec { padding: 32px 24px; }
+  .formGrid { grid-template-columns: 1fr; }
+  .fieldFull { grid-column: span 1; }
+  
+  .compareTitle {
+    font-size: 22px;
+    text-align: left;
+    margin-bottom: 24px;
+  }
+  
+  /* Hide table on mobile */
+  .tableWrapper {
+    display: none;
+  }
+  
+  /* Show mobile card view */
+  .mobileComparisonView {
+    display: block;
+    margin-bottom: 72px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page { padding: 40px 16px; }
+  .networksBox { padding: 24px; }
+  .formSec { padding: 24px 16px; }
+  .formTitle { font-size: 22px; }
+  
+  .mobileTierCard {
+    padding: 20px;
+  }
+  
+  .mobileTierHeader {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+  }
+  
+  .mobileTierIcon {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .mobileTierName {
+    font-size: 16px;
+  }
+  
+  .mobileFeatureItem {
+    font-size: 12px;
+    padding: 6px 0;
+  }
 }
