@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import styles from './page.module.css';
 import { membershipTiers, membershipFeatures, honoraryMembersList } from '@/data/dataStore';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
@@ -101,18 +100,11 @@ export default function MembershipPage() {
 
   // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setDropdownOpen(false);
       }
     };
-    
-    // Prevent body scroll when dropdown is open on mobile
-    if (dropdownOpen && typeof window !== 'undefined' && window.innerWidth <= 768) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
     
     if (dropdownOpen) {
       document.addEventListener('mousedown', handleClickOutside);
@@ -122,7 +114,6 @@ export default function MembershipPage() {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('touchstart', handleClickOutside);
-      document.body.style.overflow = '';
     };
   }, [dropdownOpen]);
 
@@ -370,47 +361,33 @@ export default function MembershipPage() {
                         className={`${styles.dropdownChevron} ${dropdownOpen ? styles.dropdownChevronOpen : ''}`}
                       />
                     </button>
-                    {isMounted && dropdownOpen && createPortal(
-                      <>
-                        <div 
-                          className={styles.dropdownBackdrop} 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDropdownOpen(false);
-                          }}
-                          onTouchEnd={(e) => {
-                            e.stopPropagation();
-                            setDropdownOpen(false);
-                          }}
-                        />
-                        <div className={styles.dropdownMenu}>
-                          {tierOptions.map((option) => (
-                            <button
-                              key={option.value}
-                              type="button"
-                              className={`${styles.dropdownOption} ${formData.tier === option.value ? styles.dropdownOptionActive : ''}`}
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                setFormData(prev => ({ ...prev, tier: option.value }));
-                                setTimeout(() => setDropdownOpen(false), 100);
-                              }}
-                            >
-                              <span className={styles.dropdownIcon} style={{ color: option.color }}>
-                                {option.icon}
-                              </span>
-                              <div className={styles.dropdownText}>
-                                <span className={styles.dropdownLabel}>{option.label}</span>
-                                <span className={styles.dropdownSubLabel}>{option.subLabel}</span>
-                              </div>
-                              {formData.tier === option.value && (
-                                <Check size={16} className={styles.dropdownCheck} />
-                              )}
-                            </button>
-                          ))}
-                        </div>
-                      </>,
-                      document.body
+                    {isMounted && dropdownOpen && (
+                      <div className={styles.dropdownMenu}>
+                        {tierOptions.map((option) => (
+                          <button
+                            key={option.value}
+                            type="button"
+                            className={`${styles.dropdownOption} ${formData.tier === option.value ? styles.dropdownOptionActive : ''}`}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setFormData(prev => ({ ...prev, tier: option.value }));
+                              setTimeout(() => setDropdownOpen(false), 100);
+                            }}
+                          >
+                            <span className={styles.dropdownIcon} style={{ color: option.color }}>
+                              {option.icon}
+                            </span>
+                            <div className={styles.dropdownText}>
+                              <span className={styles.dropdownLabel}>{option.label}</span>
+                              <span className={styles.dropdownSubLabel}>{option.subLabel}</span>
+                            </div>
+                            {formData.tier === option.value && (
+                              <Check size={16} className={styles.dropdownCheck} />
+                            )}
+                          </button>
+                        ))}
+                      </div>
                     )}
                   </div>
                 </div>
