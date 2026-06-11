@@ -363,38 +363,40 @@
   
   .mapWrapper {
     min-height: 380px;
+    position: relative;
   }
   
-  /* Make legend smaller and more compact */
+  /* Make legend smaller, positioned above map, single line */
   .legend {
-    position: static;
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
     flex-direction: row;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     justify-content: center;
-    gap: 8px;
-    padding: 8px 12px;
-    width: 100%;
-    margin-bottom: 12px;
-    font-size: 9px;
+    gap: 10px;
+    padding: 6px 10px;
+    width: auto;
+    max-width: 90%;
+    margin-bottom: 0;
+    font-size: 8px;
+    background: rgba(255, 255, 255, 0.95);
+    z-index: 20;
   }
   
   .legendHeader {
-    border-bottom: none;
-    padding-bottom: 0;
-    margin-bottom: 0;
-    width: 100%;
-    text-align: center;
-    font-size: 8px;
-    letter-spacing: 0.5px;
+    display: none;
   }
   
   .legendItem {
-    gap: 5px;
+    gap: 4px;
+    white-space: nowrap;
   }
   
   .legendDot {
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
   }
   
   /* Make info card more compact */
@@ -473,21 +475,18 @@
     min-height: 320px;
   }
   
-  /* Even smaller legend on small phones */
+  /* Even smaller legend, still single line */
   .legend {
-    gap: 6px;
-    padding: 6px 10px;
-    font-size: 8.5px;
-  }
-  
-  .legendHeader {
+    top: 8px;
+    gap: 8px;
+    padding: 5px 8px;
     font-size: 7.5px;
-    margin-bottom: 2px;
+    max-width: 95%;
   }
   
   .legendDot {
-    width: 7px;
-    height: 7px;
+    width: 6px;
+    height: 6px;
   }
   
   /* Compact info card */
