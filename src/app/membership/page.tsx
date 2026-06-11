@@ -108,15 +108,20 @@ export default function MembershipPage() {
     };
     
     // Prevent body scroll when dropdown is open on mobile
-    if (dropdownOpen && window.innerWidth <= 768) {
+    if (dropdownOpen && typeof window !== 'undefined' && window.innerWidth <= 768) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
     }
     
-    document.addEventListener('mousedown', handleClickOutside);
+    if (dropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+    }
+    
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
       document.body.style.overflow = '';
     };
   }, [dropdownOpen]);
@@ -369,7 +374,14 @@ export default function MembershipPage() {
                       <>
                         <div 
                           className={styles.dropdownBackdrop} 
-                          onClick={() => setDropdownOpen(false)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDropdownOpen(false);
+                          }}
+                          onTouchEnd={(e) => {
+                            e.stopPropagation();
+                            setDropdownOpen(false);
+                          }}
                         />
                         <div className={styles.dropdownMenu}>
                           {tierOptions.map((option) => (
@@ -377,9 +389,11 @@ export default function MembershipPage() {
                               key={option.value}
                               type="button"
                               className={`${styles.dropdownOption} ${formData.tier === option.value ? styles.dropdownOptionActive : ''}`}
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
                                 setFormData(prev => ({ ...prev, tier: option.value }));
-                                setDropdownOpen(false);
+                                setTimeout(() => setDropdownOpen(false), 100);
                               }}
                             >
                               <span className={styles.dropdownIcon} style={{ color: option.color }}>
