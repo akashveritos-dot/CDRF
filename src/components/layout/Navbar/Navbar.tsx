@@ -38,6 +38,7 @@ export default function Navbar() {
       }
 
       // 2. Hide / show navbar based on scroll direction
+      // Don't hide navbar on mobile when menu is open
       if (currentScrollY > 120) {
         if (currentScrollY > lastScrollYRef.current && !isOpen) {
           setVisible(false); // Scrolling down, hide it
@@ -53,6 +54,31 @@ export default function Navbar() {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
+  }, [isOpen]);
+
+  // Close menu when scrolling on mobile
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleScrollWhileMenuOpen = () => {
+      setIsOpen(false);
+    };
+
+    window.addEventListener('scroll', handleScrollWhileMenuOpen, { passive: true });
+    return () => window.removeEventListener('scroll', handleScrollWhileMenuOpen);
+  }, [isOpen]);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, [isOpen]);
 
   useEffect(() => {
