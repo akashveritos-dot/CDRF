@@ -34,15 +34,10 @@ const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
 
 export default function DonutChart() {
   const [mounted, setMounted] = React.useState(false);
-  const [activeIndex, setActiveIndex] = React.useState<number | null>(null);
 
   React.useEffect(() => {
     setMounted(true);
   }, []);
-
-  const handleClick = (data: any, index: number) => {
-    setActiveIndex(activeIndex === index ? null : index);
-  };
 
   if (!mounted) {
     return (
@@ -59,7 +54,7 @@ export default function DonutChart() {
   }
 
   return (
-    <div className={styles.card} onClick={() => setActiveIndex(null)}>
+    <div className={styles.card}>
       <div className={styles.header}>
         <span className={styles.title}>Economic Loss Share by Disaster (2024)</span>
         <span className={styles.badge}>% of Total Losses</span>
@@ -67,7 +62,7 @@ export default function DonutChart() {
 
       <div className={styles.chartContent}>
         {/* SVG Recharts Donut Pie */}
-        <div className={styles.chartWrapper} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.chartWrapper}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Tooltip content={<CustomTooltip />} />
@@ -80,15 +75,9 @@ export default function DonutChart() {
                 paddingAngle={3}
                 dataKey="value"
                 animationDuration={1500}
-                onClick={handleClick}
               >
                 {lossShare.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={entry.color} 
-                    stroke="none"
-                    className={activeIndex === index ? styles.activeCell : ''}
-                  />
+                  <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
                 ))}
               </Pie>
             </PieChart>
