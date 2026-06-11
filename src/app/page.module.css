@@ -320,16 +320,20 @@
   gap: 28px;
   max-width: 1200px;
   margin: 0 auto;
+  width: 100%;
 }
 
 .wideCard {
   grid-column: span 2;
+  min-height: 340px;
 }
 
 .dashCardReveal {
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 340px;
+  width: 100%;
 }
 
 /* Custom disaster bar details in home dashboard */
