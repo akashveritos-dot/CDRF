@@ -600,10 +600,15 @@
   }
 
   .dropdownOption {
-    padding: 12px 14px;
+    padding: 14px 16px;
   }
 
-  .dropdownIcon {
+  .dropdownSelected .dropdownIcon svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .dropdownOption .dropdownIcon svg {
     width: 14px;
     height: 14px;
   }
@@ -614,12 +619,13 @@
     bottom: 0;
     left: 0;
     right: 0;
-    max-height: 65vh;
+    max-height: 70vh;
     overflow-y: auto;
     border-radius: 20px 20px 0 0;
     box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.2);
     animation: dropdownSlideUp 250ms ease;
     z-index: 1000;
+    padding-bottom: 20px;
   }
 
   @keyframes dropdownSlideUp {
