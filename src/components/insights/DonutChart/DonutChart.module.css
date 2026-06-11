@@ -79,6 +79,12 @@
   transform-origin: center;
 }
 
+/* Active cell styling */
+.activeCell {
+  filter: brightness(1.15) !important;
+  opacity: 1 !important;
+}
+
 .chartCenterLabel {
   position: absolute;
   text-align: center;
