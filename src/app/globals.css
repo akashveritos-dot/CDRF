@@ -6,6 +6,17 @@
   padding: 0;
 }
 
+/* Prevent horizontal scroll on all elements */
+* {
+  max-width: 100%;
+}
+
+/* Allow specific elements to exceed if needed but still prevent scroll */
+img, svg, video, canvas, iframe {
+  max-width: 100%;
+  height: auto;
+}
+
 :root {
   /* Premium Light Theme Core Colors */
   --bg-default: #F8FAFC;         /* Soft off-white page background */
@@ -83,18 +94,27 @@ html {
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
 }
 
 body {
   overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   background: radial-gradient(circle at top right, #FFFFFF, var(--bg-default) 60%);
+  position: relative;
 }
 
 main {
   flex: 1;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
 }
 
 a {
@@ -173,4 +193,21 @@ h1, h2, h3, h4, .font-display {
 
 .recharts-tooltip-cursor {
   fill: rgba(0, 0, 0, 0.02);
+}
+
+/* Mobile: Prevent horizontal scroll completely */
+@media (max-width: 768px) {
+  html, body {
+    overflow-x: hidden !important;
+    position: relative;
+    width: 100%;
+  }
+  
+  body {
+    overscroll-behavior-x: none;
+  }
+  
+  * {
+    max-width: 100vw;
+  }
 }
