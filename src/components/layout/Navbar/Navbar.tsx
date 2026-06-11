@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
@@ -21,21 +21,39 @@ const menuLinks = [
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [visible, setVisible] = useState(true);
+  const lastScrollYRef = useRef(0);
   const [hash, setHash] = useState('');
   const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 40) {
+      const currentScrollY = window.scrollY;
+
+      // 1. Add background blur / shadow when scrolled past 40px
+      if (currentScrollY > 40) {
         setScrolled(true);
       } else {
         setScrolled(false);
       }
+
+      // 2. Hide / show navbar based on scroll direction
+      if (currentScrollY > 120) {
+        if (currentScrollY > lastScrollYRef.current && !isOpen) {
+          setVisible(false); // Scrolling down, hide it
+        } else {
+          setVisible(true);  // Scrolling up, show it
+        }
+      } else {
+        setVisible(true);    // Always show at the top
+      }
+
+      lastScrollYRef.current = currentScrollY;
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [isOpen]);
 
   useEffect(() => {
     setHash(window.location.hash);
@@ -65,7 +83,7 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className={`${styles.navbar} ${scrolled ? styles.scrolled : ''}`}>
+      <nav className={`${styles.navbar} ${scrolled ? styles.scrolled : ''} ${!visible ? styles.hidden : ''}`}>
         <Link href="/" className={styles.brand} onClick={closeMenu}>
           <div className={styles.logoBox}>DCRF</div>
           <span className={styles.name}>
