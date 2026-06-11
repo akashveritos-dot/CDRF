@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import styles from './page.module.css';
 import { membershipTiers, membershipFeatures, honoraryMembersList } from '@/data/dataStore';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
@@ -91,7 +92,12 @@ export default function MembershipPage() {
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -359,7 +365,7 @@ export default function MembershipPage() {
                         className={`${styles.dropdownChevron} ${dropdownOpen ? styles.dropdownChevronOpen : ''}`}
                       />
                     </button>
-                    {dropdownOpen && (
+                    {isMounted && dropdownOpen && createPortal(
                       <>
                         <div 
                           className={styles.dropdownBackdrop} 
@@ -389,7 +395,8 @@ export default function MembershipPage() {
                             </button>
                           ))}
                         </div>
-                      </>
+                      </>,
+                      document.body
                     )}
                   </div>
                 </div>
