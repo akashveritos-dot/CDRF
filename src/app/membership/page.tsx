@@ -327,6 +327,8 @@ export default function MembershipPage() {
                       type="button"
                       className={styles.dropdownTrigger}
                       onClick={() => setDropdownOpen(!dropdownOpen)}
+                      aria-label="Select membership tier"
+                      aria-expanded={dropdownOpen}
                     >
                       <div className={styles.dropdownSelected}>
                         <span className={styles.dropdownIcon} style={{ color: tierOptions.find(t => t.value === formData.tier)?.color }}>
@@ -347,30 +349,36 @@ export default function MembershipPage() {
                       />
                     </button>
                     {dropdownOpen && (
-                      <div className={styles.dropdownMenu}>
-                        {tierOptions.map((option) => (
-                          <button
-                            key={option.value}
-                            type="button"
-                            className={`${styles.dropdownOption} ${formData.tier === option.value ? styles.dropdownOptionActive : ''}`}
-                            onClick={() => {
-                              setFormData(prev => ({ ...prev, tier: option.value }));
-                              setDropdownOpen(false);
-                            }}
-                          >
-                            <span className={styles.dropdownIcon} style={{ color: option.color }}>
-                              {option.icon}
-                            </span>
-                            <div className={styles.dropdownText}>
-                              <span className={styles.dropdownLabel}>{option.label}</span>
-                              <span className={styles.dropdownSubLabel}>{option.subLabel}</span>
-                            </div>
-                            {formData.tier === option.value && (
-                              <Check size={16} className={styles.dropdownCheck} />
-                            )}
-                          </button>
-                        ))}
-                      </div>
+                      <>
+                        <div 
+                          className={styles.dropdownBackdrop} 
+                          onClick={() => setDropdownOpen(false)}
+                        />
+                        <div className={styles.dropdownMenu}>
+                          {tierOptions.map((option) => (
+                            <button
+                              key={option.value}
+                              type="button"
+                              className={`${styles.dropdownOption} ${formData.tier === option.value ? styles.dropdownOptionActive : ''}`}
+                              onClick={() => {
+                                setFormData(prev => ({ ...prev, tier: option.value }));
+                                setDropdownOpen(false);
+                              }}
+                            >
+                              <span className={styles.dropdownIcon} style={{ color: option.color }}>
+                                {option.icon}
+                              </span>
+                              <div className={styles.dropdownText}>
+                                <span className={styles.dropdownLabel}>{option.label}</span>
+                                <span className={styles.dropdownSubLabel}>{option.subLabel}</span>
+                              </div>
+                              {formData.tier === option.value && (
+                                <Check size={16} className={styles.dropdownCheck} />
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      </>
                     )}
                   </div>
                 </div>

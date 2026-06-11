@@ -444,6 +444,12 @@
   transition: all 200ms ease;
   outline: none;
   font-family: var(--font-body);
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .dropdownTrigger:hover {
@@ -512,7 +518,7 @@
   border: 1px solid var(--border-color);
   border-radius: 12px;
   box-shadow: 0 12px 40px -8px rgba(0, 0, 0, 0.15);
-  z-index: 50;
+  z-index: 1000;
   overflow: hidden;
   animation: dropdownSlideIn 200ms ease;
 }
@@ -565,7 +571,22 @@
   flex-shrink: 0;
 }
 
+.dropdownBackdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 999;
+  display: none;
+}
+
 @media (max-width: 768px) {
+  .dropdownBackdrop {
+    display: block;
+  }
+
   .dropdownTrigger {
     padding: 10px 14px;
   }
@@ -588,8 +609,26 @@
   }
 
   .dropdownMenu {
-    max-height: 280px;
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-height: 65vh;
     overflow-y: auto;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.2);
+    animation: dropdownSlideUp 250ms ease;
+    z-index: 1000;
+  }
+
+  @keyframes dropdownSlideUp {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
   }
 }
 
