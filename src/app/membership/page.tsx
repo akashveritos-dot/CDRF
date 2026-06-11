@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import styles from './page.module.css';
 import { membershipTiers, membershipFeatures, honoraryMembersList } from '@/data/dataStore';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
-import { Check, Minus, Star, Shield, Zap, Crown } from 'lucide-react';
+import { Check, Minus, Star, Shield, Zap, Crown, ChevronDown } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast/ToastContext';
 
 // ─── Per-tier design tokens ────────────────────────────────────────────────────
@@ -71,6 +71,14 @@ const TIER_CONFIG = {
   },
 } as const;
 
+// Tier options for custom dropdown
+const tierOptions = [
+  { value: 'Basic', label: 'Basic', subLabel: 'Free individual / student', icon: <Shield size={16} />, color: '#64748b' },
+  { value: 'Prime', label: 'Prime', subLabel: '₹20,000/yr — NGO/Academia', icon: <Zap size={16} />, color: '#0e7a6b' },
+  { value: 'Premium', label: 'Premium', subLabel: '₹50,000/yr — Small SME', icon: <Star size={16} />, color: '#6d28d9' },
+  { value: 'Gold', label: 'Gold', subLabel: '₹1,00,000/yr — Corporate / Enterprise', icon: <Crown size={16} />, color: '#b45309' },
+];
+
 export default function MembershipPage() {
   const { success } = useToast();
   const [formData, setFormData] = useState({
@@ -82,6 +90,19 @@ export default function MembershipPage() {
     message: ''
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -301,12 +322,57 @@ export default function MembershipPage() {
                 </div>
                 <div className={`${styles.formGroup} ${styles.fieldFull}`}>
                   <label className={styles.label}>Select Target Membership Tier</label>
-                  <select name="tier" className={styles.select} value={formData.tier} onChange={handleInputChange}>
-                    <option value="Basic">Basic (Free individual / student)</option>
-                    <option value="Prime">Prime (₹20,000/yr — NGO/Academia)</option>
-                    <option value="Premium">Premium (₹50,000/yr — Small SME)</option>
-                    <option value="Gold">Gold (₹1,00,000/yr — Corporate / Enterprise)</option>
-                  </select>
+                  <div className={styles.customDropdown} ref={dropdownRef}>
+                    <button
+                      type="button"
+                      className={styles.dropdownTrigger}
+                      onClick={() => setDropdownOpen(!dropdownOpen)}
+                    >
+                      <div className={styles.dropdownSelected}>
+                        <span className={styles.dropdownIcon} style={{ color: tierOptions.find(t => t.value === formData.tier)?.color }}>
+                          {tierOptions.find(t => t.value === formData.tier)?.icon}
+                        </span>
+                        <div className={styles.dropdownText}>
+                          <span className={styles.dropdownLabel}>
+                            {tierOptions.find(t => t.value === formData.tier)?.label}
+                          </span>
+                          <span className={styles.dropdownSubLabel}>
+                            {tierOptions.find(t => t.value === formData.tier)?.subLabel}
+                          </span>
+                        </div>
+                      </div>
+                      <ChevronDown 
+                        size={18} 
+                        className={`${styles.dropdownChevron} ${dropdownOpen ? styles.dropdownChevronOpen : ''}`}
+                      />
+                    </button>
+                    {dropdownOpen && (
+                      <div className={styles.dropdownMenu}>
+                        {tierOptions.map((option) => (
+                          <button
+                            key={option.value}
+                            type="button"
+                            className={`${styles.dropdownOption} ${formData.tier === option.value ? styles.dropdownOptionActive : ''}`}
+                            onClick={() => {
+                              setFormData(prev => ({ ...prev, tier: option.value }));
+                              setDropdownOpen(false);
+                            }}
+                          >
+                            <span className={styles.dropdownIcon} style={{ color: option.color }}>
+                              {option.icon}
+                            </span>
+                            <div className={styles.dropdownText}>
+                              <span className={styles.dropdownLabel}>{option.label}</span>
+                              <span className={styles.dropdownSubLabel}>{option.subLabel}</span>
+                            </div>
+                            {formData.tier === option.value && (
+                              <Check size={16} className={styles.dropdownCheck} />
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className={`${styles.formGroup} ${styles.fieldFull}`}>
                   <label className={styles.label}>Resilience Focus / Brief Description</label>
