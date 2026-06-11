@@ -1,0 +1,125 @@
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 340px;
+  box-shadow: var(--shadow-md);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-default);
+  letter-spacing: 0.5px;
+}
+
+.badge {
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--teal-light);
+  color: var(--teal-primary);
+  border: 1px solid rgba(14, 122, 107, 0.2);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+}
+
+.chartContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  flex: 1;
+  gap: 24px;
+}
+
+.chartWrapper {
+  width: 150px;
+  height: 150px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chartCenterLabel {
+  position: absolute;
+  text-align: center;
+}
+
+.centerYear {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.centerValue {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-default);
+  line-height: 1;
+  margin-top: 2px;
+}
+
+.legend {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-default);
+  transition: transform var(--transition-fast);
+}
+
+.legendItem:hover {
+  transform: translateX(4px);
+}
+
+.legendColor {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.legendText {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.percentage {
+  font-weight: 700;
+  color: var(--text-default);
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 16px;
+  }
+  .chartContent {
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+  }
+  .legend {
+    width: 100%;
+  }
+}

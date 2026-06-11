@@ -1,0 +1,496 @@
+/* ════════════════════════════════════════════════════════════════════
+   DCRF Membership Page — Tier-coloured Premium UI
+   ════════════════════════════════════════════════════════════════════ */
+
+.page {
+  padding: 80px 5%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ─── Header ─────────────────────────────────────────────────────── */
+.header { margin-bottom: 56px; }
+
+.title {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 4.5vw, 48px);
+  color: var(--text-default);
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: var(--text-muted);
+  max-width: 700px;
+  line-height: 1.75;
+}
+
+/* ─── Tier Grid ──────────────────────────────────────────────────── */
+.tiersGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 72px;
+  align-items: stretch;
+}
+
+.tiersGrid > * {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Tier Card ──────────────────────────────────────────────────── */
+.tierCard {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+
+.tierCard:hover {
+  transform: translateY(-6px);
+  border-color: color-mix(in srgb, var(--tier-accent) 30%, transparent);
+  box-shadow:
+    0 12px 32px -4px var(--tier-glow),
+    var(--shadow-lg);
+}
+
+.popularCard {
+  border: 2px solid color-mix(in srgb, var(--tier-accent) 60%, transparent) !important;
+  box-shadow: 0 8px 24px -4px var(--tier-glow), var(--shadow-lg) !important;
+}
+
+/* Coloured top accent band */
+.tierBand {
+  height: 5px;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+/* Icon badge just below the band */
+.tierIconWrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 20px 20px 0;
+  flex-shrink: 0;
+}
+
+/* Popular ribbon */
+.popularBadge {
+  position: absolute;
+  top: 22px;
+  right: -28px;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 4px 36px;
+  transform: rotate(45deg);
+}
+
+/* Tier meta (name + price) */
+.tierMeta {
+  padding: 16px 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tierName {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+.price {
+  font-family: var(--font-display);
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.priceSub {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* Divider */
+.tierDivider {
+  height: 1px;
+  margin: 18px 20px;
+  opacity: 0.4;
+}
+
+/* Feature list inside card */
+.featureList {
+  list-style: none;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  margin-bottom: 8px;
+}
+
+.featItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--text-default);
+  line-height: 1.4;
+}
+
+.featItemDisabled {
+  opacity: 0.4;
+}
+
+.featCheck {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+  background: var(--bg-surface-alt);
+  color: var(--text-muted);
+}
+
+.featLabel {
+  flex: 1;
+}
+
+/* CTA button */
+.cardAction {
+  margin: 20px 20px 20px;
+  padding: 11px 16px;
+  border-radius: 10px;
+  border: none;
+  background: var(--tier-btn);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  transition: background 150ms ease, transform 150ms ease;
+  flex-shrink: 0;
+}
+.cardAction:hover {
+  background: var(--tier-btn-hover);
+  transform: translateY(-1px);
+}
+
+/* ─── Comparison Table ───────────────────────────────────────────── */
+.compareTitle {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-default);
+  margin-bottom: 20px;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+  margin-bottom: 72px;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-md);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  text-align: left;
+  min-width: 680px;
+}
+
+/* Feature column header */
+.thFeature {
+  background: var(--bg-surface-alt);
+  color: var(--text-muted);
+  padding: 18px 24px;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  border-bottom: 2px solid var(--border-color);
+  border-top-left-radius: 16px;
+}
+
+/* Tier column headers */
+.thTier {
+  padding: 0;
+  border-top-right-radius: 0;
+}
+
+.thInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 18px 16px;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.thIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Table body */
+.tdFeature {
+  padding: 15px 24px;
+  color: var(--text-default);
+  font-size: 13px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.tdCheck {
+  padding: 15px 16px;
+  text-align: center;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+
+.table tr:last-child .tdFeature,
+.table tr:last-child .tdCheck {
+  border-bottom: none;
+}
+
+.trEven .tdFeature,
+.trEven .tdCheck {
+  background: rgba(248, 250, 252, 0.6);
+}
+
+.table tr:hover .tdFeature,
+.table tr:hover .tdCheck {
+  background: var(--bg-surface-alt);
+}
+
+/* Check pill */
+.checkPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+.dashIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(100, 116, 139, 0.4);
+}
+
+/* ─── Honorary Members ───────────────────────────────────────────── */
+.networksBox {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 40px;
+  margin-bottom: 72px;
+  box-shadow: var(--shadow-sm);
+}
+
+.networksTitle {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-default);
+  margin-bottom: 10px;
+}
+
+.networksSub {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 22px;
+  line-height: 1.65;
+  max-width: 680px;
+}
+
+.networksGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.networkChip {
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--border-color);
+  padding: 6px 16px;
+  border-radius: var(--radius-full);
+  color: var(--text-muted);
+  transition: border-color 150ms, color 150ms;
+}
+.networkChip:hover {
+  border-color: rgba(153,27,27,0.2);
+  color: var(--gold-primary);
+}
+
+/* ─── Registration Form ──────────────────────────────────────────── */
+.formSec {
+  max-width: 680px;
+  margin: 0 auto;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 48px;
+  box-shadow: var(--shadow-lg);
+}
+
+.formTitle {
+  font-family: var(--font-display);
+  font-size: 28px;
+  color: var(--text-default);
+  font-weight: 700;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.formSubtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 32px;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.fieldFull { grid-column: span 2; }
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-default);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.input, .select, .textarea {
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 12px 16px;
+  color: var(--text-default);
+  font-family: var(--font-body);
+  font-size: 14px;
+  outline: none;
+  transition: all 150ms ease;
+}
+.input:focus, .select:focus, .textarea:focus {
+  border-color: var(--gold-primary);
+  background: var(--bg-surface);
+  box-shadow: 0 0 0 3px rgba(153,27,27,0.07);
+}
+
+.submitBtn {
+  background: var(--gold-primary);
+  color: #fff;
+  border: none;
+  padding: 14px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 150ms ease, transform 150ms ease;
+  margin-top: 6px;
+  letter-spacing: 0.3px;
+}
+.submitBtn:hover {
+  background: var(--gold-light);
+  transform: translateY(-1px);
+}
+
+/* ─── Success state ──────────────────────────────────────────────── */
+.successBox {
+  text-align: center;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+
+.successIcon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #d1fae5;
+  color: #059669;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.successTitle {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-default);
+}
+
+.successMsg {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.65;
+  max-width: 420px;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .tiersGrid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .page { padding: 60px 24px; }
+  .tiersGrid { grid-template-columns: 1fr; }
+  .formSec { padding: 28px; }
+  .formGrid { grid-template-columns: 1fr; }
+  .fieldFull { grid-column: span 1; }
+}
+
+@media (max-width: 480px) {
+  .page { padding: 40px 16px; }
+  .networksBox { padding: 24px; }
+  .formSec { padding: 24px 16px; }
+  .formTitle { font-size: 22px; }
+}

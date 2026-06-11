@@ -1,0 +1,219 @@
+.page {
+  padding: 80px 5%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: 50px;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 4.5vw, 48px);
+  color: var(--text-default);
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: var(--text-muted);
+  max-width: 700px;
+  line-height: 1.7;
+}
+
+/* 2-column core description */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  margin-bottom: 70px;
+  align-items: start;
+}
+
+.bodyText {
+  font-size: 15px;
+  color: var(--text-default);
+  line-height: 1.8;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.bodyText p {
+  margin-bottom: 6px;
+}
+
+.missionSec {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 70px;
+}
+
+.missionCard {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 32px;
+  box-shadow: var(--shadow-sm);
+}
+
+.missionCard h3 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--text-default);
+  margin-bottom: 12px;
+}
+
+.missionCard p {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* Timeline vertical layout */
+.timelineSec {
+  margin-bottom: 70px;
+}
+
+.timelineSec h2 {
+  font-family: var(--font-display);
+  font-size: 26px;
+  color: var(--text-default);
+  margin-bottom: 30px;
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding-left: 32px;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 10px;
+  bottom: 10px;
+  width: 2px;
+  background: var(--border-color);
+}
+
+.timelineNode {
+  position: relative;
+  margin-bottom: 40px;
+}
+
+.timelineNode:last-child {
+  margin-bottom: 0;
+}
+
+.timelineDot {
+  position: absolute;
+  left: -32px;
+  top: 6px;
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+  background: var(--gold-primary);
+  border: 3px solid var(--bg-default);
+  box-shadow: 0 0 10px rgba(153, 27, 27, 0.2);
+}
+
+.timelineDate {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gold-light);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+
+.timelineContent h4 {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-default);
+  margin-bottom: 6px;
+}
+
+.timelineContent p {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* Partner cards left border styling */
+.partnersGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.pcard {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 28px;
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.pcard:hover {
+  border-color: rgba(15, 23, 42, 0.15);
+  box-shadow: var(--shadow-md);
+}
+
+.pcard h4 {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-default);
+  margin-bottom: 10px;
+}
+
+.pcard p {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+  .missionSec {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding: 60px 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page {
+    padding: 40px 16px;
+  }
+  .missionCard {
+    padding: 20px 16px;
+  }
+  .pcard {
+    padding: 18px 16px;
+  }
+  .timeline {
+    padding-left: 20px;
+  }
+  .timelineDot {
+    left: -20px;
+    width: 12px;
+    height: 12px;
+    border-width: 2px;
+  }
+}

@@ -1,0 +1,407 @@
+.container {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 36px;
+  align-items: center;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+}
+
+.container::before {
+  content: '';
+  position: absolute;
+  top: -100px;
+  left: -100px;
+  width: 250px;
+  height: 250px;
+  border-radius: var(--radius-full);
+  background: radial-gradient(circle, rgba(192, 57, 43, 0.03) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.mapWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+  min-height: 380px;
+}
+
+.mapSvg {
+  width: 100%;
+  max-width: 440px;
+  height: auto;
+  filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.08));
+}
+
+.statePath {
+  cursor: pointer;
+  stroke: var(--bg-surface);
+  stroke-width: 1.5;
+  outline: none;
+  transition: fill var(--transition-base), filter var(--transition-base), stroke var(--transition-fast);
+}
+
+.statePath:hover {
+  filter: brightness(0.95) drop-shadow(0 0 10px rgba(0, 0, 0, 0.05));
+  stroke: var(--navy-primary);
+  stroke-width: 2;
+  z-index: 10;
+}
+
+/* Hazard classes color fills */
+.hazardHigh {
+  fill: rgba(192, 57, 43, 0.85); /* Crimson Red */
+}
+.hazardMedium {
+  fill: rgba(230, 126, 34, 0.8); /* Amber Orange */
+}
+.hazardLow {
+  fill: rgba(14, 122, 107, 0.8); /* Teal Green */
+}
+.hazardNone {
+  fill: var(--bg-surface-alt);
+}
+
+.infoPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+  justify-content: center;
+}
+
+.infoTitle {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--red-primary);
+}
+
+.infoCard {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 280px;
+  transition: all var(--transition-base);
+}
+
+.cardHigh {
+  box-shadow: 0 10px 30px -10px rgba(192, 57, 43, 0.08), var(--shadow-md);
+}
+
+.cardMedium {
+  box-shadow: 0 10px 30px -10px rgba(153, 27, 27, 0.06), var(--shadow-md);
+}
+
+.cardLow {
+  box-shadow: 0 10px 30px -10px rgba(14, 122, 107, 0.06), var(--shadow-md);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 14px;
+}
+
+.stateTitleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stateCode {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.cardHeader h4 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  color: var(--text-default);
+  font-weight: 700;
+  margin: 0;
+}
+
+.hazardBadge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+}
+
+.badgeHigh {
+  background: var(--red-pale);
+  color: var(--red-primary);
+}
+
+.badgeMedium {
+  background: var(--gold-pale);
+  color: var(--gold-primary);
+}
+
+.badgeLow {
+  background: var(--teal-light);
+  color: var(--teal-primary);
+}
+
+/* Premium Severity Index Bar */
+.riskMeterSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: rgba(15, 23, 42, 0.015);
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--border-color);
+}
+
+.riskMeterLabel {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.riskValueText {
+  font-family: var(--font-display);
+  font-weight: 800;
+  color: var(--text-default);
+}
+
+.riskBarBg {
+  width: 100%;
+  height: 8px;
+  background: rgba(15, 23, 42, 0.06);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.riskBarFill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.fillHigh {
+  background: linear-gradient(90deg, var(--red-light), var(--red-primary));
+}
+
+.fillMedium {
+  background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+.fillLow {
+  background: linear-gradient(90deg, var(--teal-light), var(--teal-primary));
+}
+
+.cardMetrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.metricLabel {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.metricIcon {
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+.metricValue {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-default);
+  line-height: 1.4;
+}
+
+.cardFooter {
+  font-size: 13px;
+  color: var(--text-default);
+  line-height: 1.6;
+  padding: 16px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.footerHigh {
+  background: rgba(192, 57, 43, 0.02);
+}
+
+.footerMedium {
+  background: rgba(153, 27, 27, 0.02);
+}
+
+.footerLow {
+  background: rgba(14, 122, 107, 0.02);
+}
+
+.advisoryHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.advisoryIcon {
+  color: var(--red-primary);
+}
+
+.advisoryText {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.legend {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--border-color);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 25px -10px rgba(0, 0, 0, 0.05);
+  z-index: 10;
+}
+
+.legendHeader {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 4px;
+  margin-bottom: 4px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+}
+
+.stateActive {
+  stroke: var(--navy-primary) !important;
+  stroke-width: 2.5 !important;
+  filter: brightness(0.9) drop-shadow(0 0 12px rgba(18, 40, 70, 0.25)) !important;
+}
+
+@media (max-width: 1024px) {
+  .container {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    padding: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 20px;
+    gap: 24px;
+  }
+  .mapWrapper {
+    min-height: 300px;
+  }
+  .infoCard {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 12px;
+    gap: 20px;
+  }
+  .mapWrapper {
+    min-height: 260px;
+  }
+  .infoCard {
+    padding: 16px;
+    gap: 16px;
+  }
+  .cardHeader h4 {
+    font-size: 20px;
+  }
+  .cardMetrics {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .legend {
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px;
+    padding: 10px 14px;
+    width: 100%;
+    margin-bottom: 16px;
+  }
+  .legendHeader {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 0;
+    width: 100%;
+    text-align: center;
+  }
+}

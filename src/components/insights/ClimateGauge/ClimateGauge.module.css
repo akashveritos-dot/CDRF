@@ -1,0 +1,124 @@
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  min-height: 340px;
+  box-shadow: var(--shadow-md);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-default);
+  letter-spacing: 0.5px;
+}
+
+.badge {
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--red-pale);
+  color: var(--red-primary);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+}
+
+.gaugeContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  margin: 10px 0;
+}
+
+.svg {
+  width: 100%;
+  max-width: 220px;
+  height: auto;
+}
+
+.gaugeTrack {
+  fill: none;
+  stroke: var(--bg-surface-alt);
+  stroke-width: 18;
+  stroke-linecap: round;
+}
+
+.gaugeFill {
+  fill: none;
+  stroke: url(#gaugeGradient);
+  stroke-width: 18;
+  stroke-linecap: round;
+}
+
+.needle {
+  transform-origin: 100px 90px;
+  fill: var(--text-default);
+  stroke: var(--bg-surface);
+  stroke-width: 1;
+}
+
+.centerPin {
+  fill: var(--gold-primary);
+  stroke: var(--bg-surface);
+  stroke-width: 2;
+}
+
+.anomalyValue {
+  font-family: var(--font-display);
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--red-primary);
+  line-height: 1;
+  margin-top: 6px;
+  text-shadow: 0 0 20px rgba(192, 57, 43, 0.05);
+}
+
+.anomalyLabel {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  text-align: center;
+}
+
+.scaleLabels {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 200px;
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 10px;
+}
+
+.footerText {
+  margin-top: 16px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 14px;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 16px;
+  }
+  .anomalyValue {
+    font-size: 38px;
+  }
+  .title {
+    font-size: 14px;
+  }
+}

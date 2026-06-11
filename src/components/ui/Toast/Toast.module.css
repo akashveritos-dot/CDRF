@@ -1,0 +1,120 @@
+/* Toast Portal container — fixed top-right stack */
+.portal {
+  position: fixed;
+  top: 72px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+  width: 360px;
+}
+
+/* Individual toast card */
+.toast {
+  pointer-events: all;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow:
+    0 8px 24px rgba(15, 23, 42, 0.12),
+    0 2px 8px rgba(15, 23, 42, 0.06);
+  font-family: 'Inter', sans-serif;
+  will-change: transform, opacity;
+}
+
+/* Variant themes */
+.success {
+  background: rgba(240, 253, 244, 0.97);
+  border-color: rgba(22, 163, 74, 0.25);
+}
+.success .icon { color: #16a34a; }
+
+.error {
+  background: rgba(255, 241, 242, 0.97);
+  border-color: rgba(220, 38, 38, 0.25);
+}
+.error .icon { color: #dc2626; }
+
+.warning {
+  background: rgba(255, 251, 235, 0.97);
+  border-color: rgba(217, 119, 6, 0.25);
+}
+.warning .icon { color: #d97706; }
+
+.info {
+  background: rgba(239, 246, 255, 0.97);
+  border-color: rgba(59, 130, 246, 0.25);
+}
+.info .icon { color: #3b82f6; }
+
+.download {
+  background: rgba(245, 243, 255, 0.97);
+  border-color: rgba(109, 40, 217, 0.25);
+}
+.download .icon { color: #6d28d9; }
+
+/* Icon */
+.icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+}
+
+/* Body */
+.body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.toastTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1.4;
+}
+
+.toastMsg {
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.45;
+}
+
+/* Dismiss button */
+.close {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 150ms, color 150ms;
+  padding: 0;
+}
+.close:hover {
+  background: rgba(15, 23, 42, 0.06);
+  color: #0f172a;
+}
+
+@media (max-width: 480px) {
+  .portal {
+    width: calc(100vw - 32px);
+    left: 16px;
+    right: 16px;
+  }
+}

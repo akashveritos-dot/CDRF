@@ -1,0 +1,109 @@
+.tickerBar {
+  background: var(--red-pale); /* Premium Light Red background */
+  padding: 10px 0;
+  overflow: hidden;
+  z-index: 200;
+  position: relative;
+  border-bottom: 1px solid rgba(192, 57, 43, 0.15);
+}
+
+.tickerInner {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.tickerLabel {
+  background: var(--red-primary); /* Prominent warning red badge */
+  color: var(--text-inverse);    /* Highly visible white text */
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 5px 16px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  border-radius: var(--radius-xs);
+  margin-left: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(192, 57, 43, 0.2);
+}
+
+.warningIcon {
+  color: var(--text-inverse);
+  display: inline-block;
+  animation: iconPulse 2s infinite ease-in-out;
+}
+
+@keyframes iconPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.15); opacity: 0.8; }
+}
+
+.tickerTrack {
+  overflow: hidden;
+  flex: 1;
+  position: relative;
+  display: flex;
+}
+
+.tickerTrack::before,
+.tickerTrack::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.tickerTrack::before {
+  left: 0;
+  background: linear-gradient(90deg, var(--red-pale), transparent);
+}
+
+.tickerTrack::after {
+  right: 0;
+  background: linear-gradient(-90deg, var(--red-pale), transparent);
+}
+
+@keyframes tickerScroll {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.tickerItems {
+  display: flex;
+  animation: tickerScroll 30s linear infinite;
+  white-space: nowrap;
+  will-change: transform;
+}
+
+.tickerBar:hover .tickerItems {
+  animation-play-state: paused;
+}
+
+.tickerItems span {
+  color: var(--red-dark); /* Dark red text, highly legible on light red bg */
+  font-size: 13px;
+  padding: 0 40px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+}
+
+.tickerItems span::before {
+  content: "● ";
+  color: var(--red-primary);
+  margin-right: 12px;
+  font-size: 10px;
+  opacity: 0.8;
+}
