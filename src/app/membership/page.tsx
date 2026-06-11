@@ -100,9 +100,20 @@ export default function MembershipPage() {
         setDropdownOpen(false);
       }
     };
+    
+    // Prevent body scroll when dropdown is open on mobile
+    if (dropdownOpen && window.innerWidth <= 768) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.body.style.overflow = '';
+    };
+  }, [dropdownOpen]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
