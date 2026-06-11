@@ -58,8 +58,8 @@ export default function LossChart() {
           <span className={styles.title}>Economic Losses from Climate Disasters (₹ Lakh Crore)</span>
           <span className={styles.badge}>NDMA / World Bank</span>
         </div>
-        <div className={styles.chartContainer} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Loading chart telemetry...</span>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '200px' }}>
+          <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Loading chart...</span>
         </div>
       </div>
     );
@@ -73,7 +73,7 @@ export default function LossChart() {
       </div>
 
       <div className={styles.chartContainer}>
-        <ResponsiveContainer width="100%" height={200}>
+        <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={chartData}
             margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
@@ -104,21 +104,23 @@ export default function LossChart() {
                 <stop offset="100%" stopColor="#641e16" />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.05)" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(15, 23, 42, 0.08)" vertical={false} />
             <XAxis
               dataKey="name"
-              stroke="var(--gray-500)"
+              stroke="var(--text-muted)"
               tickLine={false}
               axisLine={false}
               dy={10}
+              style={{ fontSize: '12px' }}
             />
             <YAxis
-              stroke="var(--gray-500)"
+              stroke="var(--text-muted)"
               tickLine={false}
               axisLine={false}
               dx={-5}
+              style={{ fontSize: '12px' }}
             />
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }} />
             <Bar
               dataKey="Losses"
               radius={[6, 6, 0, 0]}

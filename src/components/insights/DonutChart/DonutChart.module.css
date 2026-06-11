@@ -40,6 +40,8 @@
   justify-content: space-around;
   flex: 1;
   gap: 24px;
+  padding: 10px;
+  overflow: visible;
 }
 
 .chartWrapper {
@@ -49,6 +51,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.chartWrapper svg {
+  overflow: visible !important;
 }
 
 /* Remove default recharts focus outline */
@@ -163,6 +171,7 @@
 @media (max-width: 768px) {
   .card {
     padding: 16px;
+    overflow: visible;
   }
   
   .header {
@@ -186,6 +195,12 @@
     flex-direction: column;
     gap: 20px;
     align-items: center;
+    padding: 15px 10px;
+  }
+  
+  .chartWrapper {
+    width: 160px;
+    height: 160px;
   }
   
   .legend {
@@ -206,6 +221,7 @@
 @media (max-width: 480px) {
   .card {
     padding: 14px;
+    overflow: visible;
   }
   
   .title {
@@ -219,11 +235,12 @@
   
   .chartContent {
     gap: 16px;
+    padding: 12px 5px;
   }
   
   .chartWrapper {
-    width: 130px;
-    height: 130px;
+    width: 140px;
+    height: 140px;
   }
   
   .centerYear {
