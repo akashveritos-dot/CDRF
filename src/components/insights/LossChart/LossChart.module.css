@@ -55,20 +55,12 @@
 .chartContainer rect:focus,
 .chartContainer rect:active {
   outline: none !important;
-  stroke: none !important;
 }
 
 /* Custom hover effect - brighten the bar */
 .chartContainer rect:hover {
   filter: brightness(1.1);
   transition: filter 0.2s ease;
-}
-
-.chartContainer rect:active {
-  filter: brightness(1.15);
-  transform: scaleY(1.02);
-  transform-origin: bottom;
-  transition: all 0.2s ease;
 }
 
 .tooltip {

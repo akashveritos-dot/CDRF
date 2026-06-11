@@ -66,17 +66,10 @@
   outline: none !important;
 }
 
-/* Custom hover/click effect - scale the segment */
+/* Custom hover effect - brighten the segment */
 .chartWrapper path:hover {
   filter: brightness(1.1);
-  transform-origin: center;
-  transition: all 0.2s ease;
-}
-
-.chartWrapper path:active {
-  filter: brightness(1.15);
-  transform: scale(1.05);
-  transform-origin: center;
+  transition: filter 0.2s ease;
 }
 
 .chartCenterLabel {
