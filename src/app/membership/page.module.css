@@ -406,6 +406,9 @@
 }
 
 .input, .select, .textarea {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
   background: var(--bg-surface-alt);
   border: 1px solid var(--border-color);
   border-radius: 10px;
@@ -483,7 +486,7 @@
 @media (max-width: 768px) {
   .page { padding: 60px 24px; }
   .tiersGrid { grid-template-columns: 1fr; }
-  .formSec { padding: 28px; }
+  .formSec { padding: 32px 24px; }
   .formGrid { grid-template-columns: 1fr; }
   .fieldFull { grid-column: span 1; }
 }
