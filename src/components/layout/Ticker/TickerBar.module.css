@@ -16,34 +16,34 @@
 .tickerLabel {
   background: var(--red-primary); /* Prominent warning red badge */
   color: var(--text-inverse);    /* Highly visible white text */
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 1.5px;
+  letter-spacing: 1.2px;
   text-transform: uppercase;
-  padding: 5px 16px;
+  padding: 4px 12px;
   white-space: nowrap;
   flex-shrink: 0;
   border-radius: var(--radius-xs);
   margin-left: 20px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   z-index: 10;
   box-shadow: 0 2px 8px rgba(192, 57, 43, 0.2);
 }
 
 @media (max-width: 768px) {
   .tickerLabel {
-    font-size: 9px;
-    padding: 4px 10px;
-    margin-left: 10px;
-    letter-spacing: 1px;
-    gap: 5px;
+    font-size: 8px;
+    padding: 3px 8px;
+    margin-left: 8px;
+    letter-spacing: 0.8px;
+    gap: 4px;
   }
   
   .warningIcon {
-    width: 10px;
-    height: 10px;
+    width: 9px;
+    height: 9px;
   }
 }
 
@@ -97,7 +97,7 @@
 
 .tickerItems {
   display: flex;
-  animation: tickerScroll 30s linear infinite;
+  animation: tickerScroll 20s linear infinite;
   white-space: nowrap;
   will-change: transform;
 }
