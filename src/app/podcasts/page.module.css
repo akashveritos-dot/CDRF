@@ -118,10 +118,17 @@
   align-items: start;
 }
 
-/* Makes the ScrollReveal wrapper pass height through */
+/* Makes the ScrollReveal wrapper pass height through and fit width */
 .stageGrid > * {
   display: flex;
   flex-direction: column;
+  width: 100%;
+  min-width: 0;
+}
+
+.episodeList > * {
+  width: 100%;
+  min-width: 0;
 }
 
 /* ─── Featured Player Card ───────────────────────────────────────────── */
@@ -311,6 +318,7 @@
   display: flex;
   flex-direction: column;
   gap: 1px;
+  min-width: 0;
 }
 .speakerLabel {
   font-size: 9px;
@@ -445,6 +453,8 @@
 
 .volSlider {
   flex: 1;
+  width: 100%;
+  min-width: 0;
   appearance: none;
   -webkit-appearance: none;
   height: 4px;
@@ -686,6 +696,8 @@
 .videoGrid > * {
   display: flex;
   flex-direction: column;
+  width: 100%;
+  min-width: 0;
 }
 
 .videoCard {
