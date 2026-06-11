@@ -366,19 +366,21 @@
     position: relative;
   }
   
-  /* Make legend smaller, positioned above map, single line */
+  /* Make legend smaller, positioned top-right of map, single line */
   .legend {
     position: absolute;
     top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    flex-direction: row;
+    right: 10px;
+    left: auto;
+    transform: none;
+    flex-direction: column;
     flex-wrap: nowrap;
-    justify-content: center;
-    gap: 10px;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 6px;
     padding: 6px 10px;
     width: auto;
-    max-width: 90%;
+    max-width: 140px;
     margin-bottom: 0;
     font-size: 8px;
     background: rgba(255, 255, 255, 0.95);
@@ -475,13 +477,14 @@
     min-height: 320px;
   }
   
-  /* Even smaller legend, still single line */
+  /* Even smaller legend, top-right position */
   .legend {
     top: 8px;
-    gap: 8px;
+    right: 8px;
+    gap: 5px;
     padding: 5px 8px;
     font-size: 7.5px;
-    max-width: 95%;
+    max-width: 120px;
   }
   
   .legendDot {
