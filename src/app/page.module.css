@@ -494,24 +494,12 @@
   overflow: hidden;
   transition: transform var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base);
   box-shadow: var(--shadow-md);
-  outline: none !important;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.pillarCard:focus,
-.pillarCard:active {
-  outline: none !important;
-  -webkit-tap-highlight-color: transparent;
 }
 
 .pillarCard:hover {
   transform: translateY(-4px);
   border-color: rgba(153, 27, 27, 0.25);
   box-shadow: var(--shadow-lg), var(--shadow-gold);
-}
-
-.pillarCard:active {
-  transform: translateY(-2px);
 }
 
 .pillarNum {

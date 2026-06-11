@@ -51,34 +51,6 @@
   justify-content: center;
 }
 
-/* Remove default recharts focus outline */
-.chartWrapper svg {
-  outline: none;
-}
-
-.chartWrapper path {
-  outline: none !important;
-}
-
-/* Remove black rectangle on focus/click */
-.chartWrapper path:focus,
-.chartWrapper path:active {
-  outline: none !important;
-}
-
-/* Custom hover/click effect - scale the segment */
-.chartWrapper path:hover {
-  filter: brightness(1.1);
-  transform-origin: center;
-  transition: all 0.2s ease;
-}
-
-.chartWrapper path:active {
-  filter: brightness(1.15);
-  transform: scale(1.05);
-  transform-origin: center;
-}
-
 .chartCenterLabel {
   position: absolute;
   text-align: center;
