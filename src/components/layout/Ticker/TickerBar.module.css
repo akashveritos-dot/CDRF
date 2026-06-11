@@ -32,6 +32,21 @@
   box-shadow: 0 2px 8px rgba(192, 57, 43, 0.2);
 }
 
+@media (max-width: 768px) {
+  .tickerLabel {
+    font-size: 9px;
+    padding: 4px 10px;
+    margin-left: 10px;
+    letter-spacing: 1px;
+    gap: 5px;
+  }
+  
+  .warningIcon {
+    width: 10px;
+    height: 10px;
+  }
+}
+
 .warningIcon {
   color: var(--text-inverse);
   display: inline-block;
@@ -106,4 +121,16 @@
   margin-right: 12px;
   font-size: 10px;
   opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+  .tickerItems span {
+    font-size: 11px;
+    padding: 0 20px;
+  }
+  
+  .tickerItems span::before {
+    margin-right: 8px;
+    font-size: 8px;
+  }
 }
