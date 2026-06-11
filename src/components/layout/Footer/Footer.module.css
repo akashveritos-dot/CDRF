@@ -196,7 +196,22 @@
   }
   .bottom {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    text-align: center;
+    gap: 20px;
+  }
+  .bottom > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .bottom p {
+    text-align: center;
+  }
+  .legalLinks {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px 20px;
   }
 }
 
@@ -211,5 +226,11 @@
   .btn {
     padding: 11px 18px;
     width: 100%;
+  }
+  .legalLinks {
+    gap: 8px 16px;
+  }
+  .bottom p {
+    font-size: 11px;
   }
 }
