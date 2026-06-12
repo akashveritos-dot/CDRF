@@ -39,10 +39,31 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
 
 export default function LossChart() {
   const [mounted, setMounted] = React.useState(false);
+  const [chartWidth, setChartWidth] = React.useState(0);
+  const containerRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     setMounted(true);
   }, []);
+
+  React.useEffect(() => {
+    if (!mounted || !containerRef.current) return;
+
+    setChartWidth(containerRef.current.getBoundingClientRect().width || 500);
+
+    const handleResize = () => {
+      if (containerRef.current) {
+        setChartWidth(containerRef.current.getBoundingClientRect().width);
+      }
+    };
+
+    const observer = new ResizeObserver(handleResize);
+    observer.observe(containerRef.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [mounted]);
 
   // Map values for chart compatibility
   const chartData = economicLosses.map((item) => ({
@@ -72,9 +93,11 @@ export default function LossChart() {
         <span className={styles.badge}>NDMA / World Bank</span>
       </div>
 
-      <div className={styles.chartContainer}>
-        <ResponsiveContainer width="100%" height="100%">
+      <div ref={containerRef} className={styles.chartContainer}>
+        {chartWidth > 0 && (
           <BarChart
+            width={chartWidth}
+            height={240}
             data={chartData}
             margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
           >
@@ -132,7 +155,7 @@ export default function LossChart() {
               ))}
             </Bar>
           </BarChart>
-        </ResponsiveContainer>
+        )}
       </div>
     </div>
   );

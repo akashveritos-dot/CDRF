@@ -34,10 +34,31 @@ const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
 
 export default function DonutChart() {
   const [mounted, setMounted] = React.useState(false);
+  const [chartWidth, setChartWidth] = React.useState(0);
+  const containerRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     setMounted(true);
   }, []);
+
+  React.useEffect(() => {
+    if (!mounted || !containerRef.current) return;
+
+    setChartWidth(containerRef.current.getBoundingClientRect().width || 160);
+
+    const handleResize = () => {
+      if (containerRef.current) {
+        setChartWidth(containerRef.current.getBoundingClientRect().width);
+      }
+    };
+
+    const observer = new ResizeObserver(handleResize);
+    observer.observe(containerRef.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [mounted]);
 
   if (!mounted) {
     return (
@@ -62,16 +83,16 @@ export default function DonutChart() {
 
       <div className={styles.chartContent}>
         {/* SVG Recharts Donut Pie */}
-        <div className={styles.chartWrapper}>
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
+        <div ref={containerRef} className={styles.chartWrapper}>
+          {chartWidth > 0 && (
+            <PieChart width={chartWidth} height={chartWidth}>
               <Tooltip content={<CustomTooltip />} />
               <Pie
                 data={lossShare}
                 cx="50%"
                 cy="50%"
-                innerRadius={52}
-                outerRadius={70}
+                innerRadius={chartWidth * 0.325} // Proportional scaling (52/160)
+                outerRadius={chartWidth * 0.4375} // Proportional scaling (70/160)
                 paddingAngle={3}
                 dataKey="value"
                 animationDuration={1500}
@@ -81,7 +102,7 @@ export default function DonutChart() {
                 ))}
               </Pie>
             </PieChart>
-          </ResponsiveContainer>
+          )}
           
           <div className={styles.chartCenterLabel}>
             <div className={styles.centerYear}>India</div>
