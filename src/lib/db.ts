@@ -9,7 +9,8 @@ export function getDbPool(): mysql.Pool {
     const password = process.env.DB_PASSWORD || process.env.MYSQL_ADDON_PASSWORD || '';
     const database = process.env.DB_NAME || process.env.MYSQL_ADDON_DB || 'dcrs_db';
     const port = parseInt(process.env.DB_PORT || process.env.MYSQL_ADDON_PORT || '3306', 10);
-    console.log('[DEBUG DB] Initializing connection pool with config:', { host, port, user, database });
+    const connectionLimit = parseInt(process.env.DB_CONNECTION_LIMIT || '2', 10);
+    console.log('[DEBUG DB] Initializing connection pool with config:', { host, port, user, database, connectionLimit });
 
     pool = mysql.createPool({
       host,
@@ -18,7 +19,9 @@ export function getDbPool(): mysql.Pool {
       database,
       port,
       waitForConnections: true,
-      connectionLimit: 10,
+      connectionLimit,
+      maxIdle: 1, // Keep only 1 idle connection in pool at a time
+      idleTimeout: 5000, // Close idle connections after 5 seconds to release them
       queueLimit: 0,
       enableKeepAlive: true,
       keepAliveInitialDelay: 0,
