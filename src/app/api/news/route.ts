@@ -29,7 +29,13 @@ export async function GET(req: NextRequest) {
       })
     }));
 
-    return NextResponse.json(formatted);
+    return new NextResponse(JSON.stringify(formatted), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=30'
+      }
+    });
   } catch (error: any) {
     console.error('Fetch news error:', error);
     return NextResponse.json(

@@ -123,46 +123,66 @@ export default function Home() {
 
           {/* Right Climate Widget Panel */}
           <ScrollReveal direction="left" delay={0.3}>
-            <div className={styles.heroPanel}>
-              <div className={styles.panelTitle}>
-                <span className="pulse-dot sonar-emitter">
-                  <span className="sonar-pulse" />
-                </span>
-                India Climate Monitor • Live
+            <div className={`${styles.heroPanel} glass-panel radar-sweep-container`} style={{ padding: '0', overflow: 'hidden' }}>
+              <div className="radar-sweep-line" />
+              
+              <div style={{ position: 'relative', height: '180px', width: '100%', overflow: 'hidden' }}>
+                <img 
+                  src="/climate_radar_dashboard.png" 
+                  alt="DCRF India Climate Radar Monitor" 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.85 }} 
+                />
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent, rgba(10, 20, 36, 0.95))' }} />
+                
+                {/* Floating Warning Tag */}
+                <div style={{ position: 'absolute', top: '16px', left: '16px', display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(153, 27, 27, 0.9)', padding: '6px 12px', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 'var(--radius-full)', fontSize: '10px', fontWeight: 700, color: 'var(--white)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                  <span className="pulse-dot" style={{ width: '6px', height: '6px', boxShadow: 'none', background: 'white' }} />
+                  Early Warning Feed Active
+                </div>
               </div>
               
-              <div className={styles.dstatGrid}>
-                {stats.map((stat) => (
-                  <div key={stat.id} className={styles.dstat}>
-                    <div className={`${styles.dstatNum} ${
-                      stat.type === 'red' ? styles.numRed : 
-                      stat.type === 'amber' ? styles.numAmber : 
-                      stat.type === 'teal' ? styles.numTeal : styles.numBlue
-                    }`}>
-                      <CountUp end={stat.count} suffix={stat.suffix} decimals={stat.count % 1 !== 0 ? 1 : 0} />
+              <div style={{ padding: '24px 28px 28px' }}>
+                <div className={styles.panelTitle} style={{ color: 'var(--white)' }}>
+                  <span className="pulse-dot sonar-emitter">
+                    <span className="sonar-pulse" />
+                  </span>
+                  India Climate Monitor • Live
+                </div>
+                
+                <div className={styles.dstatGrid}>
+                  {stats.map((stat) => (
+                    <div key={stat.id} className={styles.dstat} style={{ background: 'rgba(255, 255, 255, 0.03)', borderColor: 'rgba(255,255,255,0.06)' }}>
+                      <div className={`${styles.dstatNum} ${
+                        stat.type === 'red' ? styles.numRed : 
+                        stat.type === 'amber' ? styles.numAmber : 
+                        stat.type === 'teal' ? styles.numTeal : styles.numBlue
+                      }`}>
+                        <CountUp end={stat.count} suffix={stat.suffix} decimals={stat.count % 1 !== 0 ? 1 : 0} />
+                      </div>
+                      <div className={styles.dstatLabel} style={{ color: 'var(--gray-400)' }}>{stat.label}</div>
                     </div>
-                    <div className={styles.dstatLabel}>{stat.label}</div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
 
-              <div className={styles.tempsHeader}>Heat Index — Major Cities</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {temps.map((city) => (
-                  <div key={city.city} className={styles.tempRow}>
-                    <span className={styles.tempCity}>{city.city}</span>
-                    <div className={styles.tempBarWrap}>
-                      <motion.div 
-                        className={styles.tempBarFill} 
-                        initial={{ width: 0 }}
-                        whileInView={{ width: `${city.percentage}%` }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 1.2, ease: 'easeOut' }}
-                      />
+                <div className={styles.tempsHeader} style={{ color: 'var(--white)', opacity: 0.9 }}>Heat Index — Major Cities</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {temps.map((city) => (
+                    <div key={city.city} className={styles.tempRow}>
+                      <span className={styles.tempCity} style={{ color: 'var(--gray-300)' }}>{city.city}</span>
+                      <div className={styles.tempBarWrap} style={{ background: 'rgba(255,255,255,0.08)' }}>
+                        <motion.div 
+                          className={styles.tempBarFill} 
+                          initial={{ width: 0 }}
+                          whileInView={{ width: `${city.percentage}%` }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 1.2, ease: 'easeOut' }}
+                          style={{ background: 'linear-gradient(90deg, var(--gold-light), var(--red-primary))' }}
+                        />
+                      </div>
+                      <span className={styles.tempVal} style={{ color: 'var(--white)' }}>{city.temp}°C</span>
                     </div>
-                    <span className={styles.tempVal}>{city.temp}°C</span>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
           </ScrollReveal>

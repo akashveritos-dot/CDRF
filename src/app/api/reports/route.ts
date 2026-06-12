@@ -18,7 +18,13 @@ export async function GET(req: NextRequest) {
     }
 
     const reportsList = await query<any[]>(sql, params);
-    return NextResponse.json(reportsList);
+    return new NextResponse(JSON.stringify(reportsList), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=30'
+      }
+    });
   } catch (error: any) {
     console.error('Fetch reports error:', error);
     return NextResponse.json(

@@ -289,3 +289,14 @@ INSERT INTO monsoon_heatmap (year, month, intensity) VALUES
 ('2024', 'Jan', 1), ('2024', 'Feb', 1), ('2024', 'Mar', 1), ('2024', 'Apr', 2), ('2024', 'May', 3), ('2024', 'Jun', 8), ('2024', 'Jul', 10), ('2024', 'Aug', 10), ('2024', 'Sep', 8), ('2024', 'Oct', 4), ('2024', 'Nov', 2), ('2024', 'Dec', 1)
 ON DUPLICATE KEY UPDATE intensity=VALUES(intensity);
 
+
+-- ==========================================
+-- PERFORMANCE TUNING INDEXES
+-- ==========================================
+CREATE INDEX idx_news_category_date ON news (category, published_date);
+CREATE INDEX idx_news_published_date ON news (published_date);
+CREATE INDEX idx_reports_category_year ON reports (category, year);
+CREATE INDEX idx_reports_year ON reports (year);
+CREATE INDEX idx_scraped_status_date ON scraped_content (status, scrape_date);
+
+
