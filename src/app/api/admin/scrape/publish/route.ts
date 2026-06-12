@@ -18,7 +18,11 @@ export async function POST(req: NextRequest) {
       externalLink,
       pageCount,
       year,
-      downloadUrl
+      downloadUrl,
+      location,
+      publishedDate,
+      severityLevel,
+      affectedPopulation
     } = body;
 
     if (!scrapedId || !action) {
@@ -62,22 +66,25 @@ export async function POST(req: NextRequest) {
       if (publishType === 'News') {
         const headlineText = headline || item.headline;
         const excerptText = excerpt || item.excerpt;
+        const locVal = location || item.location || 'National';
+        const pubDateVal = publishedDate || (item.published_date ? new Date(item.published_date).toISOString().split('T')[0] : null) || new Date().toISOString().split('T')[0];
         
         // Insert into news table
         const newsResult = await query<any>(
-          `INSERT INTO news (tag, source, headline, excerpt, published_date, author, external_link, thumbnail_emoji, image_url, category) 
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          `INSERT INTO news (tag, source, headline, excerpt, published_date, author, external_link, thumbnail_emoji, image_url, category, location) 
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             'Alert',
             source || item.source || 'Scraped Alert',
             headlineText,
             excerptText,
-            new Date().toISOString().split('T')[0], // Today's date
+            pubDateVal,
             author || 'Editor, DCRF',
             externalLink || item.url || '',
             '📡',
-            imageUrl || 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80', // Default telemetry image
-            (category || item.category || 'disasters').toLowerCase()
+            imageUrl || item.image_url || 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80',
+            (category || item.category || 'disasters').toLowerCase(),
+            locVal
           ]
         );
 
@@ -98,11 +105,14 @@ export async function POST(req: NextRequest) {
       else if (publishType === 'Report') {
         const titleText = headline || item.headline;
         const descText = excerpt || item.excerpt;
+        const sourceText = source || item.source || 'DCRF Scraped Report';
+        const regionVal = location || item.location || 'National';
+        const disasterTypeVal = category || item.category || 'General';
 
         // Insert into reports table
         const reportResult = await query<any>(
-          `INSERT INTO reports (title, category, description, page_count, year, download_url, accent_color, icon, image_url) 
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          `INSERT INTO reports (title, category, description, page_count, year, download_url, accent_color, icon, image_url, source, region, disaster_type, severity_level, affected_population) 
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             titleText,
             category || 'Technical',
@@ -112,7 +122,12 @@ export async function POST(req: NextRequest) {
             downloadUrl || item.url || '#',
             '#EDF2F8',
             '📡',
-            imageUrl || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80'
+            imageUrl || item.image_url || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80',
+            sourceText,
+            regionVal,
+            disasterTypeVal,
+            severityLevel || 'Medium',
+            affectedPopulation || null
           ]
         );
 

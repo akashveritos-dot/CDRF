@@ -3,23 +3,38 @@ import { query } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
 
-// GET /api/news - Fetch all news stories
+// GET /api/news - Fetch news stories
 export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
     const category = url.searchParams.get('category');
+    const limit = parseInt(url.searchParams.get('limit') || '0', 10);
+    const afterId = parseInt(url.searchParams.get('after_id') || '0', 10);
     
-    let sql = 'SELECT * FROM news ORDER BY published_date DESC, id DESC';
-    let params: any[] = [];
+    let sql = 'SELECT * FROM news';
+    const params: any[] = [];
+    const conditions: string[] = [];
     
     if (category && category.toLowerCase() !== 'all') {
-      sql = 'SELECT * FROM news WHERE category = ? ORDER BY published_date DESC, id DESC';
-      params = [category.toLowerCase()];
+      conditions.push('category = ?');
+      params.push(category.toLowerCase());
+    }
+    if (afterId > 0) {
+      conditions.push('id > ?');
+      params.push(afterId);
+    }
+    if (conditions.length > 0) {
+      sql += ' WHERE ' + conditions.join(' AND ');
+    }
+    sql += ' ORDER BY published_date DESC, id DESC';
+    if (limit > 0) {
+      sql += ' LIMIT ?';
+      params.push(limit);
     }
 
     const stories = await query<any[]>(sql, params);
     
-    // Format stories for frontend compatibility (e.g. format SQL date objects to string)
+    // Format stories for frontend compatibility
     const formatted = stories.map(story => ({
       ...story,
       date: new Date(story.published_date).toLocaleDateString('en-US', {
@@ -33,7 +48,7 @@ export async function GET(req: NextRequest) {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=30'
+        'Cache-Control': 'no-store'
       }
     });
   } catch (error: any) {

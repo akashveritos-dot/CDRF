@@ -58,9 +58,22 @@ async function migrate() {
     try {
       await conn.query('ALTER TABLE scraped_content ADD COLUMN image_url VARCHAR(512) DEFAULT NULL;');
       console.log('Added image_url column to scraped_content table.');
-    } catch (err) {
-      // Ignore if it already exists or if alter fails because of schema
-    }
+    } catch (err) {}
+
+    try {
+      await conn.query('ALTER TABLE news ADD COLUMN location VARCHAR(255) DEFAULT NULL;');
+      console.log('Added location column to news table.');
+    } catch (err) {}
+
+    try {
+      await conn.query('ALTER TABLE scraped_content ADD COLUMN location VARCHAR(255) DEFAULT NULL;');
+      console.log('Added location column to scraped_content table.');
+    } catch (err) {}
+
+    try {
+      await conn.query('ALTER TABLE scraped_content ADD COLUMN published_date DATE DEFAULT NULL;');
+      console.log('Added published_date column to scraped_content table.');
+    } catch (err) {}
 
     const [rows] = await conn.query('SELECT id, email, role FROM users;');
     console.log('Seeded users in database:', rows);

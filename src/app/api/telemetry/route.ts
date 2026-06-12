@@ -27,6 +27,19 @@ export async function GET(req: NextRequest) {
       }
     });
 
+    // Fetch dynamic home statistics counters
+    const activeIncidentsRes = await query<any[]>('SELECT SUM(count) as total FROM disaster_events');
+    const reportsCountRes = await query<any[]>('SELECT COUNT(*) as cnt FROM reports');
+    const alertsCountRes = await query<any[]>('SELECT COUNT(*) as cnt FROM ticker_alerts');
+
+    const homepageStats = {
+      activeIncidents: parseInt(activeIncidentsRes[0]?.total || '705', 10),
+      countriesAffected: 6,
+      reportsPublished: parseInt(reportsCountRes[0]?.cnt || '6', 10),
+      disasterCategories: 10,
+      alertsIssued: parseInt(alertsCountRes[0]?.cnt || '7', 10)
+    };
+
     return NextResponse.json({
       tickerAlerts,
       heroStats: heroStats.map(s => ({ ...s, count: parseFloat(s.count) })),
@@ -40,7 +53,8 @@ export async function GET(req: NextRequest) {
       })),
       lossShare,
       stateHazards,
-      heatmapData
+      heatmapData,
+      homepageStats
     });
   } catch (error: any) {
     console.error('Fetch telemetry error:', error);

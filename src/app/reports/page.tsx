@@ -2,9 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import styles from './page.module.css';
-import { reports as fallbackReports } from '@/data/dataStore';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
-import { Search, Download, BookOpen, Thermometer, Waves, Compass, Mountain, Cpu } from 'lucide-react';
+import { Search, Download, BookOpen, Thermometer, Waves, Compass, Mountain, Cpu, ShieldAlert, MapPin, AlertCircle } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast/ToastContext';
 
 const tabs = ['All', 'Annual', 'Policy', 'CSR', 'Technical'];
@@ -12,6 +11,7 @@ const tabs = ['All', 'Annual', 'Policy', 'CSR', 'Technical'];
 const getReportIcon = (iconEmoji: string) => {
   switch (iconEmoji) {
     case '📙':
+    case '📡': // fallback
       return <BookOpen size={20} style={{ color: 'var(--red-primary)' }} />;
     case '🌡️':
       return <Thermometer size={20} style={{ color: 'var(--orange-primary)' }} />;
@@ -21,8 +21,6 @@ const getReportIcon = (iconEmoji: string) => {
       return <Compass size={20} style={{ color: 'var(--purple-primary)' }} />;
     case '🏔️':
       return <Mountain size={20} style={{ color: 'var(--navy-light)' }} />;
-    case '📡':
-      return <Cpu size={20} style={{ color: 'var(--teal-primary)' }} />;
     default:
       return <BookOpen size={20} style={{ color: 'var(--red-primary)' }} />;
   }
@@ -71,7 +69,9 @@ export default function ReportsPage() {
     const matchesTab = activeTab === 'All' || report.category.toLowerCase() === activeTab.toLowerCase();
     const matchesSearch =
       report.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      report.description.toLowerCase().includes(searchQuery.toLowerCase());
+      report.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (report.disaster_type && report.disaster_type.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (report.region && report.region.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesTab && matchesSearch;
   });
 
@@ -107,7 +107,7 @@ export default function ReportsPage() {
             <Search size={18} className={styles.searchIcon} />
             <input
               type="text"
-              placeholder="Search reports or topics..."
+              placeholder="Search reports, states, or hazards..."
               className={styles.searchInput}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -138,28 +138,42 @@ export default function ReportsPage() {
               direction="up"
               delay={0.05 * (idx % 3)}
             >
-              <div className={styles.card}>
-                {report.image_url && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img 
-                    src={report.image_url} 
-                    alt={report.title} 
-                    className={styles.cardImg}
-                  />
-                )}
+              <div className={styles.card} style={{ position: 'relative', overflow: 'hidden', borderTop: '4px solid var(--gold-primary)', paddingTop: '24px' }}>
+                {/* Visual Category badge row */}
                 <div className={styles.cardHeaderRow}>
-                  {!report.image_url && (
-                    <div className={`${styles.iconWrapper} ${getReportIconBgClass(report.icon)}`}>
-                      {getReportIcon(report.icon)}
-                    </div>
-                  )}
+                  <div className={`${styles.iconWrapper} ${getReportIconBgClass(report.icon)}`}>
+                    {getReportIcon(report.icon)}
+                  </div>
                   <span className={styles.categoryBadge}>{report.category}</span>
                 </div>
+                
                 <div className={styles.cardBody}>
                   <h3 className={styles.cardTitle}>{report.title}</h3>
                   <p className={styles.description}>{report.description}</p>
+                  
+                  {/* Metadata fields */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 12px', fontSize: '11px', color: 'var(--text-muted)', borderTop: '1px solid var(--border-color)', paddingTop: '14px', marginTop: '14px' }}>
+                    <div>
+                      <strong style={{ color: 'var(--text-default)' }}>Source:</strong> <span>{report.source || 'DCRF'}</span>
+                    </div>
+                    <div>
+                      <strong style={{ color: 'var(--text-default)' }}>Region:</strong> <span>{report.region || 'National'}</span>
+                    </div>
+                    <div>
+                      <strong style={{ color: 'var(--text-default)' }}>Hazard:</strong> <span>{report.disaster_type || 'General'}</span>
+                    </div>
+                    <div>
+                      <strong style={{ color: 'var(--text-default)' }}>Severity:</strong> <span>{report.severity_level || 'Medium'}</span>
+                    </div>
+                    {report.affected_population && (
+                      <div style={{ gridColumn: 'span 2' }}>
+                        <strong style={{ color: 'var(--text-default)' }}>Impact:</strong> <span>{report.affected_population}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className={styles.footer}>
+
+                <div className={styles.footer} style={{ borderTop: '1px solid var(--border-color)', marginTop: '14px', paddingTop: '14px' }}>
                   <span className={styles.metaText}>
                     {report.year} • {report.page_count || report.pageCount} pages
                   </span>

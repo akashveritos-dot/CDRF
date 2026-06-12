@@ -8,6 +8,26 @@ import { ArrowRight, Globe, ExternalLink, AlertCircle, Leaf, Activity, Sun, Flam
 
 const categories = ['All', 'Breaking', 'Environment', 'Health Crisis', 'Climate', 'Disasters', 'Sustainability'];
 
+const categoryFallbacks: Record<string, string> = {
+  earthquake: 'https://images.unsplash.com/photo-1594897030264-ab7d87efc473?auto=format&fit=crop&w=800&q=80',
+  flood: 'https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?auto=format&fit=crop&w=800&q=80',
+  wildfire: 'https://images.unsplash.com/photo-1508873696983-2df519f0397e?auto=format&fit=crop&w=800&q=80',
+  cyclone: 'https://images.unsplash.com/photo-1527482797697-8795b05a133d?auto=format&fit=crop&w=800&q=80',
+  storm: 'https://images.unsplash.com/photo-1504370805625-d32c54b16100?auto=format&fit=crop&w=800&q=80',
+  landslide: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80',
+  drought: 'https://images.unsplash.com/photo-1473116763269-b552f58d6f67?auto=format&fit=crop&w=800&q=80',
+  climate: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80',
+  environment: 'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80',
+  sustainability: 'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=800&q=80',
+  disasters: 'https://images.unsplash.com/photo-1542393545-10f5b85e14fc?auto=format&fit=crop&w=800&q=80',
+  breaking: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80'
+};
+
+const getFallbackImg = (story: any): string => {
+  const key = (story.category || story.tag || 'breaking').toLowerCase();
+  return categoryFallbacks[key] || categoryFallbacks.breaking;
+};
+
 const getCategoryIcon = (tag: string) => {
   switch (tag.toLowerCase()) {
     case 'breaking':
@@ -98,7 +118,7 @@ export default function NewsPage() {
 
   // First item is featured in visual layout (if available)
   const featuredStory = stories[0] || null;
-  const gridStories = featuredStory 
+  const gridStories = featuredStory
     ? filteredStories.filter(story => story.id !== featuredStory.id || activeTab !== 'All')
     : filteredStories;
 
@@ -146,16 +166,14 @@ export default function NewsPage() {
         <ScrollReveal direction="up" delay={0.2}>
           <div className={styles.featured}>
             <div className={`${styles.featImgContainer} ${getTagAccentColorClass(featuredStory.tag)}`}>
-              {featuredStory.image_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img 
-                  src={featuredStory.image_url} 
-                  alt={featuredStory.headline}
-                  className={styles.featImg}
-                />
-              ) : (
-                getCategoryIconFeatured(featuredStory.tag)
-              )}
+              {/* Always show image — fall back via onError */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={featuredStory.image_url || getFallbackImg(featuredStory)}
+                alt={featuredStory.headline}
+                className={styles.featImg}
+                onError={(e) => { (e.target as HTMLImageElement).src = getFallbackImg(featuredStory); }}
+              />
             </div>
             <div className={styles.featBody}>
               <div className={styles.meta}>
@@ -163,7 +181,7 @@ export default function NewsPage() {
                   {featuredStory.tag}
                 </span>
                 <span>•</span>
-                <span>{featuredStory.date}</span>
+                <span>{featuredStory.date || featuredStory.published_date}</span>
                 <span>•</span>
                 <span className={styles.sourceLabel}>{featuredStory.source}</span>
               </div>
@@ -192,25 +210,20 @@ export default function NewsPage() {
             delay={0.05 * (idx % 3)}
           >
             <div className={styles.card}>
-              {story.image_url && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img 
-                  src={story.image_url} 
-                  alt={story.headline} 
-                  className={styles.cardImg}
-                />
-              )}
+              {/* Always show image — onError falls back to category Unsplash */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={story.image_url || getFallbackImg(story)}
+                alt={story.headline}
+                className={styles.cardImg}
+                onError={(e) => { (e.target as HTMLImageElement).src = getFallbackImg(story); }}
+              />
               <div className={styles.cardBody}>
                 <div className={styles.cardHeaderRow}>
-                  {!story.image_url && (
-                    <div className={`${styles.iconWrapper} ${getTagAccentColorClass(story.tag)}`}>
-                      {getCategoryIcon(story.tag)}
-                    </div>
-                  )}
                   <span className={`${styles.tag} ${getTagClass(story.tag)}`}>
                     {story.tag}
                   </span>
-                  <span className={styles.cardDate}>{story.date}</span>
+                  <span className={styles.cardDate}>{story.date || story.published_date}</span>
                   {story.source && (
                     <>
                       <span style={{ color: 'var(--text-muted)', fontSize: '10px' }}>•</span>

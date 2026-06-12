@@ -355,3 +355,54 @@
     gap: 12px;
   }
 }
+
+/* Skeleton Loader Styles */
+.skeletonCard {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.skeletonImg {
+  height: 170px;
+  background: linear-gradient(90deg, var(--bg-surface-alt) 25%, rgba(15, 23, 42, 0.05) 50%, var(--bg-surface-alt) 75%);
+  background-size: 200% 100%;
+  animation: loadingShine 1.5s infinite;
+}
+
+.skeletonBody {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.skeletonText {
+  height: 12px;
+  background: linear-gradient(90deg, var(--bg-surface-alt) 25%, rgba(15, 23, 42, 0.05) 50%, var(--bg-surface-alt) 75%);
+  background-size: 200% 100%;
+  animation: loadingShine 1.5s infinite;
+  border-radius: var(--radius-xs);
+}
+
+.skeletonTitle {
+  width: 80%;
+  height: 20px;
+}
+
+.skeletonLine {
+  width: 100%;
+}
+
+.skeletonLineShort {
+  width: 60%;
+}
+
+@keyframes loadingShine {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

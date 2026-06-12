@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS news (
     thumbnail_emoji VARCHAR(10) DEFAULT NULL,
     image_url VARCHAR(512) DEFAULT NULL,
     category VARCHAR(50) NOT NULL DEFAULT 'environment',
+    location VARCHAR(255) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
@@ -60,6 +61,11 @@ CREATE TABLE IF NOT EXISTS reports (
     accent_color VARCHAR(20) DEFAULT '#FDECEA',
     icon VARCHAR(10) DEFAULT '📙',
     image_url VARCHAR(512) DEFAULT NULL,
+    source VARCHAR(255) DEFAULT 'DCRF',
+    region VARCHAR(255) DEFAULT 'National',
+    disaster_type VARCHAR(100) DEFAULT 'General',
+    severity_level VARCHAR(50) DEFAULT 'Medium',
+    affected_population VARCHAR(100) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
@@ -73,7 +79,9 @@ CREATE TABLE IF NOT EXISTS scraped_content (
     source VARCHAR(100) NOT NULL,
     url VARCHAR(512) NOT NULL UNIQUE,
     scrape_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    published_date DATE DEFAULT NULL,
     category VARCHAR(50) NOT NULL DEFAULT 'disasters',
+    location VARCHAR(255) DEFAULT NULL,
     status ENUM('Pending', 'Published', 'Rejected') NOT NULL DEFAULT 'Pending',
     published_id INT DEFAULT NULL,
     published_type ENUM('News', 'Report') DEFAULT NULL,

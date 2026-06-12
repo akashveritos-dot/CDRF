@@ -7,9 +7,9 @@ import styles from './page.module.css';
 import {
   heroStats as fallbackHeroStats,
   cityTemps as fallbackCityTemps,
-  stripStats,
   disasterEvents as fallbackDisasterEvents,
-  partners
+  partners,
+  councilMembers
 } from '@/data/dataStore';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
 import CountUp from '@/components/ui/CountUp/CountUp';
@@ -18,7 +18,94 @@ import ClimateGauge from '@/components/insights/ClimateGauge/ClimateGauge';
 import LossChart from '@/components/insights/LossChart/LossChart';
 import DonutChart from '@/components/insights/DonutChart/DonutChart';
 import Heatmap from '@/components/insights/Heatmap/Heatmap';
-import { Shield, ArrowRight, Calendar, Users, FileText, Globe, Waves, Flame, Wind, Mountain, Droplets, Activity } from 'lucide-react';
+import { 
+  Shield, 
+  ArrowRight, 
+  Calendar, 
+  Users, 
+  FileText, 
+  Globe, 
+  Waves, 
+  Flame, 
+  Wind, 
+  Mountain, 
+  Droplets, 
+  Activity, 
+  AlertTriangle, 
+  ExternalLink,
+  BookOpen,
+  Thermometer,
+  ShieldAlert,
+  Download,
+  Linkedin
+} from 'lucide-react';
+
+const categoryFallbacks: Record<string, string> = {
+  earthquake: 'https://images.unsplash.com/photo-1594897030264-ab7d87efc473?auto=format&fit=crop&w=800&q=80',
+  flood: 'https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?auto=format&fit=crop&w=800&q=80',
+  wildfire: 'https://images.unsplash.com/photo-1508873696983-2df519f0397e?auto=format&fit=crop&w=800&q=80',
+  cyclone: 'https://images.unsplash.com/photo-1527482797697-8795b05a133d?auto=format&fit=crop&w=800&q=80',
+  storm: 'https://images.unsplash.com/photo-1504370805625-d32c54b16100?auto=format&fit=crop&w=800&q=80',
+  landslide: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80',
+  drought: 'https://images.unsplash.com/photo-1473116763269-b552f58d6f67?auto=format&fit=crop&w=800&q=80',
+  climate: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80',
+  environment: 'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80',
+  sustainability: 'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=800&q=80',
+  breaking: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80'
+};
+
+const getRelativeTime = (dateString: string) => {
+  try {
+    const pubDate = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - pubDate.getTime();
+    const diffSecs = Math.floor(diffMs / 1000);
+    const diffMins = Math.floor(diffSecs / 60);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffDays > 30) {
+      return pubDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+    if (diffDays > 1) return `${diffDays} days ago`;
+    if (diffDays === 1) return 'Yesterday';
+    if (diffHours >= 1) return `${diffHours} hr${diffHours > 1 ? 's' : ''} ago`;
+    if (diffMins >= 1) return `${diffMins} min${diffMins > 1 ? 's' : ''} ago`;
+    return 'Just now';
+  } catch (e) {
+    return 'Recently';
+  }
+};
+
+const getCategoryIcon = (tag: string) => {
+  switch (tag?.toLowerCase()) {
+    case 'flood':
+    case 'floods':
+      return <Waves size={16} />;
+    case 'earthquake':
+    case 'earthquakes':
+      return <Activity size={16} />;
+    case 'wildfire':
+    case 'wildfires':
+      return <Flame size={16} />;
+    case 'cyclone':
+    case 'cyclones':
+      return <Wind size={16} />;
+    case 'landslide':
+    case 'landslides':
+      return <Mountain size={16} />;
+    case 'drought':
+    case 'droughts':
+      return <Droplets size={16} />;
+    case 'storm':
+    case 'storms':
+      return <Wind size={16} style={{ transform: 'rotate(45deg)' }} />;
+    case 'climate':
+      return <Thermometer size={16} />;
+    default:
+      return <FileText size={16} />;
+  }
+};
 
 export default function Home() {
   const [stats, setStats] = useState<any[]>(fallbackHeroStats);
@@ -27,6 +114,17 @@ export default function Home() {
   const [lossesData, setLossesData] = useState<any[] | undefined>(undefined);
   const [shareData, setShareData] = useState<any[] | undefined>(undefined);
   const [heatmapData, setHeatmapData] = useState<number[][] | undefined>(undefined);
+
+  // Dynamic statistics, news, and reports
+  const [homeStats, setHomeStats] = useState<any>({
+    activeIncidents: 705,
+    countriesAffected: 6,
+    reportsPublished: 6,
+    disasterCategories: 10,
+    alertsIssued: 7
+  });
+  const [latestNews, setLatestNews] = useState<any[]>([]);
+  const [latestReports, setLatestReports] = useState<any[]>([]);
 
   useEffect(() => {
     async function loadTelemetry() {
@@ -40,12 +138,34 @@ export default function Home() {
           if (data.economicLosses) setLossesData(data.economicLosses);
           if (data.lossShare) setShareData(data.lossShare);
           if (data.heatmapData) setHeatmapData(data.heatmapData);
+          if (data.homepageStats) setHomeStats(data.homepageStats);
         }
       } catch (err) {
         console.warn('Failed to fetch home telemetry API:', err);
       }
     }
+
+    async function loadContent() {
+      try {
+        const [newsRes, reportsRes] = await Promise.all([
+          fetch('/api/news'),
+          fetch('/api/reports')
+        ]);
+        if (newsRes.ok) {
+          const newsData = await newsRes.json();
+          setLatestNews(newsData.slice(0, 3));
+        }
+        if (reportsRes.ok) {
+          const reportsData = await reportsRes.json();
+          setLatestReports(reportsData.slice(0, 3));
+        }
+      } catch (err) {
+        console.warn('Failed to fetch content feeds:', err);
+      }
+    }
+
     loadTelemetry();
+    loadContent();
     const pollInterval = setInterval(loadTelemetry, 8000);
     return () => clearInterval(pollInterval);
   }, []);
@@ -86,9 +206,28 @@ export default function Home() {
     }
   };
 
+  const dashboardStatsList = [
+    { id: 'incidents', count: homeStats.activeIncidents, suffix: '+', label: 'Active Incidents' },
+    { id: 'countries', count: homeStats.countriesAffected, suffix: '', label: 'Countries Affected' },
+    { id: 'reports', count: homeStats.reportsPublished, suffix: '+', label: 'Reports Published' },
+    { id: 'categories', count: homeStats.disasterCategories, suffix: '', label: 'Disaster Categories' },
+    { id: 'alerts', count: homeStats.alertsIssued, suffix: '+', label: 'Alerts Issued' }
+  ];
+
+  const categoryCards = [
+    { label: 'Earthquake', icon: <Activity size={24} />, count: '42 Events', color: '#B03A2E', path: '/news?category=earthquake' },
+    { label: 'Flood', icon: <Waves size={24} />, count: '267 Events', color: '#2980B9', path: '/news?category=flood' },
+    { label: 'Wildfire', icon: <Flame size={24} />, count: '28 Events', color: '#E67E22', path: '/news?category=wildfire' },
+    { label: 'Cyclone', icon: <Wind size={24} />, count: '18 Events', color: '#6C3483', path: '/news?category=cyclone' },
+    { label: 'Storm', icon: <Wind size={24} style={{ transform: 'rotate(45deg)' }} />, count: '54 Events', color: '#2E5185', path: '/news?category=storm' },
+    { label: 'Landslide', icon: <Mountain size={24} />, count: '124 Events', color: '#5D6D7E', path: '/news?category=landslide' },
+    { label: 'Drought', icon: <Droplets size={24} />, count: '96 Events', color: '#D35400', path: '/news?category=drought' },
+    { label: 'Climate', icon: <Thermometer size={24} />, count: '178 Events', color: '#0E7A6B', path: '/news?category=climate' }
+  ];
+
   return (
     <div>
-      {/* HERO SECTION */}
+      {/* HERO SECTION - REDESIGNED PREMIUM LIGHT THEME */}
       <section className={styles.hero}>
         <div className={styles.heroBg} />
         <div className={styles.heroOrb} />
@@ -96,7 +235,7 @@ export default function Home() {
         <div className={styles.heroContent}>
           <ScrollReveal direction="up" delay={0.1}>
             <div className={styles.heroEyebrow}>
-              <Shield size={12} style={{ color: 'var(--gold-light)' }} />
+              <Shield size={12} style={{ color: 'var(--red-primary)' }} />
               Founded 2026 • New Delhi, India
             </div>
             <h1>
@@ -116,42 +255,42 @@ export default function Home() {
                 <ArrowRight size={16} />
               </Link>
               <a href="#insights" className={styles.btnOutline}>
-                Explore Data Insights
+                Explore Command Dashboard
               </a>
             </div>
           </ScrollReveal>
 
-          {/* Right Climate Widget Panel */}
+          {/* Right Climate Widget Panel - Light Glassmorphic */}
           <ScrollReveal direction="left" delay={0.3}>
-            <div className={`${styles.heroPanel} glass-panel radar-sweep-container`} style={{ padding: '0', overflow: 'hidden' }}>
-              <div className="radar-sweep-line" />
+            <div className={`${styles.heroPanel} ${styles.heroPanelLight} radar-sweep-container`} style={{ padding: '0', overflow: 'hidden' }}>
+              <div className="radar-sweep-line" style={{ background: 'linear-gradient(to right, transparent, var(--red-primary), transparent)', boxShadow: '0 0 10px var(--red-primary)' }} />
               
               <div style={{ position: 'relative', height: '180px', width: '100%', overflow: 'hidden' }}>
                 <img 
                   src="/climate_radar_dashboard.png" 
                   alt="DCRF India Climate Radar Monitor" 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.85 }} 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.9 }} 
                 />
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent, rgba(10, 20, 36, 0.95))' }} />
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.95))' }} />
                 
                 {/* Floating Warning Tag */}
-                <div style={{ position: 'absolute', top: '16px', left: '16px', display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(153, 27, 27, 0.9)', padding: '6px 12px', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 'var(--radius-full)', fontSize: '10px', fontWeight: 700, color: 'var(--white)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                <div style={{ position: 'absolute', top: '16px', left: '16px', display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--red-primary)', padding: '6px 12px', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 'var(--radius-full)', fontSize: '10px', fontWeight: 700, color: 'var(--white)', textTransform: 'uppercase', letterSpacing: '1px' }}>
                   <span className="pulse-dot" style={{ width: '6px', height: '6px', boxShadow: 'none', background: 'white' }} />
                   Early Warning Feed Active
                 </div>
               </div>
               
               <div style={{ padding: '24px 28px 28px' }}>
-                <div className={styles.panelTitle} style={{ color: 'var(--white)' }}>
+                <div className={styles.panelTitle}>
                   <span className="pulse-dot sonar-emitter">
                     <span className="sonar-pulse" />
                   </span>
-                  India Climate Monitor • Live
+                  India Climate Monitor • Live telemetry
                 </div>
                 
                 <div className={styles.dstatGrid}>
                   {stats.map((stat) => (
-                    <div key={stat.id} className={styles.dstat} style={{ background: 'rgba(255, 255, 255, 0.03)', borderColor: 'rgba(255,255,255,0.06)' }}>
+                    <div key={stat.id} className={styles.dstat}>
                       <div className={`${styles.dstatNum} ${
                         stat.type === 'red' ? styles.numRed : 
                         stat.type === 'amber' ? styles.numAmber : 
@@ -159,27 +298,26 @@ export default function Home() {
                       }`}>
                         <CountUp end={stat.count} suffix={stat.suffix} decimals={stat.count % 1 !== 0 ? 1 : 0} />
                       </div>
-                      <div className={styles.dstatLabel} style={{ color: 'var(--gray-400)' }}>{stat.label}</div>
+                      <div className={styles.dstatLabel}>{stat.label}</div>
                     </div>
                   ))}
                 </div>
 
-                <div className={styles.tempsHeader} style={{ color: 'var(--white)', opacity: 0.9 }}>Heat Index — Major Cities</div>
+                <div className={styles.tempsHeader}>Heat Index — Major Cities</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {temps.map((city) => (
                     <div key={city.city} className={styles.tempRow}>
-                      <span className={styles.tempCity} style={{ color: 'var(--gray-300)' }}>{city.city}</span>
-                      <div className={styles.tempBarWrap} style={{ background: 'rgba(255,255,255,0.08)' }}>
+                      <span className={styles.tempCity}>{city.city}</span>
+                      <div className={styles.tempBarWrap}>
                         <motion.div 
                           className={styles.tempBarFill} 
                           initial={{ width: 0 }}
                           whileInView={{ width: `${city.percentage}%` }}
                           viewport={{ once: true }}
                           transition={{ duration: 1.2, ease: 'easeOut' }}
-                          style={{ background: 'linear-gradient(90deg, var(--gold-light), var(--red-primary))' }}
                         />
                       </div>
-                      <span className={styles.tempVal} style={{ color: 'var(--white)' }}>{city.temp}°C</span>
+                      <span className={styles.tempVal}>{city.temp}°C</span>
                     </div>
                   ))}
                 </div>
@@ -189,16 +327,46 @@ export default function Home() {
         </div>
       </section>
 
-      {/* STATS STRIP SECTION */}
+      {/* STATS STRIP SECTION - DYNAMIC COUNTERS */}
       <section className={styles.statsStrip}>
-        {stripStats.map((stat, idx) => (
+        {dashboardStatsList.map((stat, idx) => (
           <div key={stat.id} className={styles.stripStat}>
             <div className={styles.stripNum}>
-              <CountUp end={stat.count} suffix={stat.suffix} decimals={stat.count % 1 !== 0 ? 1 : 0} />
+              <CountUp end={stat.count} suffix={stat.suffix} />
             </div>
             <div className={styles.stripLabel}>{stat.label}</div>
           </div>
         ))}
+      </section>
+
+      {/* DISASTER CATEGORIES SECTION */}
+      <section className={styles.sectionAlt}>
+        <ScrollReveal direction="up">
+          <div className={styles.sectionHeader} style={{ textAlign: 'center' }}>
+            <div className={styles.sectionEyebrow}>Hazard Classification</div>
+            <h2 className={styles.sectionTitle}>Monitor Hazards by Category</h2>
+            <p className={styles.sectionSub} style={{ margin: '0 auto' }}>
+              Select a category to view active alerts, analytical breakdowns, and custom emergency response guidelines.
+            </p>
+          </div>
+        </ScrollReveal>
+
+        <div className={styles.categoriesGrid}>
+          {categoryCards.map((cat, idx) => (
+            <ScrollReveal key={cat.label} direction="up" delay={0.05 * idx}>
+              <Link href={cat.path} className={styles.categoryCard}>
+                <div className={styles.catIconWrapper} style={{ color: cat.color, backgroundColor: `${cat.color}0D` }}>
+                  {cat.icon}
+                </div>
+                <h3>{cat.label}</h3>
+                <span className={styles.catCount}>{cat.count}</span>
+                <span className={styles.catLinkText}>
+                  Explore Feed <ArrowRight size={12} />
+                </span>
+              </Link>
+            </ScrollReveal>
+          ))}
+        </div>
       </section>
 
       {/* INTERACTIVE DATA INSIGHTS DASHBOARD */}
@@ -285,6 +453,143 @@ export default function Home() {
         </div>
       </section>
 
+      {/* LATEST NEWS FEED SECTION */}
+      <section className={styles.sectionAlt}>
+        <ScrollReveal direction="up">
+          <div className={styles.sectionHeader}>
+            <div className={styles.sectionEyebrow}>Live Broadcast</div>
+            <h2 className={styles.sectionTitle}>Syndicated Emergency News</h2>
+            <p className={styles.sectionSub}>
+              Real-time monitoring feeds scraped directly from PIB, ReliefWeb, and vetted disaster management agencies.
+            </p>
+          </div>
+        </ScrollReveal>
+
+        <div className={styles.feedGrid}>
+          {latestNews.length > 0 ? (
+            latestNews.map((story, idx) => {
+              const fallbackImg = categoryFallbacks[story.category?.toLowerCase()] || categoryFallbacks.breaking;
+              return (
+                <ScrollReveal key={story.id} direction="up" delay={idx * 0.1}>
+                  <div className={styles.feedCard}>
+                    <div className={styles.feedCardImgWrapper}>
+                      <img 
+                        src={story.image_url || fallbackImg} 
+                        alt={story.headline} 
+                        className={styles.feedCardImg}
+                        onError={(e) => { (e.target as HTMLImageElement).src = fallbackImg; }}
+                      />
+                      <span className={styles.feedCardCategory}>
+                        {story.category || 'Alert'}
+                      </span>
+                    </div>
+                    <div className={styles.feedCardBody}>
+                      <div className={styles.feedCardMeta}>
+                        <span className={styles.feedCardSource}>{story.source}</span>
+                        <span>•</span>
+                        <span>{getRelativeTime(story.published_date)}</span>
+                        {story.location && (
+                          <>
+                            <span>•</span>
+                            <span className={styles.feedCardLocation}>{story.location}</span>
+                          </>
+                        )}
+                      </div>
+                      <h3 className={styles.feedCardTitle}>{story.headline}</h3>
+                      <p className={styles.feedCardExcerpt}>{story.excerpt}</p>
+                      <a 
+                        href={story.external_link || '#'} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className={styles.feedCardBtn}
+                      >
+                        Read Original Article
+                        <ExternalLink size={12} />
+                      </a>
+                    </div>
+                  </div>
+                </ScrollReveal>
+              );
+            })
+          ) : (
+            <div className={styles.emptyFeed}>
+              <span className="pulse-dot" style={{ marginRight: '8px' }} />
+              Synchronizing with emergency news portals...
+            </div>
+          )}
+        </div>
+        <div style={{ textAlign: 'center', marginTop: '40px' }}>
+          <Link href="/news" className={styles.btnOutline}>
+            View All Broadcasts <ArrowRight size={14} />
+          </Link>
+        </div>
+      </section>
+
+      {/* LATEST REPORTS SECTION */}
+      <section className={styles.section}>
+        <ScrollReveal direction="up">
+          <div className={styles.sectionHeader}>
+            <div className={styles.sectionEyebrow}>Publications</div>
+            <h2 className={styles.sectionTitle}>Latest Intelligence Reports</h2>
+            <p className={styles.sectionSub}>
+              Vetted scientific analyses, disaster risk assessments, and policy briefs published by DCRF Secretariat.
+            </p>
+          </div>
+        </ScrollReveal>
+
+        <div className={styles.reportsListGrid}>
+          {latestReports.length > 0 ? (
+            latestReports.map((report, idx) => (
+              <ScrollReveal key={report.id} direction="up" delay={idx * 0.1}>
+                <div className={styles.premiumReportCard}>
+                  <div className={styles.reportAccentStrip} style={{ background: `linear-gradient(135deg, var(--gold-primary), ${report.accent_color || 'var(--red-primary)'})` }} />
+                  <div className={styles.reportCategoryBadge}>{report.category}</div>
+                  <h3>{report.title}</h3>
+                  <p className={styles.reportDesc}>{report.description}</p>
+                  
+                  <div className={styles.reportMetaGrid}>
+                    <div>
+                      <strong>Source:</strong> <span>{report.source || 'DCRF'}</span>
+                    </div>
+                    <div>
+                      <strong>Region:</strong> <span>{report.region || 'National'}</span>
+                    </div>
+                    <div>
+                      <strong>Hazard:</strong> <span>{report.disaster_type || 'General'}</span>
+                    </div>
+                    <div>
+                      <strong>Severity:</strong> <span>{report.severity_level || 'Medium'}</span>
+                    </div>
+                  </div>
+                  
+                  <div className={styles.reportFooter}>
+                    <span className={styles.reportPages}>{report.year} • {report.page_count} pages</span>
+                    <a 
+                      href={report.download_url || '#'} 
+                      className={styles.reportDownloadBtn}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Download size={14} />
+                      View Document
+                    </a>
+                  </div>
+                </div>
+              </ScrollReveal>
+            ))
+          ) : (
+            <div className={styles.emptyFeed}>
+              Syncing publications database...
+            </div>
+          )}
+        </div>
+        <div style={{ textAlign: 'center', marginTop: '40px' }}>
+          <Link href="/reports" className={styles.btnOutline}>
+            Browse Publications Library <ArrowRight size={14} />
+          </Link>
+        </div>
+      </section>
+
       {/* TWO PILLARS FRAMEWORK */}
       <section className={styles.sectionAlt}>
         <ScrollReveal direction="up">
@@ -358,6 +663,65 @@ export default function Home() {
               </div>
             </div>
           </ScrollReveal>
+        </div>
+      </section>
+
+      {/* GOVERNING COUNCIL SECTION */}
+      <section className={styles.sectionAlt}>
+        <ScrollReveal direction="up">
+          <div className={styles.sectionHeader} style={{ textAlign: 'center' }}>
+            <div className={styles.sectionEyebrow}>Leadership</div>
+            <h2 className={styles.sectionTitle}>Governing &amp; Executive Council</h2>
+            <p className={styles.sectionSub} style={{ margin: '0 auto' }}>
+              DCRF is steered by a joint council combining academic research, corporate sustainability pipelines, and technical disaster risk analytics.
+            </p>
+          </div>
+        </ScrollReveal>
+
+        <div className={styles.councilGrid}>
+          {councilMembers.map((member, idx) => {
+            const isHighlight = member.id === 'bm';
+            return (
+              <ScrollReveal key={member.id} direction="up" delay={0.05 * idx}>
+                <div className={`${styles.councilCard} ${isHighlight ? styles.councilCardHighlight : ''}`}>
+                  <div className={styles.councilProfileHeader}>
+                    <div className={`${styles.councilAvatar} ${isHighlight ? styles.councilAvatarGold : ''}`}>
+                      {member.avatarInitials}
+                    </div>
+                    <div className={styles.councilIdentity}>
+                      <h3>{member.name}</h3>
+                      <span className={`${styles.councilBadge} ${
+                        member.roleBadgeColor === 'gold' ? styles.councilBadgeGold :
+                        member.roleBadgeColor === 'finance' ? styles.councilBadgeFinance : ''
+                      }`}>
+                        {member.role}
+                      </span>
+                    </div>
+                  </div>
+                  <p className={styles.councilBio}>{member.bio}</p>
+                  {member.linkedinUrl ? (
+                    <a
+                      href={member.linkedinUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.councilLinkedin}
+                    >
+                      <Linkedin size={12} fill="currentColor" stroke="none" />
+                      LinkedIn Profile
+                    </a>
+                  ) : (
+                    <span className={styles.councilOrgMuted}>{member.organization}</span>
+                  )}
+                </div>
+              </ScrollReveal>
+            );
+          })}
+        </div>
+
+        <div style={{ textAlign: 'center', marginTop: '36px' }}>
+          <Link href="/council" className={styles.btnOutline}>
+            View Full Council <ArrowRight size={14} />
+          </Link>
         </div>
       </section>
 
