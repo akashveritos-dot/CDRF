@@ -1,0 +1,302 @@
+/* src/app/admin/admin-theme.css */
+
+/* Reset layout container background */
+.admin-panel {
+  --bg-admin-default: #f8fafc;
+  --bg-admin-surface: #ffffff;
+  --bg-admin-surface-alt: #f1f5f9;
+  --border-admin-color: rgba(15, 23, 42, 0.08);
+  --text-admin-default: #0f172a;
+  --text-admin-muted: #475569;
+  
+  background-color: var(--bg-admin-default) !important;
+  color: var(--text-admin-default) !important;
+}
+
+/* Background overrides for main admin areas */
+.admin-panel,
+.admin-panel main,
+.admin-panel[class*="content"],
+.admin-panel [class*="content"],
+.admin-panel [class*="layout"] {
+  background-color: var(--bg-admin-default) !important;
+  color: var(--text-admin-default) !important;
+}
+
+/* Sidebar Styling (Clean light theme white sidebar, no gold boxes/lines) */
+.admin-panel aside,
+.admin-panel [class*="sidebar"] {
+  background-color: var(--bg-admin-surface) !important;
+  border-right: 1px solid var(--border-admin-color) !important;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.02) !important;
+}
+
+.admin-panel [class*="brand"] {
+  border-bottom: 1px solid var(--border-admin-color) !important;
+}
+
+.admin-panel [class*="brandTitle"] {
+  color: var(--text-admin-default) !important;
+}
+
+.admin-panel [class*="profile"] {
+  background: var(--bg-admin-surface-alt) !important;
+  border: 1px solid var(--border-admin-color) !important;
+}
+
+.admin-panel [class*="profileName"] {
+  color: var(--text-admin-default) !important;
+}
+
+.admin-panel [class*="sidebarFooter"] {
+  border-top: 1px solid var(--border-admin-color) !important;
+}
+
+/* Navigation Links in Sidebar */
+.admin-panel [class*="navLink"] {
+  color: var(--text-admin-muted) !important;
+}
+
+.admin-panel [class*="navLink"]:hover {
+  color: #ef4444 !important;
+  background-color: rgba(239, 68, 68, 0.04) !important;
+}
+
+.admin-panel [class*="navLinkActive"] {
+  color: #ef4444 !important;
+  background-color: rgba(239, 68, 68, 0.06) !important;
+  border-left: 3px solid #ef4444 !important;
+}
+
+.admin-panel [class*="navLinkOuter"] {
+  color: var(--text-admin-muted) !important;
+}
+
+.admin-panel [class*="navLinkOuter"]:hover {
+  color: var(--text-admin-default) !important;
+}
+
+/* Cards & Panel Sections (White surfaces with subtle shadow/border, no gold borders/shadows) */
+.admin-panel [class*="card"],
+.admin-panel [class*="panelSection"],
+.admin-panel [class*="consolePanel"],
+.admin-panel [class*="modal"],
+.admin-panel [class*="controls"],
+.admin-panel [class*="tableWrapper"],
+.admin-panel [class*="modalMetaInfo"] {
+  background-color: var(--bg-admin-surface) !important;
+  border: 1px solid var(--border-admin-color) !important;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 2px 8px -1px rgba(15, 23, 42, 0.02) !important;
+  color: var(--text-admin-default) !important;
+}
+
+/* Reset inner card/modal elements to prevent nested borders/boxes */
+.admin-panel [class*="cardHeader"],
+.admin-panel [class*="cardTitle"],
+.admin-panel [class*="cardValue"],
+.admin-panel [class*="cardFooter"],
+.admin-panel [class*="cardLink"],
+.admin-panel [class*="cardIcon"],
+.admin-panel [class*="modalHeader"],
+.admin-panel [class*="modalForm"],
+.admin-panel [class*="modalActions"],
+.admin-panel [class*="modalCloseBtn"],
+.admin-panel [class*="modalError"],
+.admin-panel [class*="profileInfo"],
+.admin-panel [class*="profileName"],
+.admin-panel [class*="profileRole"] {
+  border: none !important;
+  background: none !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
+}
+
+.admin-panel [class*="card"]:hover,
+.admin-panel [class*="shortcutBtn"]:hover {
+  border-color: rgba(239, 68, 68, 0.2) !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06) !important;
+}
+
+.admin-panel [class*="panelTitleBlock"],
+.admin-panel [class*="modalHeader"] {
+  border-bottom: 1px solid var(--border-admin-color) !important;
+  background-color: var(--bg-admin-surface) !important;
+}
+
+/* Typography Colors */
+.admin-panel h1,
+.admin-panel h2,
+.admin-panel h3,
+.admin-panel h4,
+.admin-panel [class*="title"],
+.admin-panel [class*="cardValue"],
+.admin-panel [class*="headlineText"],
+.admin-panel [class*="name"] {
+  color: var(--text-admin-default) !important;
+}
+
+.admin-panel p,
+.admin-panel span,
+.admin-panel [class*="subtitle"],
+.admin-panel [class*="cardTitle"],
+.admin-panel [class*="excerptText"],
+.admin-panel [class*="sourceName"],
+.admin-panel [class*="dateCell"],
+.admin-panel [class*="authorName"] {
+  color: var(--text-admin-muted) !important;
+}
+
+/* Inputs, Selects, and Textareas */
+.admin-panel input,
+.admin-panel select,
+.admin-panel textarea,
+.admin-panel [class*="input"],
+.admin-panel [class*="select"],
+.admin-panel [class*="searchInput"],
+.admin-panel [class*="selectField"],
+.admin-panel [class*="textareaField"],
+.admin-panel [class*="inputField"],
+.admin-panel [class*="inputFieldWithIcon"] {
+  background-color: var(--bg-admin-surface-alt) !important;
+  border: 1px solid var(--border-admin-color) !important;
+  color: var(--text-admin-default) !important;
+}
+
+.admin-panel input:focus,
+.admin-panel select:focus,
+.admin-panel textarea:focus {
+  border-color: #ef4444 !important;
+  background-color: var(--bg-admin-surface) !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.08) !important;
+}
+
+/* Tables */
+.admin-panel table,
+.admin-panel [class*="table"] {
+  border-collapse: collapse !important;
+  color: var(--text-admin-default) !important;
+}
+
+.admin-panel th,
+.admin-panel [class*="table"] th {
+  background-color: var(--bg-admin-surface-alt) !important;
+  color: var(--text-admin-muted) !important;
+  border-bottom: 1px solid var(--border-admin-color) !important;
+}
+
+.admin-panel td,
+.admin-panel [class*="table"] td {
+  border-bottom: 1px solid var(--border-admin-color) !important;
+  color: var(--text-admin-default) !important;
+}
+
+.admin-panel tr:hover,
+.admin-panel [class*="tableRow"]:hover {
+  background-color: var(--bg-admin-surface-alt) !important;
+}
+
+/* Buttons and Controls */
+.admin-panel [class*="shortcutBtn"] {
+  background-color: var(--bg-admin-surface-alt) !important;
+  border: 1px solid var(--border-admin-color) !important;
+  color: var(--text-admin-default) !important;
+}
+
+.admin-panel [class*="editBtn"] {
+  border: 1px solid var(--border-admin-color) !important;
+  color: var(--text-admin-muted) !important;
+}
+
+.admin-panel [class*="editBtn"]:hover {
+  background-color: var(--bg-admin-surface-alt) !important;
+  color: var(--text-admin-default) !important;
+}
+
+.admin-panel [class*="cancelBtn"] {
+  background-color: var(--bg-admin-surface-alt) !important;
+  border: 1px solid var(--border-admin-color) !important;
+  color: var(--text-admin-default) !important;
+}
+
+.admin-panel [class*="cancelBtn"]:hover {
+  background-color: var(--bg-admin-surface) !important;
+  border-color: rgba(15, 23, 42, 0.15) !important;
+}
+
+/* Gold/Amber color overrides - No gold displays, lines, or gold boxes */
+.admin-panel [class*="cardIconGold"],
+.admin-panel [class*="gold"],
+.admin-panel [class*="Gold"] {
+  color: #0e7a6b !important; /* Steel teal */
+}
+
+.admin-panel [class*="subStat"],
+.admin-panel [class*="clockIcon"],
+.admin-panel [class*="Clock"] {
+  color: #475569 !important; /* Neutral slate grey */
+}
+
+.admin-panel [class*="tierGold"] {
+  background-color: var(--bg-admin-surface-alt) !important;
+  color: var(--text-admin-muted) !important;
+  border: 1px solid var(--border-admin-color) !important;
+}
+
+.admin-panel [class*="badgeWarning"] {
+  background-color: #e0f2fe !important; /* Clean info blue instead of warning gold */
+  color: #0369a1 !important;
+  border: 1px solid rgba(3, 105, 161, 0.08) !important;
+}
+
+.admin-panel [class*="suggestedCat"] {
+  background-color: var(--bg-admin-surface-alt) !important;
+  color: var(--text-admin-muted) !important;
+}
+
+.admin-panel [class*="cathealth"] {
+  background-color: #fee2e2 !important;
+  color: #dc2626 !important;
+}
+
+/* Category & status badges override defaults for light theme readability */
+.admin-panel [class*="tierBasic"] {
+  background-color: #e2e8f0 !important;
+  color: #334155 !important;
+}
+
+.admin-panel [class*="tierPrime"] {
+  background-color: #ccfbf1 !important;
+  color: #0d9488 !important;
+}
+
+.admin-panel [class*="tierPremium"] {
+  background-color: #ede9fe !important;
+  color: #7c3aed !important;
+}
+
+.admin-panel [class*="badgeSuccess"] {
+  background-color: #d1fae5 !important;
+  color: #059669 !important;
+}
+
+.admin-panel [class*="badgeDanger"] {
+  background-color: #fee2e2 !important;
+  color: #dc2626 !important;
+}
+
+.admin-panel [class*="badgeInfo"] {
+  background-color: #dbeafe !important;
+  color: #2563eb !important;
+}
+
+/* Mobile header styling overrides */
+.admin-panel header[class*="mobileHeader"],
+.admin-panel [class*="mobileHeader"] {
+  background-color: var(--bg-admin-surface) !important;
+  border-bottom: 1px solid var(--border-admin-color) !important;
+}
+
+.admin-panel [class*="mobileBrand"],
+.admin-panel [class*="menuBtn"] {
+  color: var(--text-admin-default) !important;
+}

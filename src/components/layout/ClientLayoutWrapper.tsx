@@ -1,0 +1,25 @@
+'use client';
+
+import React from 'react';
+import { usePathname } from 'next/navigation';
+import TickerBar from '@/components/layout/Ticker/TickerBar';
+import Navbar from '@/components/layout/Navbar/Navbar';
+import Footer from '@/components/layout/Footer/Footer';
+
+export default function ClientLayoutWrapper({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const isAdminRoute = pathname?.startsWith('/admin');
+
+  if (isAdminRoute) {
+    return <main>{children}</main>;
+  }
+
+  return (
+    <>
+      <TickerBar />
+      <Navbar />
+      <main>{children}</main>
+      <Footer />
+    </>
+  );
+}

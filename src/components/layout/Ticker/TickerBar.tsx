@@ -1,13 +1,32 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './TickerBar.module.css';
-import { tickerAlerts } from '@/data/dataStore';
+import { tickerAlerts as fallbackAlerts } from '@/data/dataStore';
 import { AlertTriangle } from 'lucide-react';
 
 export default function TickerBar() {
+  const [alerts, setAlerts] = useState<any[]>(fallbackAlerts);
+
+  useEffect(() => {
+    async function loadAlerts() {
+      try {
+        const res = await fetch('/api/telemetry');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.tickerAlerts && data.tickerAlerts.length > 0) {
+            setAlerts(data.tickerAlerts);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to fetch live alerts, using fallback.', err);
+      }
+    }
+    loadAlerts();
+  }, []);
+
   // Double alerts to make infinite scroll smooth
-  const doubleAlerts = [...tickerAlerts, ...tickerAlerts];
+  const doubleAlerts = [...alerts, ...alerts];
 
   return (
     <div className={styles.tickerBar}>
@@ -19,7 +38,7 @@ export default function TickerBar() {
         <div className={styles.tickerTrack}>
           <div className={styles.tickerItems}>
             {doubleAlerts.map((alert, index) => (
-              <span key={`${alert.id}-${index}`}>{alert.text}</span>
+              <span key={`${alert.id || index}-${index}`}>{alert.text}</span>
             ))}
           </div>
         </div>

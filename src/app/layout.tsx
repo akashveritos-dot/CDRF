@@ -1,9 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import TickerBar from '@/components/layout/Ticker/TickerBar';
-import Navbar from '@/components/layout/Navbar/Navbar';
-import Footer from '@/components/layout/Footer/Footer';
 import { ToastProvider } from '@/components/ui/Toast/ToastContext';
+import ClientLayoutWrapper from '@/components/layout/ClientLayoutWrapper';
 
 export const viewport = {
   width: 'device-width',
@@ -33,10 +31,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body suppressHydrationWarning>
         <ToastProvider>
-          <TickerBar />
-          <Navbar />
-          <main>{children}</main>
-          <Footer />
+          <ClientLayoutWrapper>{children}</ClientLayoutWrapper>
         </ToastProvider>
       </body>
     </html>

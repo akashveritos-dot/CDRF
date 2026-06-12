@@ -1,0 +1,78 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { query } from '@/lib/db';
+
+// PUT /api/admin/memberships/[id] - Update registration status and payment logs
+export async function PUT(
+  req: NextRequest,
+  props: { params: Promise<{ id: string }> }
+) {
+  try {
+    const params = await props.params;
+    const id = params.id;
+    const body = await req.json();
+    const { status, pay_status, payment_details } = body;
+
+    if (!status || !pay_status) {
+      return NextResponse.json(
+        { error: 'Status and payment status are required' },
+        { status: 400 }
+      );
+    }
+
+    // Verify application exists
+    const existing = await query<any[]>('SELECT id FROM memberships WHERE id = ?', [id]);
+    if (existing.length === 0) {
+      return NextResponse.json({ error: 'Membership application not found' }, { status: 404 });
+    }
+
+    await query(
+      `UPDATE memberships 
+       SET status = ?, pay_status = ?, payment_details = ? 
+       WHERE id = ?`,
+      [status, pay_status, payment_details || '', id]
+    );
+
+    return NextResponse.json({
+      success: true,
+      message: 'Membership application updated successfully'
+    });
+
+  } catch (error: any) {
+    console.error('Update membership error:', error);
+    return NextResponse.json(
+      { error: 'Failed to update membership application' },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE /api/admin/memberships/[id] - Delete application record
+export async function DELETE(
+  req: NextRequest,
+  props: { params: Promise<{ id: string }> }
+) {
+  try {
+    const params = await props.params;
+    const id = params.id;
+
+    // Verify application exists
+    const existing = await query<any[]>('SELECT id FROM memberships WHERE id = ?', [id]);
+    if (existing.length === 0) {
+      return NextResponse.json({ error: 'Membership application not found' }, { status: 404 });
+    }
+
+    await query('DELETE FROM memberships WHERE id = ?', [id]);
+
+    return NextResponse.json({
+      success: true,
+      message: 'Membership application deleted successfully'
+    });
+
+  } catch (error: any) {
+    console.error('Delete membership error:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete membership record' },
+      { status: 500 }
+    );
+  }
+}

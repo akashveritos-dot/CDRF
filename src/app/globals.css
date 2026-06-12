@@ -195,6 +195,67 @@ h1, h2, h3, h4, .font-display {
   fill: rgba(0, 0, 0, 0.02);
 }
 
+/* ── Tactical Command Center UI Overlays ─────────────────────────────────── */
+
+/* Tech Scan Grid Background */
+.tech-grid-bg {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(153, 27, 27, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(153, 27, 27, 0.02) 1px, transparent 1px);
+}
+
+/* Sonar Pulse Indicator */
+.sonar-emitter {
+  position: relative;
+}
+
+.sonar-pulse {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--red-primary);
+  opacity: 0.75;
+  animation: sonarScale 2s infinite ease-out;
+  pointer-events: none;
+}
+
+@keyframes sonarScale {
+  0% { transform: scale(1); opacity: 0.75; }
+  100% { transform: scale(2.8); opacity: 0; }
+}
+
+/* Warning Yellow/Black Hazard Strip Accent */
+.hazard-tape {
+  height: 4px;
+  background: repeating-linear-gradient(
+    -45deg,
+    #f59e0b,
+    #f59e0b 8px,
+    #0f172a 8px,
+    #0f172a 16px
+  );
+  width: 100%;
+}
+
+/* Monospaced coordinates/telemetry styling */
+.monospaced-tel {
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+  letter-spacing: -0.02em;
+}
+
+/* Red Emergency Warning Borders */
+.emergency-card-border {
+  border: 1px solid rgba(192, 57, 43, 0.15) !important;
+  box-shadow: 0 0 15px rgba(192, 57, 43, 0.03) !important;
+}
+
+.emergency-card-border:hover {
+  border-color: var(--red-primary) !important;
+  box-shadow: 0 0 25px rgba(192, 57, 43, 0.08) !important;
+}
+
 /* Mobile: Prevent horizontal scroll completely */
 @media (max-width: 768px) {
   html, body {

@@ -117,10 +117,29 @@ export default function MembershipPage() {
     };
   }, [dropdownOpen]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.name && formData.email && formData.organization) {
-      setIsSubmitted(true);
+      try {
+        const res = await fetch('/api/membership/apply', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+
+        if (!res.ok) {
+          throw new Error('Application submission failed');
+        }
+
+        setIsSubmitted(true);
+        success(
+          'Application Logged',
+          `Your request for ${formData.tier} tier is staged for review.`
+        );
+      } catch (err) {
+        console.error('Membership form error:', err);
+        alert('Failed to submit application. Please try again later.');
+      }
     }
   };
 

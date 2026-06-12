@@ -37,7 +37,11 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   return null;
 };
 
-export default function LossChart() {
+interface LossChartProps {
+  data?: Array<{ year: string; value: number; display: string; color: string }>;
+}
+
+export default function LossChart({ data }: LossChartProps) {
   const [mounted, setMounted] = React.useState(false);
   const [chartWidth, setChartWidth] = React.useState(0);
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -63,16 +67,16 @@ export default function LossChart() {
     return () => {
       observer.disconnect();
     };
-  }, [mounted]);
+  }, [mounted, data]);
 
   // Map values for chart compatibility
-  const chartData = economicLosses.map((item) => ({
+  const chartData = (data || []).map((item) => ({
     name: item.year,
     Losses: item.value,
     display: item.display
   }));
 
-  if (!mounted) {
+  if (!mounted || !data) {
     return (
       <div className={styles.card}>
         <div className={styles.header}>
@@ -80,6 +84,7 @@ export default function LossChart() {
           <span className={styles.badge}>NDMA / World Bank</span>
         </div>
         <div className={styles.chartContainer} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="pulse-dot" style={{ width: '8px', height: '8px', marginRight: '8px' }} />
           <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Loading chart telemetry...</span>
         </div>
       </div>

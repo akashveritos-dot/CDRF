@@ -1,0 +1,313 @@
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+.loadingState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  gap: 16px;
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+  color: #ef4444;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 24px;
+}
+
+.title {
+  font-family: 'Playfair Display', serif;
+  font-size: 30px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #94a3b8;
+}
+
+.systemStatus {
+  background-color: rgba(239, 68, 68, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #ef4444;
+  letter-spacing: 0.05em;
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.05);
+}
+
+/* ── Metrics Grid ────────────────────────────────────────────────────────── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+}
+
+.card {
+  background-color: #0a0f1d;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.cardTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cardIconBlue { color: #3b82f6; }
+.cardIconTeal { color: #14b8a6; }
+.cardIconGold { color: #f59e0b; }
+.cardIconRed { color: #ef4444; }
+
+.cardValue {
+  font-size: 36px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 16px;
+  line-height: 1;
+}
+
+.cardFooter {
+  margin-top: auto;
+  font-size: 12px;
+}
+
+.cardFooterSplit {
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+
+.cardLink {
+  color: #94a3b8;
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+.cardLink:hover {
+  color: #ffffff;
+}
+
+.cardLinkRed {
+  color: #f87171;
+  font-weight: 600;
+}
+
+.cardLinkRed:hover {
+  color: #ef4444;
+}
+
+.subStat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+.subStatRed {
+  color: #f87171;
+  font-weight: 500;
+}
+
+.clockIcon {
+  color: #f59e0b;
+}
+
+/* ── Operations Console Panels ────────────────────────────────────────────── */
+.panelSection {
+  background-color: #0a0f1d;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  padding: 32px;
+}
+
+.panelTitleBlock {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 16px;
+}
+
+.panelTitleIcon {
+  color: #ef4444;
+  filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.3));
+}
+
+.panelTitleBlock h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.controlsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 32px;
+}
+
+@media (max-width: 1100px) {
+  .controlsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.consolePanel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background-color: rgba(255, 255, 255, 0.01);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 24px;
+  border-radius: 12px;
+}
+
+.consolePanel h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.consolePanel p {
+  font-size: 13px;
+  color: #94a3b8;
+  line-height: 1.5;
+}
+
+.actionRow {
+  margin-top: 8px;
+}
+
+.scrapeBtn {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: #ffffff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+  transition: opacity 0.2s ease;
+}
+
+.scrapeBtn:hover {
+  opacity: 0.95;
+}
+
+.scrapeBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.scrapeResult {
+  margin-top: 8px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.scrapeSuccess {
+  background-color: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  color: #a7f3d0;
+}
+
+.scrapeError {
+  background-color: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+.resultItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.successIcon {
+  color: #10b981;
+}
+
+.errorIcon {
+  color: #ef4444;
+}
+
+.shortcutsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.shortcutBtn {
+  background-color: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 14px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.shortcutBtn:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}

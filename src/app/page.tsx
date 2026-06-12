@@ -1,14 +1,14 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import styles from './page.module.css';
 import {
-  heroStats,
-  cityTemps,
+  heroStats as fallbackHeroStats,
+  cityTemps as fallbackCityTemps,
   stripStats,
-  disasterEvents,
+  disasterEvents as fallbackDisasterEvents,
   partners
 } from '@/data/dataStore';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
@@ -21,6 +21,35 @@ import Heatmap from '@/components/insights/Heatmap/Heatmap';
 import { Shield, ArrowRight, Calendar, Users, FileText, Globe, Waves, Flame, Wind, Mountain, Droplets, Activity } from 'lucide-react';
 
 export default function Home() {
+  const [stats, setStats] = useState<any[]>(fallbackHeroStats);
+  const [temps, setTemps] = useState<any[]>(fallbackCityTemps);
+  const [events, setEvents] = useState<any[]>(fallbackDisasterEvents);
+  const [lossesData, setLossesData] = useState<any[] | undefined>(undefined);
+  const [shareData, setShareData] = useState<any[] | undefined>(undefined);
+  const [heatmapData, setHeatmapData] = useState<number[][] | undefined>(undefined);
+
+  useEffect(() => {
+    async function loadTelemetry() {
+      try {
+        const res = await fetch('/api/telemetry');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.heroStats) setStats(data.heroStats);
+          if (data.cityTemps) setTemps(data.cityTemps);
+          if (data.disasterEvents) setEvents(data.disasterEvents);
+          if (data.economicLosses) setLossesData(data.economicLosses);
+          if (data.lossShare) setShareData(data.lossShare);
+          if (data.heatmapData) setHeatmapData(data.heatmapData);
+        }
+      } catch (err) {
+        console.warn('Failed to fetch home telemetry API:', err);
+      }
+    }
+    loadTelemetry();
+    const pollInterval = setInterval(loadTelemetry, 8000);
+    return () => clearInterval(pollInterval);
+  }, []);
+
   const getEventIcon = (label: string) => {
     switch (label.toLowerCase()) {
       case 'floods':
@@ -96,12 +125,14 @@ export default function Home() {
           <ScrollReveal direction="left" delay={0.3}>
             <div className={styles.heroPanel}>
               <div className={styles.panelTitle}>
-                <div className="pulse-dot" />
+                <span className="pulse-dot sonar-emitter">
+                  <span className="sonar-pulse" />
+                </span>
                 India Climate Monitor • Live
               </div>
               
               <div className={styles.dstatGrid}>
-                {heroStats.map((stat) => (
+                {stats.map((stat) => (
                   <div key={stat.id} className={styles.dstat}>
                     <div className={`${styles.dstatNum} ${
                       stat.type === 'red' ? styles.numRed : 
@@ -117,7 +148,7 @@ export default function Home() {
 
               <div className={styles.tempsHeader}>Heat Index — Major Cities</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {cityTemps.map((city) => (
+                {temps.map((city) => (
                   <div key={city.city} className={styles.tempRow}>
                     <span className={styles.tempCity}>{city.city}</span>
                     <div className={styles.tempBarWrap}>
@@ -183,7 +214,7 @@ export default function Home() {
                 <span style={{ fontSize: '11px', background: 'var(--bg-surface-alt)', padding: '4px 10px', borderRadius: 'var(--radius-full)', color: 'var(--text-muted)', fontWeight: 600 }}>Events / Year</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', justifyContent: 'center', flex: 1 }}>
-                {disasterEvents.map((item, idx) => (
+                {events.map((item, idx) => (
                   <div key={item.label} className={styles.barRow}>
                     <div className={styles.barLabelGroup}>
                       {getEventIcon(item.label)}
@@ -192,11 +223,11 @@ export default function Home() {
                     <div className={styles.barTrack}>
                       <motion.div
                         className={`${styles.barFill} ${
-                          item.class === 'bf-floods' ? styles.bfFloods :
-                          item.class === 'bf-heat' ? styles.bfHeat :
-                          item.class === 'bf-cyclone' ? styles.bfCyclone :
-                          item.class === 'bf-land' ? styles.bfLand :
-                          item.class === 'bf-drought' ? styles.bfDrought : styles.bfQuake
+                          (item.class_name || item.class) === 'bf-floods' ? styles.bfFloods :
+                          (item.class_name || item.class) === 'bf-heat' ? styles.bfHeat :
+                          (item.class_name || item.class) === 'bf-cyclone' ? styles.bfCyclone :
+                          (item.class_name || item.class) === 'bf-land' ? styles.bfLand :
+                          (item.class_name || item.class) === 'bf-drought' ? styles.bfDrought : styles.bfQuake
                         }`}
                         initial={{ width: 0 }}
                         whileInView={{ width: item.percentage }}
@@ -218,18 +249,18 @@ export default function Home() {
           {/* Economic Losses Chart - Wide Column */}
           <div className={styles.wideCard}>
             <ScrollReveal direction="up" delay={0.1}>
-              <LossChart />
+              <LossChart data={lossesData} />
             </ScrollReveal>
           </div>
 
           {/* Donut Loss Share */}
           <ScrollReveal direction="up" delay={0.2} className={styles.dashCardReveal}>
-            <DonutChart />
+            <DonutChart data={shareData} />
           </ScrollReveal>
 
           {/* Monsoon Rainfall Heatmap */}
           <ScrollReveal direction="up" delay={0.3} className={styles.dashCardReveal}>
-            <Heatmap />
+            <Heatmap data={heatmapData} />
           </ScrollReveal>
         </div>
       </section>

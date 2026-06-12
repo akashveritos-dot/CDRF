@@ -32,7 +32,11 @@ const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
   return null;
 };
 
-export default function DonutChart() {
+interface DonutChartProps {
+  data?: Array<{ name: string; value: number; color: string }>;
+}
+
+export default function DonutChart({ data }: DonutChartProps) {
   const [mounted, setMounted] = React.useState(false);
   const [chartWidth, setChartWidth] = React.useState(0);
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -58,9 +62,11 @@ export default function DonutChart() {
     return () => {
       observer.disconnect();
     };
-  }, [mounted]);
+  }, [mounted, data]);
 
-  if (!mounted) {
+  const liveData = data;
+
+  if (!mounted || !liveData) {
     return (
       <div className={styles.card}>
         <div className={styles.header}>
@@ -68,6 +74,7 @@ export default function DonutChart() {
           <span className={styles.badge}>% of Total Losses</span>
         </div>
         <div className={styles.chartContent} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '200px' }}>
+          <div className="pulse-dot" style={{ width: '8px', height: '8px', marginRight: '8px' }} />
           <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Loading chart telemetry...</span>
         </div>
       </div>
@@ -88,7 +95,7 @@ export default function DonutChart() {
             <PieChart width={chartWidth} height={chartWidth}>
               <Tooltip content={<CustomTooltip />} />
               <Pie
-                data={lossShare}
+                data={liveData}
                 cx="50%"
                 cy="50%"
                 innerRadius={chartWidth * 0.325} // Proportional scaling (52/160)
@@ -97,7 +104,7 @@ export default function DonutChart() {
                 dataKey="value"
                 animationDuration={1500}
               >
-                {lossShare.map((entry, index) => (
+                {liveData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
                 ))}
               </Pie>
@@ -112,7 +119,7 @@ export default function DonutChart() {
 
         {/* Customized Legend Panel */}
         <div className={styles.legend}>
-          {lossShare.map((item, index) => (
+          {liveData.map((item, index) => (
             <div key={`${item.name}-${index}`} className={styles.legendItem}>
               <div className={styles.legendColor} style={{ backgroundColor: item.color }} />
               <div className={styles.legendText}>

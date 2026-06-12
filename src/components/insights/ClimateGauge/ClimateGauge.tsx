@@ -5,22 +5,43 @@ import styles from './ClimateGauge.module.css';
 import { motion } from 'framer-motion';
 
 export default function ClimateGauge() {
-  const [anomaly, setAnomaly] = useState(2.11);
+  const [baseAnomaly, setBaseAnomaly] = useState(2.10);
+  const [anomaly, setAnomaly] = useState(2.10);
   const maxValue = 3.0;
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setAnomaly((prev) => {
-        // Fluctuate slightly around 2.1°C to simulate real-time sensors
-        const change = (Math.random() - 0.5) * 0.03;
-        const newVal = prev + change;
-        // Keep within a realistic tight band [2.07, 2.15]
-        return parseFloat(Math.max(2.07, Math.min(2.15, newVal)).toFixed(2));
-      });
-    }, 5000);
-
-    return () => clearInterval(interval);
+    async function fetchAnomaly() {
+      try {
+        const res = await fetch('/api/telemetry');
+        if (res.ok) {
+          const data = await res.json();
+          const warmingStat = data.heroStats?.find((s: any) => s.id === 'warming');
+          if (warmingStat) {
+            const val = parseFloat(warmingStat.count);
+            setBaseAnomaly(val);
+            setAnomaly(val);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load temperature anomaly from telemetry:', err);
+      }
+    }
+    
+    fetchAnomaly();
+    const pollInterval = setInterval(fetchAnomaly, 10000);
+    return () => clearInterval(pollInterval);
   }, []);
+
+  useEffect(() => {
+    const fluctuationInterval = setInterval(() => {
+      setAnomaly(() => {
+        const change = (Math.random() - 0.5) * 0.02;
+        return parseFloat((baseAnomaly + change).toFixed(2));
+      });
+    }, 4000);
+
+    return () => clearInterval(fluctuationInterval);
+  }, [baseAnomaly]);
   
   // Calculate angle for needle: -90deg (0°C) to +90deg (+3°C)
   const rotationAngle = (anomaly / maxValue) * 180 - 90;
