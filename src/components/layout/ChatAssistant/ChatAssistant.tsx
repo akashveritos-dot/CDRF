@@ -174,7 +174,7 @@ export default function ChatAssistant() {
       const errorMessage: Message = {
         id: `msg-${Date.now()}-error`,
         role: 'assistant',
-        content: `⚠️ Error: ${err.message || 'Make sure Ollama is running (`ollama run llama3.1`)'}.`
+        content: "⚠️ Sorry, we're having trouble connecting to the Assistant right now. Please try again in a few moments."
       };
       setMessages((prev) => [...prev, errorMessage]);
     } finally {

@@ -4,6 +4,14 @@ import React, { useState, useEffect } from 'react';
 import { Users, UserPlus, Edit2, Trash2, Lock, Check, X, Shield } from 'lucide-react';
 import styles from './page.module.css';
 
+function getFriendlyError(err: any, fallback: string): string {
+  const msg = err?.message || '';
+  if (!msg || msg.toLowerCase().includes('failed to fetch') || msg.toLowerCase().includes('typeerror') || msg.toLowerCase().includes('database') || msg.toLowerCase().includes('internal server error')) {
+    return 'Unable to connect to the server. Please check your network connection and try again.';
+  }
+  return msg;
+}
+
 interface User {
   id: number;
   email: string;
@@ -149,7 +157,7 @@ export default function UsersManagementPage() {
       setShowModal(false);
       fetchUsers();
     } catch (err: any) {
-      setError(err.message);
+      setError(getFriendlyError(err, 'Failed to save user. Please try again.'));
     }
   };
 
@@ -168,7 +176,7 @@ export default function UsersManagementPage() {
 
       fetchUsers();
     } catch (err: any) {
-      setError(err.message);
+      setError(getFriendlyError(err, 'Failed to update status. Please try again.'));
     }
   };
 
@@ -190,7 +198,7 @@ export default function UsersManagementPage() {
 
       fetchUsers();
     } catch (err: any) {
-      setError(err.message);
+      setError(getFriendlyError(err, 'Failed to delete user. Please try again.'));
     }
   };
 
@@ -235,7 +243,7 @@ export default function UsersManagementPage() {
       setShowPasswordModal(false);
       alert('Password updated successfully');
     } catch (err: any) {
-      setError(err.message);
+      setError(getFriendlyError(err, 'Failed to update password. Please try again.'));
     }
   };
 

@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (error: any) {
     console.error('Scraper run error:', error);
-    return NextResponse.json({ error: 'Scraper failed', detail: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Scraper failed', detail: 'Failed to complete scrape process. Please try again later.' }, { status: 500 });
   }
 }
 

@@ -5,6 +5,14 @@ import { useRouter } from 'next/navigation';
 import { ShieldAlert, Lock, Mail, Loader2 } from 'lucide-react';
 import styles from './page.module.css';
 
+function getFriendlyError(err: any, fallback: string): string {
+  const msg = err?.message || '';
+  if (!msg || msg.toLowerCase().includes('failed to fetch') || msg.toLowerCase().includes('typeerror') || msg.toLowerCase().includes('database') || msg.toLowerCase().includes('internal server error')) {
+    return 'Unable to connect to the authentication server. Please check your network connection and try again.';
+  }
+  return msg;
+}
+
 export default function AdminLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -50,7 +58,7 @@ export default function AdminLoginPage() {
       // Success - force a full page reload to ensure cookies are set
       window.location.href = '/admin';
     } catch (err: any) {
-      setError(err.message || 'Invalid administrator credentials');
+      setError(getFriendlyError(err, 'Invalid administrator credentials'));
       setIsLoading(false);
     }
   };

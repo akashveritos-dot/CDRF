@@ -13,6 +13,14 @@ import {
 } from 'lucide-react';
 import styles from './page.module.css';
 
+function getFriendlyError(err: any, fallback: string): string {
+  const msg = err?.message || '';
+  if (!msg || msg.toLowerCase().includes('failed to fetch') || msg.toLowerCase().includes('typeerror') || msg.toLowerCase().includes('database') || msg.toLowerCase().includes('internal server error')) {
+    return 'Unable to connect to the server. Please check your network connection and try again.';
+  }
+  return msg;
+}
+
 export default function AdminAlerts() {
   const [alerts, setAlerts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,7 +79,7 @@ export default function AdminAlerts() {
       }
       fetchAlerts();
     } catch (err: any) {
-      alert(err.message || 'Error deleting ticker alert');
+      alert(getFriendlyError(err, 'Error deleting ticker alert. Please try again.'));
     }
   };
 
@@ -101,7 +109,7 @@ export default function AdminAlerts() {
       setIsFormOpen(false);
       fetchAlerts();
     } catch (err: any) {
-      setError(err.message || 'Error occurred while saving alert');
+      setError(getFriendlyError(err, 'Error occurred while saving alert. Please try again.'));
     } finally {
       setIsSaving(false);
     }

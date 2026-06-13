@@ -38,6 +38,6 @@ export async function query<T = any>(sql: string, params: any[] = []): Promise<T
     return results as T;
   } catch (error: any) {
     console.error(`Database query failed: ${error.message} (SQL: ${sql})`);
-    throw error;
+    throw new Error('Database operation failed. Please try again later.');
   }
 }

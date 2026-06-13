@@ -16,6 +16,14 @@ import {
 } from 'lucide-react';
 import styles from './page.module.css';
 
+function getFriendlyError(err: any, fallback: string): string {
+  const msg = err?.message || '';
+  if (!msg || msg.toLowerCase().includes('failed to fetch') || msg.toLowerCase().includes('typeerror') || msg.toLowerCase().includes('database') || msg.toLowerCase().includes('internal server error')) {
+    return 'Unable to connect to the server. Please check your network connection and try again.';
+  }
+  return msg;
+}
+
 export default function AdminCouncils() {
   const [members, setMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -108,7 +116,7 @@ export default function AdminCouncils() {
       }
       fetchMembers();
     } catch (err: any) {
-      alert(err.message || 'Error deleting council member');
+      alert(getFriendlyError(err, 'Error deleting council member. Please try again.'));
     }
   };
 
@@ -146,7 +154,7 @@ export default function AdminCouncils() {
       setIsFormOpen(false);
       fetchMembers();
     } catch (err: any) {
-      setError(err.message || 'Error occurred while saving council member');
+      setError(getFriendlyError(err, 'Error occurred while saving council member. Please try again.'));
     } finally {
       setIsSaving(false);
     }

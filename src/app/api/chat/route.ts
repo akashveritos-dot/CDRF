@@ -146,7 +146,7 @@ Goal: Ensure the user gets a helpful, polite, and fully satisfying response that
             new TextEncoder().encode(
               `data: ${JSON.stringify({
                 type: 'error',
-                content: err.message || 'Error communicating with Ollama local model. Make sure Ollama is running (`ollama run llama3.1:8b`)',
+                content: 'I am currently unable to connect to my AI model. Please try again in a few moments.',
               })}\n\n`
             )
           );
@@ -167,7 +167,7 @@ Goal: Ensure the user gets a helpful, polite, and fully satisfying response that
   } catch (error: any) {
     console.error('Chat API Error:', error);
     return NextResponse.json(
-      { error: error.message || 'Internal Server Error' },
+      { error: 'An unexpected error occurred while processing your message. Please try again.' },
       { status: 500 }
     );
   }

@@ -27,6 +27,14 @@ const attendanceOptions = [
   { value: 'Media representative', label: 'Media delegate', subLabel: 'Press pass', icon: <Shield size={16} />, color: '#64748b' },
 ];
 
+function getFriendlyError(err: any, fallback: string): string {
+  const msg = err?.message || '';
+  if (!msg || msg.toLowerCase().includes('failed to fetch') || msg.toLowerCase().includes('typeerror') || msg.toLowerCase().includes('database') || msg.toLowerCase().includes('internal server error')) {
+    return 'Unable to connect to the server. Please check your network connection and try again.';
+  }
+  return msg;
+}
+
 export default function EventPage() {
   const [activeTab, setActiveTab] = useState('Day 1');
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
@@ -142,7 +150,7 @@ export default function EventPage() {
 
       setIsRegistered(true);
     } catch (err: any) {
-      setError(err.message || 'Failed to submit registration. Please try again.');
+      setError(getFriendlyError(err, 'Failed to submit registration. Please try again.'));
     } finally {
       setIsSubmitting(false);
     }

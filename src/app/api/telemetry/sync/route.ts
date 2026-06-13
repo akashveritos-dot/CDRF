@@ -121,7 +121,7 @@ export async function GET(req: NextRequest) {
   } catch (error: any) {
     console.error('Telemetry Sync Error:', error);
     return NextResponse.json(
-      { error: 'Failed to synchronize live telemetry feeds', details: error.message },
+      { error: 'Failed to synchronize live telemetry feeds', details: 'Unable to sync live data at this time.' },
       { status: 500 }
     );
   }

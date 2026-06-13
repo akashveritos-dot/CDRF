@@ -15,6 +15,14 @@ import {
 } from 'lucide-react';
 import styles from './page.module.css';
 
+function getFriendlyError(err: any, fallback: string): string {
+  const msg = err?.message || '';
+  if (!msg || msg.toLowerCase().includes('failed to fetch') || msg.toLowerCase().includes('typeerror') || msg.toLowerCase().includes('database') || msg.toLowerCase().includes('internal server error')) {
+    return 'Unable to connect to the server. Please check your network connection and try again.';
+  }
+  return msg;
+}
+
 export default function AdminReports() {
   const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -138,7 +146,7 @@ export default function AdminReports() {
       setIsFormOpen(false);
       fetchReports();
     } catch (err: any) {
-      setError(err.message || 'Error occurred while saving report');
+      setError(getFriendlyError(err, 'Error occurred while saving report. Please try again.'));
     } finally {
       setIsSaving(false);
     }
