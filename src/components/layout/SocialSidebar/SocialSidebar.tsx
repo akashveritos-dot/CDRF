@@ -8,7 +8,7 @@ const SocialSidebar = () => {
   const socialLinks = [
     {
       name: 'LinkedIn',
-      url: 'https://www.linkedin.com/company/thecsruniverse/',
+      url: 'https://www.linkedin.com/company/disaster-and-climate-resilience-federation/',
       icon: <Linkedin size={24} />,
       color: '#0A66C2',
       hoverColor: '#004182'
