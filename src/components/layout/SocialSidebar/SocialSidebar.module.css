@@ -183,37 +183,34 @@
   }
 }
 
-/* Mobile styles - horizontal dock centered at the bottom */
+/* Mobile styles - vertical dock on the left edge */
 @media (max-width: 768px) {
   .socialSidebar {
-    left: 50%;
-    top: auto;
-    bottom: 20px;
-    transform: translateX(-50%);
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    bottom: auto;
   }
 
   .socialContainer {
-    flex-direction: row;
-    padding: 10px 20px;
-    gap: 20px;
-    border-radius: 9999px;
+    flex-direction: column;
+    padding: 10px 8px 10px 6px;
+    gap: 12px;
   }
 
   .socialContainer::before {
-    border-radius: 9999px;
-    border: 1px solid rgba(15, 23, 42, 0.04);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-    background: rgba(255, 255, 255, 0.85);
+    border-radius: 0 16px 16px 0;
+    border-left: none;
   }
 
   .socialLink {
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
   }
 
   .brandSvg {
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
   }
 
   .socialLabel {
@@ -221,28 +218,34 @@
   }
 
   .socialItem:hover .socialLink {
-    transform: scale(1.15) translateY(-2px);
+    transform: scale(1.15) translateX(2px);
   }
 }
 
 /* Extra small mobile */
 @media (max-width: 480px) {
   .socialSidebar {
-    bottom: 16px;
+    left: 0;
   }
 
   .socialContainer {
-    padding: 8px 14px;
-    gap: 14px;
+    padding: 8px 6px 8px 4px;
+    gap: 10px;
+  }
+
+  .socialContainer::before {
+    border-radius: 0 12px 12px 0;
   }
 
   .socialLink {
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
   }
 
   .brandSvg {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
   }
 }
+
+
