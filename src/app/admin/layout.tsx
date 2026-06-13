@@ -77,8 +77,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: 'Scraper Queue', path: '/admin/scrape', icon: <Radio size={18} /> }
   ];
 
-  // Add Users menu item only for SUPERADMIN
+  // Add Users and Launch Registrations menu items only for SUPERADMIN
   if (adminUser?.role === 'SUPERADMIN') {
+    menuItems.push({ name: 'Launch Registrations', path: '/admin/soon', icon: <Globe size={18} /> });
     menuItems.push({ name: 'Users', path: '/admin/users', icon: <UserCog size={18} /> });
   }
 

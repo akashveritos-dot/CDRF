@@ -11,6 +11,11 @@ import ChatAssistant from '@/components/layout/ChatAssistant/ChatAssistant';
 export default function ClientLayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAdminRoute = pathname?.startsWith('/admin');
+  const isSoonRoute = pathname?.startsWith('/soon');
+
+  if (isSoonRoute) {
+    return <main>{children}</main>;
+  }
 
   if (isAdminRoute) {
     return (
