@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     // Query the database for the user
     console.log('[DEBUG AUTH] Database login attempt:', { email });
     const users = await query<any[]>(
-      'SELECT id, email, password_hash, name, role FROM users WHERE email = ? LIMIT 1',
+      'SELECT id, email, password_hash, name, role, is_active FROM users WHERE email = ? LIMIT 1',
       [email]
     );
     console.log('[DEBUG AUTH] Users found:', users.map(u => ({ id: u.id, email: u.email, role: u.role })));
@@ -32,11 +32,20 @@ export async function POST(req: NextRequest) {
 
     const user = users[0];
 
-    // Verify role is ADMIN (no login/signup for regular users)
-    if (user.role !== 'ADMIN') {
+    // Verify role is ADMIN or SUPERADMIN (no login/signup for regular users)
+    if (user.role !== 'ADMIN' && user.role !== 'SUPERADMIN') {
       console.log('[DEBUG AUTH] Access denied for non-admin role:', user.role);
       return NextResponse.json(
         { error: 'Access denied. Administrator privileges required.' },
+        { status: 403 }
+      );
+    }
+
+    // Check if user is active
+    if (!user.is_active) {
+      console.log('[DEBUG AUTH] Access denied for inactive user:', user.email);
+      return NextResponse.json(
+        { error: 'Account is inactive. Please contact support.' },
         { status: 403 }
       );
     }

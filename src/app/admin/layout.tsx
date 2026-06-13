@@ -68,6 +68,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: 'Scraper Queue', path: '/admin/scrape', icon: <Radio size={18} /> }
   ];
 
+  // Add Users menu item only for SUPERADMIN
+  if (adminUser?.role === 'SUPERADMIN') {
+    menuItems.push({ name: 'Users', path: '/admin/users', icon: <Users size={18} /> });
+  }
+
   return (
     <div className={`${styles.layout} admin-panel`}>
       {/* Top Mobile Bar */}
@@ -95,7 +100,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className={styles.avatar}>A</div>
           <div className={styles.profileInfo}>
             <div className={styles.profileName}>{adminUser?.name || 'Administrator'}</div>
-            <div className={styles.profileRole}>Super Admin</div>
+            <div className={styles.profileRole}>{adminUser?.role || 'ADMIN'}</div>
           </div>
         </div>
 

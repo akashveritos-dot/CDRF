@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
 
     const payload = await verifyToken(token);
 
-    if (!payload || payload.role !== 'ADMIN') {
+    if (!payload || (payload.role !== 'ADMIN' && payload.role !== 'SUPERADMIN')) {
       return NextResponse.json({ authenticated: false }, { status: 200 });
     }
 

@@ -53,7 +53,7 @@ export async function PUT(
     }
 
     const session = await verifyToken(token);
-    if (!session || session.role !== 'ADMIN') {
+    if (!session || (session.role !== 'ADMIN' && session.role !== 'SUPERADMIN')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -123,7 +123,7 @@ export async function PUT(
   }
 }
 
-// DELETE /api/news/[id] - Delete a news story (Admin Secured)
+// DELETE /api/news/[id] - Delete a news story (SUPERADMIN ONLY)
 export async function DELETE(
   req: NextRequest,
   props: { params: Promise<{ id: string }> }
@@ -139,8 +139,9 @@ export async function DELETE(
     }
 
     const session = await verifyToken(token);
-    if (!session || session.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    // Only SUPERADMIN can delete
+    if (!session || session.role !== 'SUPERADMIN') {
+      return NextResponse.json({ error: 'Forbidden. Only SUPERADMIN can delete content.' }, { status: 403 });
     }
 
     // Verify item exists
