@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styles from './page.module.css';
 import { eventFeatures } from '@/data/dataStore';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
-import { Calendar, MapPin, Users, Award, Shield } from 'lucide-react';
+import { Calendar, MapPin, Users, Award, Shield, ChevronDown, Check } from 'lucide-react';
 
 const scheduleDay1 = [
   { time: '09:30 - 10:30', title: 'Inaugural Plenary & Keynote address', desc: 'Welcome address by Secretary General DCRF. Launch of the Annual Disaster & Climate Action Index Report by NDMA officials.' },
@@ -20,6 +20,13 @@ const scheduleDay2 = [
   { time: '16:30 - 17:30', title: 'DCRF Recognition Awards Ceremony', desc: 'Honoring Best Corporate Response, Best NGO Initiative, Disaster-Tech Innovator, and Climate Resilient Community Awards.' }
 ];
 
+const attendanceOptions = [
+  { value: 'In-Person Delegate', label: 'In-Person Delegate', subLabel: 'India International Centre', icon: <MapPin size={16} />, color: 'var(--gold-primary)' },
+  { value: 'Virtual Delegate', label: 'Virtual Delegate', subLabel: 'Live Web Stream', icon: <Users size={16} />, color: 'var(--teal-primary)' },
+  { value: 'Sponsor / Exhibition partner', label: 'Exhibitor', subLabel: 'Disaster-Tech Expo pavilion', icon: <Award size={16} />, color: 'var(--gold-light)' },
+  { value: 'Media representative', label: 'Media delegate', subLabel: 'Press pass', icon: <Shield size={16} />, color: '#64748b' },
+];
+
 export default function EventPage() {
   const [activeTab, setActiveTab] = useState('Day 1');
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
@@ -33,6 +40,32 @@ export default function EventPage() {
     designation: '',
     role: 'In-Person Delegate'
   });
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    
+    if (dropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+    }
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [dropdownOpen]);
 
   // Calculate live countdown to Nov 26, 2026
   useEffect(() => {
@@ -325,18 +358,62 @@ export default function EventPage() {
                 {/* Choose Conclave Attendance Mode */}
                 <div className={`${styles.formGroup} ${styles.fieldFull}`}>
                   <label className={styles.label}>Choose Conclave Attendance Mode</label>
-                  <select
-                    name="role"
-                    className={styles.select}
-                    value={formData.role}
-                    onChange={handleInputChange}
-                    disabled={isSubmitting}
-                  >
-                    <option value="In-Person Delegate">In-Person Delegate (India International Centre)</option>
-                    <option value="Virtual Delegate">Virtual Delegate (Live Web Stream)</option>
-                    <option value="Sponsor / Exhibition partner">Exhibitor (Disaster-Tech Expo pavilion)</option>
-                    <option value="Media representative">Media delegate / Press pass</option>
-                  </select>
+                  <div className={styles.customDropdown} ref={dropdownRef}>
+                    <button
+                      type="button"
+                      className={styles.dropdownTrigger}
+                      onClick={() => setDropdownOpen(!dropdownOpen)}
+                      aria-label="Select attendance mode"
+                      aria-expanded={dropdownOpen}
+                      disabled={isSubmitting}
+                    >
+                      <div className={styles.dropdownSelected}>
+                        <span className={styles.dropdownIcon} style={{ color: attendanceOptions.find(t => t.value === formData.role)?.color }}>
+                          {attendanceOptions.find(t => t.value === formData.role)?.icon}
+                        </span>
+                        <div className={styles.dropdownText}>
+                          <span className={styles.dropdownLabel}>
+                            {attendanceOptions.find(t => t.value === formData.role)?.label}
+                          </span>
+                          <span className={styles.dropdownSubLabel}>
+                            {attendanceOptions.find(t => t.value === formData.role)?.subLabel}
+                          </span>
+                        </div>
+                      </div>
+                      <ChevronDown 
+                        size={18} 
+                        className={`${styles.dropdownChevron} ${dropdownOpen ? styles.dropdownChevronOpen : ''}`}
+                      />
+                    </button>
+                    {isMounted && dropdownOpen && (
+                      <div className={styles.dropdownMenu}>
+                        {attendanceOptions.map((option) => (
+                          <button
+                            key={option.value}
+                            type="button"
+                            className={`${styles.dropdownOption} ${formData.role === option.value ? styles.dropdownOptionActive : ''}`}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setFormData(prev => ({ ...prev, role: option.value }));
+                              setTimeout(() => setDropdownOpen(false), 100);
+                            }}
+                          >
+                            <span className={styles.dropdownIcon} style={{ color: option.color }}>
+                              {option.icon}
+                            </span>
+                            <div className={styles.dropdownText}>
+                              <span className={styles.dropdownLabel}>{option.label}</span>
+                              <span className={styles.dropdownSubLabel}>{option.subLabel}</span>
+                            </div>
+                            {formData.role === option.value && (
+                              <Check size={16} className={styles.dropdownCheck} />
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Submit button */}
