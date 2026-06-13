@@ -91,8 +91,8 @@
 
 /* Chat Card Window - Light Glassmorphic Theme */
 .chatWindow {
-  width: 340px;
-  height: 420px;
+  width: 380px;
+  height: 540px;
   background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
