@@ -13,6 +13,8 @@ import {
 } from '@/data/dataStore';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
 import CountUp from '@/components/ui/CountUp/CountUp';
+import DisasterBackground from '@/components/ui/DisasterBackground/DisasterBackground';
+import DynamicSkyBackground from '@/components/ui/DynamicSkyBackground/DynamicSkyBackground';
 import IndiaMap from '@/components/insights/IndiaMap/IndiaMap';
 import ClimateGauge from '@/components/insights/ClimateGauge/ClimateGauge';
 import LossChart from '@/components/insights/LossChart/LossChart';
@@ -133,12 +135,63 @@ export default function Home() {
         if (res.ok) {
           const data = await res.json();
           if (data.heroStats) setStats(data.heroStats);
-          if (data.cityTemps) setTemps(data.cityTemps);
           if (data.disasterEvents) setEvents(data.disasterEvents);
           if (data.economicLosses) setLossesData(data.economicLosses);
           if (data.lossShare) setShareData(data.lossShare);
           if (data.heatmapData) setHeatmapData(data.heatmapData);
           if (data.homepageStats) setHomeStats(data.homepageStats);
+
+          // Fetch real-time temperatures for Chennai, Delhi, Kolkata, and Mumbai from Open-Meteo
+          try {
+            const weatherRes = await fetch(
+              'https://api.open-meteo.com/v1/forecast?latitude=13.0827,28.6139,22.5726,19.0760&longitude=80.2707,77.2090,88.3639,72.8777&current=temperature_2m'
+            );
+            if (weatherRes.ok) {
+              const weatherData = await weatherRes.json();
+              if (Array.isArray(weatherData)) {
+                const updatedTemps = [
+                  { 
+                    city: 'Chennai', 
+                    temp: Math.round(weatherData[0].current.temperature_2m),
+                    percentage: Math.round((weatherData[0].current.temperature_2m / 50) * 100)
+                  },
+                  { 
+                    city: 'Delhi', 
+                    temp: Math.round(weatherData[1].current.temperature_2m),
+                    percentage: Math.round((weatherData[1].current.temperature_2m / 50) * 100)
+                  },
+                  { 
+                    city: 'Kolkata', 
+                    temp: Math.round(weatherData[2].current.temperature_2m),
+                    percentage: Math.round((weatherData[2].current.temperature_2m / 50) * 100)
+                  },
+                  { 
+                    city: 'Mumbai', 
+                    temp: Math.round(weatherData[3].current.temperature_2m),
+                    percentage: Math.round((weatherData[3].current.temperature_2m / 50) * 100)
+                  }
+                ];
+                updatedTemps.sort((a, b) => b.temp - a.temp);
+                setTemps(updatedTemps);
+              } else {
+                if (data.cityTemps) {
+                  const sortedTemps = [...data.cityTemps].sort((a, b) => b.temp - a.temp);
+                  setTemps(sortedTemps);
+                }
+              }
+            } else {
+              if (data.cityTemps) {
+                const sortedTemps = [...data.cityTemps].sort((a, b) => b.temp - a.temp);
+                setTemps(sortedTemps);
+              }
+            }
+          } catch (weatherErr) {
+            console.warn('Failed to fetch real-time city temperatures:', weatherErr);
+            if (data.cityTemps) {
+              const sortedTemps = [...data.cityTemps].sort((a, b) => b.temp - a.temp);
+              setTemps(sortedTemps);
+            }
+          }
         }
       } catch (err) {
         console.warn('Failed to fetch home telemetry API:', err);
@@ -210,27 +263,16 @@ export default function Home() {
     { id: 'incidents', count: homeStats.activeIncidents, suffix: '+', label: 'Active Incidents' },
     { id: 'countries', count: homeStats.countriesAffected, suffix: '', label: 'Countries Affected' },
     { id: 'reports', count: homeStats.reportsPublished, suffix: '+', label: 'Reports Published' },
-    { id: 'categories', count: homeStats.disasterCategories, suffix: '', label: 'Disaster Categories' },
     { id: 'alerts', count: homeStats.alertsIssued, suffix: '+', label: 'Alerts Issued' }
   ];
 
-  const categoryCards = [
-    { label: 'Earthquake', icon: <Activity size={24} />, count: '42 Events', color: '#B03A2E', path: '/news?category=earthquake' },
-    { label: 'Flood', icon: <Waves size={24} />, count: '267 Events', color: '#2980B9', path: '/news?category=flood' },
-    { label: 'Wildfire', icon: <Flame size={24} />, count: '28 Events', color: '#E67E22', path: '/news?category=wildfire' },
-    { label: 'Cyclone', icon: <Wind size={24} />, count: '18 Events', color: '#6C3483', path: '/news?category=cyclone' },
-    { label: 'Storm', icon: <Wind size={24} style={{ transform: 'rotate(45deg)' }} />, count: '54 Events', color: '#2E5185', path: '/news?category=storm' },
-    { label: 'Landslide', icon: <Mountain size={24} />, count: '124 Events', color: '#5D6D7E', path: '/news?category=landslide' },
-    { label: 'Drought', icon: <Droplets size={24} />, count: '96 Events', color: '#D35400', path: '/news?category=drought' },
-    { label: 'Climate', icon: <Thermometer size={24} />, count: '178 Events', color: '#0E7A6B', path: '/news?category=climate' }
-  ];
+
 
   return (
     <div>
       {/* HERO SECTION - REDESIGNED PREMIUM LIGHT THEME */}
       <section className={styles.hero}>
         <div className={styles.heroBg} />
-        <div className={styles.heroOrb} />
         
         <div className={styles.heroContent}>
           <ScrollReveal direction="up" delay={0.1}>
@@ -262,22 +304,14 @@ export default function Home() {
 
           {/* Right Climate Widget Panel - Light Glassmorphic */}
           <ScrollReveal direction="left" delay={0.3}>
-            <div className={`${styles.heroPanel} ${styles.heroPanelLight} radar-sweep-container`} style={{ padding: '0', overflow: 'hidden' }}>
-              <div className="radar-sweep-line" style={{ background: 'linear-gradient(to right, transparent, var(--red-primary), transparent)', boxShadow: '0 0 10px var(--red-primary)' }} />
+            <div className={`${styles.heroPanel} ${styles.heroPanelLight}`} style={{ padding: '0', overflow: 'hidden' }}>
               
               <div style={{ position: 'relative', height: '180px', width: '100%', overflow: 'hidden' }}>
                 <img 
                   src="/climate_radar_dashboard.png" 
                   alt="DCRF India Climate Radar Monitor" 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.9 }} 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 1, filter: 'brightness(1.2)' }} 
                 />
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.95))' }} />
-                
-                {/* Floating Warning Tag */}
-                <div style={{ position: 'absolute', top: '16px', left: '16px', display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--red-primary)', padding: '6px 12px', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 'var(--radius-full)', fontSize: '10px', fontWeight: 700, color: 'var(--white)', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                  <span className="pulse-dot" style={{ width: '6px', height: '6px', boxShadow: 'none', background: 'white' }} />
-                  Early Warning Feed Active
-                </div>
               </div>
               
               <div style={{ padding: '24px 28px 28px' }}>
@@ -339,35 +373,7 @@ export default function Home() {
         ))}
       </section>
 
-      {/* DISASTER CATEGORIES SECTION */}
-      <section className={styles.sectionAlt}>
-        <ScrollReveal direction="up">
-          <div className={styles.sectionHeader} style={{ textAlign: 'center' }}>
-            <div className={styles.sectionEyebrow}>Hazard Classification</div>
-            <h2 className={styles.sectionTitle}>Monitor Hazards by Category</h2>
-            <p className={styles.sectionSub} style={{ margin: '0 auto' }}>
-              Select a category to view active alerts, analytical breakdowns, and custom emergency response guidelines.
-            </p>
-          </div>
-        </ScrollReveal>
 
-        <div className={styles.categoriesGrid}>
-          {categoryCards.map((cat, idx) => (
-            <ScrollReveal key={cat.label} direction="up" delay={0.05 * idx}>
-              <Link href={cat.path} className={styles.categoryCard}>
-                <div className={styles.catIconWrapper} style={{ color: cat.color, backgroundColor: `${cat.color}0D` }}>
-                  {cat.icon}
-                </div>
-                <h3>{cat.label}</h3>
-                <span className={styles.catCount}>{cat.count}</span>
-                <span className={styles.catLinkText}>
-                  Explore Feed <ArrowRight size={12} />
-                </span>
-              </Link>
-            </ScrollReveal>
-          ))}
-        </div>
-      </section>
 
       {/* INTERACTIVE DATA INSIGHTS DASHBOARD */}
       <section id="insights" className={styles.section}>

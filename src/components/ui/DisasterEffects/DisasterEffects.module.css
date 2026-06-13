@@ -1,0 +1,156 @@
+.effectsContainer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+/* Rain Effects */
+.rainContainer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.rainDrop {
+  position: absolute;
+  top: -10%;
+  width: 2px;
+  height: 40px;
+  background: linear-gradient(to bottom, transparent, rgba(100, 149, 237, 0.6));
+  animation: rainFall linear infinite;
+}
+
+@keyframes rainFall {
+  to {
+    transform: translateY(110vh);
+  }
+}
+
+/* Fire/Ember Effects */
+.emberContainer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.ember {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ff6b35, #f7931e);
+  box-shadow: 0 0 10px #ff6b35, 0 0 20px #ff6b35;
+  animation: emberRise ease-in infinite;
+  filter: blur(1px);
+}
+
+@keyframes emberRise {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-30vh) translateX(20px);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-60vh) translateX(-10px);
+    opacity: 0;
+  }
+}
+
+/* Smoke/Dust Particles */
+.smokeContainer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.smokeParticle {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(100, 100, 100, 0.15), transparent);
+  animation: smokeDrift ease-in-out infinite;
+  filter: blur(20px);
+}
+
+@keyframes smokeDrift {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.3;
+  }
+  50% {
+    transform: translate(50px, -100px) scale(1.5);
+    opacity: 0.2;
+  }
+  100% {
+    transform: translate(-30px, -200px) scale(2);
+    opacity: 0;
+  }
+}
+
+/* Earthquake Shake */
+.earthquakeOverlay {
+  position: absolute;
+  inset: 0;
+  animation: earthquakeShake 0.5s ease-in-out infinite;
+}
+
+@keyframes earthquakeShake {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-2px, 2px); }
+  20% { transform: translate(2px, -2px); }
+  30% { transform: translate(-2px, -2px); }
+  40% { transform: translate(2px, 2px); }
+  50% { transform: translate(-2px, 2px); }
+  60% { transform: translate(2px, -2px); }
+  70% { transform: translate(-2px, -2px); }
+  80% { transform: translate(2px, 2px); }
+  90% { transform: translate(-2px, -2px); }
+}
+
+/* Alert Pulse Effect */
+.alertPulse {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 12px;
+  height: 12px;
+}
+
+.pulseRing {
+  position: absolute;
+  inset: 0;
+  border: 2px solid rgba(239, 68, 68, 0.6);
+  border-radius: 50%;
+  animation: pulseExpand 2s ease-out infinite;
+}
+
+@keyframes pulseExpand {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .rainDrop,
+  .ember,
+  .smokeParticle,
+  .earthquakeOverlay,
+  .pulseRing {
+    animation: none;
+  }
+}

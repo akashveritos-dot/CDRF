@@ -28,10 +28,10 @@ export const heroStats: StatItem[] = [
 ];
 
 export const cityTemps = [
-  { city: 'Delhi', temp: 42, percentage: 88 },
-  { city: 'Mumbai', temp: 36, percentage: 70 },
-  { city: 'Chennai', temp: 38, percentage: 78 },
-  { city: 'Kolkata', temp: 37, percentage: 74 }
+  { city: 'Mumbai', temp: 31, percentage: 62 },
+  { city: 'Delhi', temp: 29, percentage: 58 },
+  { city: 'Kolkata', temp: 29, percentage: 58 },
+  { city: 'Chennai', temp: 28, percentage: 56 }
 ];
 
 export const stripStats: StatItem[] = [

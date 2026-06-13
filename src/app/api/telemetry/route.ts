@@ -15,6 +15,45 @@ export async function GET(req: NextRequest) {
     const stateHazards = await query<any[]>('SELECT * FROM state_hazards');
     const monsoonHeatmap = await query<any[]>('SELECT * FROM monsoon_heatmap');
 
+    // Fetch real-time temperatures for major cities on the server-side (Chennai, Delhi, Kolkata, Mumbai)
+    let finalCityTemps = cityTemps;
+    try {
+      const weatherRes = await fetch(
+        'https://api.open-meteo.com/v1/forecast?latitude=13.0827,28.6139,22.5726,19.0760&longitude=80.2707,77.2090,88.3639,72.8777&current=temperature_2m',
+        { next: { revalidate: 60 } } // Cache for 60 seconds
+      );
+      if (weatherRes.ok) {
+        const weatherData = await weatherRes.json();
+        if (Array.isArray(weatherData)) {
+          finalCityTemps = [
+            { 
+              city: 'Chennai', 
+              temp: Math.round(weatherData[0].current.temperature_2m),
+              percentage: Math.round((weatherData[0].current.temperature_2m / 50) * 100)
+            },
+            { 
+              city: 'Delhi', 
+              temp: Math.round(weatherData[1].current.temperature_2m),
+              percentage: Math.round((weatherData[1].current.temperature_2m / 50) * 100)
+            },
+            { 
+              city: 'Kolkata', 
+              temp: Math.round(weatherData[2].current.temperature_2m),
+              percentage: Math.round((weatherData[2].current.temperature_2m / 50) * 100)
+            },
+            { 
+              city: 'Mumbai', 
+              temp: Math.round(weatherData[3].current.temperature_2m),
+              percentage: Math.round((weatherData[3].current.temperature_2m / 50) * 100)
+            }
+          ];
+          finalCityTemps.sort((a, b) => b.temp - a.temp);
+        }
+      }
+    } catch (weatherErr) {
+      console.warn('Failed to fetch real-time weather in telemetry API route:', weatherErr);
+    }
+
     // Format monsoon gridded heatmap data
     const years = ['2019', '2020', '2021', '2022', '2023', '2024'];
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -43,7 +82,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       tickerAlerts,
       heroStats: heroStats.map(s => ({ ...s, count: parseFloat(s.count) })),
-      cityTemps,
+      cityTemps: finalCityTemps,
       disasterEvents,
       economicLosses: economicLosses.map(l => ({
         year: l.year,

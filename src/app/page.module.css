@@ -1,18 +1,32 @@
 .hero {
   position: relative;
   background: var(--bg-surface);
+  background-image: url('https://images.unsplash.com/photo-1547683905-f686c993aae5?w=1920&q=80');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   padding: 100px 5% 80px;
   overflow: hidden;
+  min-height: 600px;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1;
 }
 
 .heroBg {
   position: absolute;
   inset: 0;
-  opacity: 0.04;
+  opacity: 0;
   background-image: linear-gradient(rgba(15, 23, 42, 0.3) 1px, transparent 1px),
                     linear-gradient(90deg, rgba(15, 23, 42, 0.3) 1px, transparent 1px);
   background-size: 48px 48px;
   pointer-events: none;
+  z-index: 2;
 }
 
 .heroOrb {
@@ -22,13 +36,14 @@
   width: 560px;
   height: 560px;
   border-radius: var(--radius-full);
-  background: radial-gradient(circle at 30% 40%, rgba(153, 27, 27, 0.05) 0%, transparent 65%);
+  background: radial-gradient(circle at 30% 40%, rgba(153, 27, 27, 0.25) 0%, transparent 65%);
   pointer-events: none;
+  z-index: 2;
 }
 
 .heroContent {
   position: relative;
-  z-index: 10;
+  z-index: 3;
   display: grid;
   grid-template-columns: 1.2fr 1fr;
   gap: 60px;
@@ -56,23 +71,26 @@
 .hero h1 {
   font-size: clamp(34px, 4.5vw, 56px);
   font-weight: 700;
-  color: var(--text-default);
+  color: #ffffff;
   line-height: 1.15;
   margin-bottom: 24px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7), 0 4px 16px rgba(0, 0, 0, 0.5);
 }
 
 .hero h1 em {
   color: var(--gold-primary);
   font-style: normal;
-  text-shadow: 0 0 40px rgba(153, 27, 27, 0.05);
+  text-shadow: 0 2px 8px rgba(153, 27, 27, 0.3), 0 0 20px rgba(153, 27, 27, 0.1);
 }
 
 .heroSub {
   font-size: 17px;
-  color: var(--text-muted);
+  color: #ffffff;
   max-width: 540px;
   line-height: 1.7;
   margin-bottom: 40px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.5);
+  font-weight: 500;
 }
 
 .heroActions {
@@ -102,8 +120,9 @@
 }
 
 .btnOutline {
-  border: 1.5px solid rgba(15, 23, 42, 0.15);
-  color: var(--text-default);
+  border: 1.5px solid #000000;
+  background: #000000;
+  color: #ffffff;
   padding: 14px 32px;
   border-radius: var(--radius-sm);
   font-weight: 600;
@@ -115,8 +134,8 @@
 }
 
 .btnOutline:hover {
-  border-color: var(--text-default);
-  background: rgba(15, 23, 42, 0.02);
+  border-color: #333333;
+  background: #333333;
   transform: translateY(-1px);
 }
 
@@ -178,8 +197,9 @@
 
 .dstatLabel {
   font-size: 11px;
-  color: var(--text-muted);
+  color: #000000;
   line-height: 1.4;
+  font-weight: 600;
 }
 
 .tempsHeader {
@@ -229,11 +249,11 @@
   color: var(--text-default);
 }
 
-/* Stats strip - Navy contrast for high quality contrast strip */
+/* Stats strip - Light premium background */
 .statsStrip {
-  background: var(--navy-deep);
-  border-top: 1px solid rgba(255,255,255,0.05);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.95);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   padding: 44px 5%;
   display: flex;
 }
@@ -241,7 +261,7 @@
 .stripStat {
   flex: 1;
   padding: 0 32px;
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
   text-align: center;
   transition: transform var(--transition-fast);
 }
@@ -258,15 +278,15 @@
   font-family: var(--font-display);
   font-size: 36px;
   font-weight: 700;
-  color: var(--gold-light);
+  color: var(--gold-primary);
   line-height: 1;
   margin-bottom: 10px;
-  text-shadow: 0 0 20px rgba(14, 165, 233, 0.15);
+  text-shadow: none;
 }
 
 .stripLabel {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(0, 0, 0, 0.7);
   line-height: 1.5;
 }
 
@@ -686,7 +706,7 @@
 
 /* Light Hero Panel Override */
 .heroPanelLight {
-  background: rgba(255, 255, 255, 0.8) !important;
+  background: rgba(255, 255, 255, 0.15) !important;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(15, 23, 42, 0.08) !important;
@@ -695,20 +715,24 @@
 }
 
 .heroPanelLight .panelTitle {
-  color: var(--text-default) !important;
+  color: #ffffff !important;
+  font-weight: 700;
 }
 
 .heroPanelLight .tempsHeader {
-  color: var(--text-default) !important;
-  opacity: 0.8;
+  color: #ffffff !important;
+  opacity: 1;
+  font-weight: 700;
 }
 
 .heroPanelLight .tempCity {
-  color: var(--text-muted) !important;
+  color: #ffffff !important;
+  font-weight: 600;
 }
 
 .heroPanelLight .tempVal {
-  color: var(--text-default) !important;
+  color: #ffffff !important;
+  font-weight: 700;
 }
 
 .heroPanelLight .dstat {
@@ -717,7 +741,8 @@
 }
 
 .heroPanelLight .dstatLabel {
-  color: var(--text-muted) !important;
+  color: #000000 !important;
+  font-weight: 600;
 }
 
 /* Categories Section styles */
