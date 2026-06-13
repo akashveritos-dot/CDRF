@@ -42,11 +42,39 @@ export default function EventPage() {
   });
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // Recalculate dropdown position on window resize / scroll when open
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    const recalc = () => {
+      if (triggerRef.current && window.innerWidth <= 768) {
+        const rect = triggerRef.current.getBoundingClientRect();
+        setDropdownStyle({
+          position: 'fixed',
+          top: `${rect.bottom + 6}px`,
+          left: `${rect.left}px`,
+          width: `${rect.width}px`,
+          zIndex: 9999,
+        });
+      } else {
+        setDropdownStyle({});
+      }
+    };
+    recalc();
+    window.addEventListener('resize', recalc);
+    window.addEventListener('scroll', recalc, true);
+    return () => {
+      window.removeEventListener('resize', recalc);
+      window.removeEventListener('scroll', recalc, true);
+    };
+  }, [dropdownOpen]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -361,8 +389,24 @@ export default function EventPage() {
                   <div className={styles.customDropdown} ref={dropdownRef}>
                     <button
                       type="button"
+                      ref={triggerRef}
                       className={styles.dropdownTrigger}
-                      onClick={() => setDropdownOpen(!dropdownOpen)}
+                      onClick={() => {
+                        const next = !dropdownOpen;
+                        if (next && triggerRef.current && window.innerWidth <= 768) {
+                          const rect = triggerRef.current.getBoundingClientRect();
+                          setDropdownStyle({
+                            position: 'fixed',
+                            top: `${rect.bottom + 6}px`,
+                            left: `${rect.left}px`,
+                            width: `${rect.width}px`,
+                            zIndex: 9999,
+                          });
+                        } else {
+                          setDropdownStyle({});
+                        }
+                        setDropdownOpen(next);
+                      }}
                       aria-label="Select attendance mode"
                       aria-expanded={dropdownOpen}
                       disabled={isSubmitting}
@@ -386,7 +430,7 @@ export default function EventPage() {
                       />
                     </button>
                     {isMounted && dropdownOpen && (
-                      <div className={styles.dropdownMenu}>
+                      <div className={styles.dropdownMenu} style={dropdownStyle}>
                         {attendanceOptions.map((option) => (
                           <button
                             key={option.value}
