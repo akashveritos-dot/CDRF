@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
     }
 
     const session = await verifyToken(token);
-    if (!session || session.role !== 'ADMIN') {
+    if (!session || (session.role !== 'ADMIN' && session.role !== 'SUPERADMIN')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -120,7 +120,7 @@ export async function DELETE(req: NextRequest) {
     }
 
     const session = await verifyToken(token);
-    if (!session || session.role !== 'ADMIN') {
+    if (!session || (session.role !== 'ADMIN' && session.role !== 'SUPERADMIN')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

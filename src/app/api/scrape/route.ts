@@ -32,7 +32,7 @@ async function handleScrapeTrigger(req: NextRequest) {
       const token = cookieStore.get('auth_token')?.value;
       if (token) {
         const session = await verifyToken(token);
-        if (session && session.role === 'ADMIN') {
+        if (session && (session.role === 'ADMIN' || session.role === 'SUPERADMIN')) {
           authorized = true;
         }
       }

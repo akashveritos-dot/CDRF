@@ -15,7 +15,10 @@ import {
   Menu,
   X,
   UserCog,
-  Mail
+  Mail,
+  Award,
+  Calendar,
+  Megaphone
 } from 'lucide-react';
 import styles from './layout.module.css';
 import './admin-theme.css';
@@ -66,6 +69,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: 'Dashboard', path: '/admin', icon: <LayoutDashboard size={18} /> },
     { name: 'Manage News', path: '/admin/news', icon: <Newspaper size={18} /> },
     { name: 'Manage Reports', path: '/admin/reports', icon: <FileArchive size={18} /> },
+    { name: 'Manage Councils', path: '/admin/councils', icon: <Award size={18} /> },
+    { name: 'Conclave Registrations', path: '/admin/events', icon: <Calendar size={18} /> },
+    { name: 'Live Alert Ticker', path: '/admin/alerts', icon: <Megaphone size={18} /> },
     { name: 'Memberships', path: '/admin/memberships', icon: <Users size={18} /> },
     { name: 'Subscriptions', path: '/admin/subscriptions', icon: <Mail size={18} /> },
     { name: 'Scraper Queue', path: '/admin/scrape', icon: <Radio size={18} /> }

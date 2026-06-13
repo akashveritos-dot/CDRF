@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './page.module.css';
 import { councilMembers } from '@/data/dataStore';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
@@ -63,6 +63,25 @@ function CouncilCard({ member, isHighlight, getBadgeClass }: CouncilCardProps) {
 }
 
 export default function CouncilPage() {
+  const [members, setMembers] = useState<any[]>(councilMembers);
+
+  useEffect(() => {
+    async function loadMembers() {
+      try {
+        const res = await fetch('/api/councils');
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setMembers(data);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to fetch council members dynamically:', err);
+      }
+    }
+    loadMembers();
+  }, []);
+
   const getBadgeClass = (color?: string) => {
     switch (color) {
       case 'gold': return styles.badgeGold;
@@ -84,7 +103,7 @@ export default function CouncilPage() {
 
       {/* Leadership Profile Cards Grid */}
       <div className={styles.grid}>
-        {councilMembers.map((member, idx) => {
+        {members.map((member, idx) => {
           const isHighlight = member.id === 'bm'; // Highlight convener card
           return (
             <ScrollReveal

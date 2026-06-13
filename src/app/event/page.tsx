@@ -24,12 +24,14 @@ export default function EventPage() {
   const [activeTab, setActiveTab] = useState('Day 1');
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [isRegistered, setIsRegistered] = useState(false);
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     company: '',
     designation: '',
-    role: 'Delegate'
+    role: 'In-Person Delegate'
   });
 
   // Calculate live countdown to Nov 26, 2026
@@ -57,10 +59,31 @@ export default function EventPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.name && formData.email && formData.company) {
+    setError('');
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('/api/events/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          company: formData.company,
+          designation: formData.designation,
+          role: formData.role
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to register interest');
+
       setIsRegistered(true);
+    } catch (err: any) {
+      setError(err.message || 'Failed to submit registration. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -220,6 +243,25 @@ export default function EventPage() {
                 Apply for in-person passes or virtual live streaming links for the New Delhi conclave.
               </p>
 
+              {error && (
+                <div style={{
+                  backgroundColor: 'rgba(239, 68, 68, 0.08)',
+                  border: '1px solid rgba(239, 68, 68, 0.15)',
+                  color: '#f87171',
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  marginBottom: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontWeight: 500
+                }}>
+                  <Shield size={16} />
+                  <span>{error}</span>
+                </div>
+              )}
+
               <div className={styles.formGrid}>
                 {/* Name */}
                 <div className={styles.formGroup}>
@@ -232,6 +274,7 @@ export default function EventPage() {
                     className={styles.input}
                     value={formData.name}
                     onChange={handleInputChange}
+                    disabled={isSubmitting}
                   />
                 </div>
 
@@ -246,6 +289,7 @@ export default function EventPage() {
                     className={styles.input}
                     value={formData.email}
                     onChange={handleInputChange}
+                    disabled={isSubmitting}
                   />
                 </div>
 
@@ -260,6 +304,7 @@ export default function EventPage() {
                     className={styles.input}
                     value={formData.company}
                     onChange={handleInputChange}
+                    disabled={isSubmitting}
                   />
                 </div>
 
@@ -273,10 +318,11 @@ export default function EventPage() {
                     className={styles.input}
                     value={formData.designation}
                     onChange={handleInputChange}
+                    disabled={isSubmitting}
                   />
                 </div>
 
-                {/* Role dropdown */}
+                {/* Choose Conclave Attendance Mode */}
                 <div className={`${styles.formGroup} ${styles.fieldFull}`}>
                   <label className={styles.label}>Choose Conclave Attendance Mode</label>
                   <select
@@ -284,6 +330,7 @@ export default function EventPage() {
                     className={styles.select}
                     value={formData.role}
                     onChange={handleInputChange}
+                    disabled={isSubmitting}
                   >
                     <option value="In-Person Delegate">In-Person Delegate (India International Centre)</option>
                     <option value="Virtual Delegate">Virtual Delegate (Live Web Stream)</option>
@@ -293,8 +340,13 @@ export default function EventPage() {
                 </div>
 
                 {/* Submit button */}
-                <button type="submit" className={`${styles.submitBtn} ${styles.fieldFull}`}>
-                  Register Interest
+                <button 
+                  type="submit" 
+                  disabled={isSubmitting}
+                  className={`${styles.submitBtn} ${styles.fieldFull}`}
+                  style={{ opacity: isSubmitting ? 0.8 : 1 }}
+                >
+                  {isSubmitting ? 'Registering...' : 'Register Interest'}
                 </button>
               </div>
             </form>

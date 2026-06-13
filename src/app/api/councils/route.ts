@@ -1,24 +1,12 @@
-import { NextResponse } from 'next/server';
-import mysql from 'mysql2/promise';
+import { NextRequest, NextResponse } from 'next/server';
+import { query } from '@/lib/db';
+import { verifyToken } from '@/lib/auth';
+import { cookies } from 'next/headers';
 
-// Database connection configuration
-const dbConfig = {
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '3306'),
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'dcrf_db'
-};
-
+// GET /api/councils - Fetch all active council members (Public)
 export async function GET() {
-  let connection;
-  
   try {
-    // Create database connection
-    connection = await mysql.createConnection(dbConfig);
-    
-    // Query to fetch all active council members
-    const [rows] = await connection.execute(
+    const rows = await query<any[]>(
       `SELECT 
         id,
         name,
@@ -29,29 +17,23 @@ export async function GET() {
         bio,
         linkedin_url as linkedinUrl,
         organization,
-        display_order as displayOrder
+        display_order as displayOrder,
+        is_active as isActive
       FROM councils 
       WHERE is_active = TRUE 
       ORDER BY display_order ASC`
     );
     
-    await connection.end();
-    
-    return NextResponse.json(rows);
-    
-  } catch (error) {
-    console.error('Database error fetching councils:', error);
-    
-    // Close connection if it exists
-    if (connection) {
-      try {
-        await connection.end();
-      } catch (closeError) {
-        console.error('Error closing connection:', closeError);
+    return new NextResponse(JSON.stringify(rows), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store'
       }
-    }
+    });
     
-    // Return error response
+  } catch (error: any) {
+    console.error('Database error fetching councils:', error);
     return NextResponse.json(
       { error: 'Failed to fetch council members' },
       { status: 500 }
@@ -59,22 +41,32 @@ export async function GET() {
   }
 }
 
-// POST endpoint to add a new council member
-export async function POST(request: Request) {
-  let connection;
-  
+// POST /api/councils - Add a new council member (Admin Secured)
+export async function POST(req: NextRequest) {
   try {
-    const body = await request.json();
+    const cookieStore = await cookies();
+    const token = cookieStore.get('auth_token')?.value;
+
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const session = await verifyToken(token);
+    if (!session || (session.role !== 'ADMIN' && session.role !== 'SUPERADMIN')) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const body = await req.json();
     const {
       id,
       name,
       role,
       roleBadgeColor = 'default',
       avatarInitials,
-      profileImage,
+      profileImage = '',
       bio,
-      linkedinUrl,
-      organization,
+      linkedinUrl = '',
+      organization = '',
       displayOrder = 0
     } = body;
     
@@ -86,31 +78,27 @@ export async function POST(request: Request) {
       );
     }
     
-    connection = await mysql.createConnection(dbConfig);
+    // Check if ID already exists
+    const existing = await query<any[]>('SELECT id FROM councils WHERE id = ?', [id]);
+    if (existing.length > 0) {
+      return NextResponse.json(
+        { error: `Council member with ID "${id}" already exists.` },
+        { status: 400 }
+      );
+    }
     
     // Insert new council member
-    await connection.execute(
+    await query(
       `INSERT INTO councils 
         (id, name, role, role_badge_color, avatar_initials, profile_image, bio, linkedin_url, organization, display_order) 
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [id, name, role, roleBadgeColor, avatarInitials, profileImage, bio, linkedinUrl, organization, displayOrder]
     );
     
-    await connection.end();
-    
     return NextResponse.json({ success: true, message: 'Council member added successfully' });
     
-  } catch (error) {
+  } catch (error: any) {
     console.error('Database error adding council member:', error);
-    
-    if (connection) {
-      try {
-        await connection.end();
-      } catch (closeError) {
-        console.error('Error closing connection:', closeError);
-      }
-    }
-    
     return NextResponse.json(
       { error: 'Failed to add council member' },
       { status: 500 }

@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
     }
 
     const session = await verifyToken(token);
-    if (!session || session.role !== 'ADMIN') {
+    if (!session || (session.role !== 'ADMIN' && session.role !== 'SUPERADMIN')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
