@@ -25,10 +25,42 @@ export default function ChatAssistant() {
   const [isLoading, setIsLoading] = useState(false);
   const [streamContent, setStreamContent] = useState('');
   const [showTooltip, setShowTooltip] = useState(true);
+  const [typewriterText, setTypewriterText] = useState('');
 
+  const latestStreamRef = useRef('');
+  const typewriterLengthRef = useRef(0);
   const pathname = usePathname();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Typewriter effect to make stream rendering smooth character-by-character
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout | null = null;
+    if (isLoading) {
+      setTypewriterText('');
+      typewriterLengthRef.current = 0;
+      intervalId = setInterval(() => {
+        const target = latestStreamRef.current;
+        setTypewriterText((prev) => {
+          if (prev.length < target.length) {
+            const remaining = target.length - prev.length;
+            const step = remaining > 40 ? 6 : (remaining > 15 ? 3 : 1);
+            const nextText = target.substring(0, prev.length + step);
+            typewriterLengthRef.current = nextText.length;
+            return nextText;
+          }
+          return prev;
+        });
+      }, 20);
+    } else {
+      setTypewriterText('');
+      typewriterLengthRef.current = 0;
+      latestStreamRef.current = '';
+    }
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [isLoading]);
 
   // Initialize welcome message
   useEffect(() => {
@@ -41,12 +73,12 @@ export default function ChatAssistant() {
     ]);
   }, []);
 
-  // Scroll to bottom
+  // Scroll to bottom (only when messages count changes or chat is opened)
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, streamContent, isOpen]);
+  }, [messages, isOpen]);
 
   // Focus input
   useEffect(() => {
@@ -73,6 +105,10 @@ export default function ChatAssistant() {
       role: m.role,
       content: m.content
     }));
+
+    // Reset typewriter state
+    latestStreamRef.current = '';
+    typewriterLengthRef.current = 0;
 
     try {
       const response = await fetch('/api/chat', {
@@ -109,6 +145,7 @@ export default function ChatAssistant() {
               const data = JSON.parse(line.trim().substring(6));
               if (data.type === 'content') {
                 accumulatedContent += data.content;
+                latestStreamRef.current = accumulatedContent;
                 setStreamContent(accumulatedContent);
               } else if (data.type === 'error') {
                 throw new Error(data.content);
@@ -118,6 +155,11 @@ export default function ChatAssistant() {
             }
           }
         }
+      }
+
+      // Wait for typewriter to fully catch up to the accumulated text
+      while (typewriterLengthRef.current < accumulatedContent.length) {
+        await new Promise((resolve) => setTimeout(resolve, 30));
       }
 
       const assistantMessage: Message = {
@@ -322,16 +364,16 @@ export default function ChatAssistant() {
             ))}
 
             {/* Streaming Message */}
-            {isLoading && streamContent && (
+            {isLoading && typewriterText && (
               <div className={`${styles.messageRow} ${styles.messageRowAssistant}`}>
                 <div className={`${styles.bubble} ${styles.bubbleAssistant}`}>
-                  {renderMessageText(streamContent)}
+                  {renderMessageText(typewriterText)}
                 </div>
               </div>
             )}
 
             {/* Loading Indicator */}
-            {isLoading && !streamContent && (
+            {isLoading && !typewriterText && (
               <div className={`${styles.messageRow} ${styles.messageRowAssistant}`}>
                 <div className={`${styles.bubble} ${styles.bubbleAssistant}`}>
                   <div className={styles.typingIndicator}>
