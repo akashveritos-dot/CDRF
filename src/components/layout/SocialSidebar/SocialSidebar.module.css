@@ -1,69 +1,110 @@
 .socialSidebar {
   position: fixed;
-  left: 0;
+  left: 24px;
   top: 50%;
   transform: translateY(-50%);
   z-index: 9999;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: visible !important;
 }
 
 .socialContainer {
   display: flex;
   flex-direction: column;
-  gap: 0;
-  background: #ffffff;
-  border-radius: 0 16px 16px 0;
-  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15), 
-              0 8px 32px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-left: none;
+  gap: 20px;
+  padding: 16px 14px;
+  transition: all 0.3s ease;
+  overflow: visible !important;
+  position: relative;
+  z-index: 1;
+}
+
+/* 
+  Background glass effect on a pseudo-element. 
+  This fixes a WebKit/Blink bug where combining backdrop-filter 
+  with border-radius on the parent container clips all absolutely-positioned children.
+*/
+.socialContainer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 9999px;
+  box-shadow: 
+    0 4px 6px -1px rgba(15, 23, 42, 0.03),
+    0 20px 40px -15px rgba(15, 23, 42, 0.08),
+    0 0 0 1px rgba(15, 23, 42, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  transition: all 0.3s ease;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Subtly glow/shadow container on hover */
+.socialContainer:hover::before {
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 
+    0 10px 15px -3px rgba(15, 23, 42, 0.05),
+    0 25px 50px -12px rgba(15, 23, 42, 0.12),
+    0 0 0 1px rgba(15, 23, 42, 0.03);
+}
+
+.socialItem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible !important;
 }
 
 .socialLink {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  padding: 16px;
-  gap: 12px;
+  justify-content: center;
   text-decoration: none;
-  color: #ffffff;
-  background: var(--social-color);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--social-color);
+  background: transparent !important;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
-  overflow: hidden;
-  min-width: 56px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: visible !important;
+  width: 44px;
+  height: 44px;
+  border-radius: 0;
+  box-shadow: none !important;
 }
 
-.socialLink:last-child {
-  border-bottom: none;
+.brandSvg {
+  width: 34px;
+  height: 34px;
+  transition: all 0.3s ease;
+  display: block;
 }
 
-.socialLink::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 0;
-  height: 100%;
-  background: linear-gradient(90deg, 
-    rgba(255, 255, 255, 0.2), 
-    rgba(255, 255, 255, 0.1)
-  );
-  transition: width 0.4s ease;
-  z-index: 0;
+/* Hover effects triggered by hovering the wrapper item */
+.socialItem:hover .socialLink {
+  color: var(--social-color) !important;
+  transform: scale(1.18) translateY(-2px);
+  background: transparent !important;
+  box-shadow: none !important;
+  animation: iconGlow 1.5s infinite ease-in-out;
 }
 
-.socialLink:hover::before {
-  width: 100%;
-}
-
-.socialLink:hover {
-  background: var(--social-hover-color);
-  padding-right: 24px;
-  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.15);
-  transform: translateX(4px);
+/* Pulsing SVG glow direct drop shadow */
+@keyframes iconGlow {
+  0% {
+    filter: drop-shadow(0 2px 3px var(--social-glow));
+  }
+  50% {
+    filter: drop-shadow(0 6px 12px var(--social-glow));
+  }
+  100% {
+    filter: drop-shadow(0 2px 3px var(--social-glow));
+  }
 }
 
 .iconWrapper {
@@ -71,152 +112,137 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  position: relative;
-  z-index: 1;
   transition: transform 0.3s ease;
+  z-index: 1;
 }
 
-.socialLink:hover .iconWrapper {
-  transform: scale(1.15) rotate(5deg);
+.socialItem:hover .iconWrapper {
+  transform: scale(1.05) rotate(3deg);
 }
 
+/* Premium Floating Tooltip */
 .socialLabel {
-  font-size: 14px;
+  position: absolute;
+  left: calc(100% + 18px);
+  top: 50%;
+  transform: translateY(-50%) translateX(-8px);
+  background: var(--navy-dark);
+  color: var(--white);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
   white-space: nowrap;
   opacity: 0;
-  max-width: 0;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  position: relative;
-  z-index: 1;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-md);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 20;
+  max-width: none !important; /* Override global max-width constraints */
 }
 
-.socialLink:hover .socialLabel {
-  opacity: 1;
-  max-width: 120px;
-  margin-left: 4px;
-}
-
-/* Premium shine effect */
-.socialLink::after {
+/* Tooltip arrow pointing left */
+.socialLabel::before {
   content: '';
   position: absolute;
-  top: -50%;
-  right: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent,
-    rgba(255, 255, 255, 0.1),
-    transparent
-  );
-  transform: rotate(45deg);
-  animation: shine 3s infinite;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent var(--navy-dark) transparent transparent;
 }
 
-@keyframes shine {
-  0% {
-    transform: translateX(-100%) translateY(-100%) rotate(45deg);
-  }
-  100% {
-    transform: translateX(100%) translateY(100%) rotate(45deg);
-  }
+.socialItem:hover .socialLabel {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
 }
 
 /* Tablet styles */
 @media (max-width: 1024px) {
   .socialSidebar {
-    left: 0;
+    left: 16px;
   }
 
   .socialContainer {
-    border-radius: 0 12px 12px 0;
+    padding: 12px 10px;
+    gap: 16px;
   }
 
   .socialLink {
-    padding: 14px;
+    width: 36px;
+    height: 36px;
   }
 
-  .iconWrapper svg {
-    width: 22px;
-    height: 22px;
-  }
-
-  .socialLabel {
-    font-size: 13px;
+  .brandSvg {
+    width: 28px;
+    height: 28px;
   }
 }
 
-/* Mobile styles - smaller and compact */
+/* Mobile styles - horizontal dock centered at the bottom */
 @media (max-width: 768px) {
   .socialSidebar {
-    left: 0;
+    left: 50%;
     top: auto;
     bottom: 20px;
-    transform: none;
+    transform: translateX(-50%);
   }
 
   .socialContainer {
-    border-radius: 0 8px 8px 0;
-    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
+    flex-direction: row;
+    padding: 10px 20px;
+    gap: 20px;
+    border-radius: 9999px;
+  }
+
+  .socialContainer::before {
+    border-radius: 9999px;
+    border: 1px solid rgba(15, 23, 42, 0.04);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    background: rgba(255, 255, 255, 0.85);
   }
 
   .socialLink {
-    padding: 8px 8px;
-    min-width: 36px;
+    width: 32px;
+    height: 32px;
   }
 
-  .iconWrapper svg {
-    width: 18px;
-    height: 18px;
+  .brandSvg {
+    width: 24px;
+    height: 24px;
   }
 
   .socialLabel {
-    display: none;
+    display: none !important;
   }
 
-  .socialLink:hover {
-    padding-right: 8px;
-    transform: translateX(0);
-  }
-  
-  .socialLink:hover .socialLabel {
-    opacity: 0;
-    max-width: 0;
+  .socialItem:hover .socialLink {
+    transform: scale(1.15) translateY(-2px);
   }
 }
 
 /* Extra small mobile */
 @media (max-width: 480px) {
   .socialSidebar {
-    bottom: 15px;
+    bottom: 16px;
   }
 
   .socialContainer {
-    border-radius: 0 6px 6px 0;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
+    padding: 8px 14px;
+    gap: 14px;
   }
 
   .socialLink {
-    padding: 7px 6px;
-    min-width: 32px;
+    width: 28px;
+    height: 28px;
   }
 
-  .iconWrapper svg {
-    width: 16px;
-    height: 16px;
-  }
-
-  .socialLabel {
-    display: none;
-  }
-  
-  .socialLink:hover {
-    padding-right: 6px;
-    transform: translateX(0);
+  .brandSvg {
+    width: 22px;
+    height: 22px;
   }
 }

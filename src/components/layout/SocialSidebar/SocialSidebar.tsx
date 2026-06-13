@@ -9,23 +9,26 @@ const SocialSidebar = () => {
     {
       name: 'LinkedIn',
       url: 'https://www.linkedin.com/company/disaster-and-climate-resilience-federation/',
-      icon: <Linkedin size={24} />,
+      icon: <Linkedin className={styles.brandSvg} strokeWidth={1.5} />,
       color: '#0A66C2',
-      hoverColor: '#004182'
+      hoverColor: '#004182',
+      glow: 'rgba(10, 102, 194, 0.5)'
     },
     {
       name: 'Facebook',
       url: 'https://www.facebook.com/thecsruniverse.official/',
-      icon: <Facebook size={24} />,
+      icon: <Facebook className={styles.brandSvg} strokeWidth={1.5} />,
       color: '#1877F2',
-      hoverColor: '#0C63D4'
+      hoverColor: '#0C63D4',
+      glow: 'rgba(24, 119, 242, 0.5)'
     },
     {
       name: 'YouTube',
       url: 'https://www.youtube.com/@thecsruniverse',
-      icon: <Youtube size={24} />,
+      icon: <Youtube className={styles.brandSvg} strokeWidth={1.5} />,
       color: '#FF0000',
-      hoverColor: '#CC0000'
+      hoverColor: '#CC0000',
+      glow: 'rgba(255, 0, 0, 0.5)'
     }
   ];
 
@@ -33,25 +36,27 @@ const SocialSidebar = () => {
     <div className={styles.socialSidebar}>
       <div className={styles.socialContainer}>
         {socialLinks.map((social) => (
-          <a
-            key={social.name}
-            href={social.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.socialLink}
-            style={
-              {
-                '--social-color': social.color,
-                '--social-hover-color': social.hoverColor
-              } as React.CSSProperties
-            }
-            aria-label={`Visit our ${social.name} page`}
-          >
-            <div className={styles.iconWrapper}>
-              {social.icon}
-            </div>
+          <div key={social.name} className={styles.socialItem}>
+            <a
+              href={social.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.socialLink}
+              style={
+                {
+                  '--social-color': social.color,
+                  '--social-hover-color': social.hoverColor,
+                  '--social-glow': social.glow
+                } as React.CSSProperties
+              }
+              aria-label={`Visit our ${social.name} page`}
+            >
+              <div className={styles.iconWrapper}>
+                {social.icon}
+              </div>
+            </a>
             <span className={styles.socialLabel}>{social.name}</span>
-          </a>
+          </div>
         ))}
       </div>
     </div>
