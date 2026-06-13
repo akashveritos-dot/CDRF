@@ -37,6 +37,7 @@ export default function AdminLoginPage() {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Ensure cookies are sent
         body: JSON.stringify({ email, password })
       });
 
@@ -46,10 +47,10 @@ export default function AdminLoginPage() {
         throw new Error(data.error || 'Login failed');
       }
 
-      router.push('/admin');
+      // Success - force a full page reload to ensure cookies are set
+      window.location.href = '/admin';
     } catch (err: any) {
       setError(err.message || 'Invalid administrator credentials');
-    } finally {
       setIsLoading(false);
     }
   };
