@@ -1,10 +1,66 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import styles from './page.module.css';
 import { councilMembers } from '@/data/dataStore';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
 import { Linkedin } from 'lucide-react';
+
+interface CouncilCardProps {
+  member: any;
+  isHighlight: boolean;
+  getBadgeClass: (color?: string) => string;
+}
+
+function CouncilCard({ member, isHighlight, getBadgeClass }: CouncilCardProps) {
+  const [imageError, setImageError] = useState(false);
+
+  return (
+    <div className={`${styles.card} ${isHighlight ? styles.highlightCard : ''}`}>
+      <div className={styles.profileHeader}>
+        <div className={`${styles.avatar} ${isHighlight ? styles.avatarGold : ''}`}>
+          {member.profileImage && !imageError ? (
+            <img
+              src={member.profileImage}
+              alt={member.name}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                borderRadius: '50%'
+              }}
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            member.avatarInitials
+          )}
+        </div>
+        <div className={styles.identity}>
+          <h3>{member.name}</h3>
+          <span className={`${styles.badge} ${getBadgeClass(member.roleBadgeColor)}`}>
+            {member.role}
+          </span>
+        </div>
+      </div>
+
+      <p className={styles.bio}>{member.bio}</p>
+
+      {member.linkedinUrl ? (
+        <a
+          href={member.linkedinUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.linkedin}
+        >
+          <Linkedin size={12} fill="currentColor" stroke="none" />
+          LinkedIn Profile
+        </a>
+      ) : (
+        <span className={styles.orgMuted}>{member.organization}</span>
+      )}
+    </div>
+  );
+}
 
 export default function CouncilPage() {
   const getBadgeClass = (color?: string) => {
@@ -36,35 +92,11 @@ export default function CouncilPage() {
               direction="up"
               delay={0.05 * idx}
             >
-              <div className={`${styles.card} ${isHighlight ? styles.highlightCard : ''}`}>
-                <div className={styles.profileHeader}>
-                  <div className={`${styles.avatar} ${isHighlight ? styles.avatarGold : ''}`}>
-                    {member.avatarInitials}
-                  </div>
-                  <div className={styles.identity}>
-                    <h3>{member.name}</h3>
-                    <span className={`${styles.badge} ${getBadgeClass(member.roleBadgeColor)}`}>
-                      {member.role}
-                    </span>
-                  </div>
-                </div>
-
-                <p className={styles.bio}>{member.bio}</p>
-
-                {member.linkedinUrl ? (
-                  <a
-                    href={member.linkedinUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={styles.linkedin}
-                  >
-                    <Linkedin size={12} fill="currentColor" stroke="none" />
-                    LinkedIn Profile
-                  </a>
-                ) : (
-                  <span className={styles.orgMuted}>{member.organization}</span>
-                )}
-              </div>
+              <CouncilCard
+                member={member}
+                isHighlight={isHighlight}
+                getBadgeClass={getBadgeClass}
+              />
             </ScrollReveal>
           );
         })}

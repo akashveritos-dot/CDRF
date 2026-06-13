@@ -1,10 +1,21 @@
 'use client';
 
-import React from 'react';
-import { Linkedin, Facebook, Youtube } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Linkedin, Facebook, Youtube, ChevronRight, ChevronLeft } from 'lucide-react';
 import styles from './SocialSidebar.module.css';
 
 const SocialSidebar = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [shouldWiggle, setShouldWiggle] = useState(false);
+
+  useEffect(() => {
+    // Trigger wiggle animation after 3 seconds to guide the mobile user
+    const timer = setTimeout(() => {
+      setShouldWiggle(true);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
   const socialLinks = [
     {
       name: 'LinkedIn',
@@ -33,7 +44,21 @@ const SocialSidebar = () => {
   ];
 
   return (
-    <div className={styles.socialSidebar}>
+    <div className={`${styles.socialSidebar} ${isOpen ? styles.isOpen : ''} ${shouldWiggle ? styles.shouldWiggle : ''}`}>
+      {/* Mobile drawer toggle handle */}
+      <button
+        className={styles.mobileToggle}
+        onClick={() => {
+          setIsOpen(!isOpen);
+          setShouldWiggle(false); // Stop attention animation once interacted
+        }}
+        aria-label={isOpen ? "Close social drawer" : "Open social drawer"}
+      >
+        <span className={styles.toggleArrow}>
+          {isOpen ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
+        </span>
+      </button>
+
       <div className={styles.socialContainer}>
         {socialLinks.map((social) => (
           <div key={social.name} className={styles.socialItem}>
