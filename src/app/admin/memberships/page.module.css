@@ -430,3 +430,72 @@
 .saveBtn:disabled {
   opacity: 0.6;
 }
+
+/* ── Mobile Responsive ────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .page {
+    gap: 16px;
+  }
+
+  .titleBlock h1 {
+    font-size: 20px;
+  }
+
+  .controls {
+    padding: 16px;
+  }
+
+  .filters {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .tableWrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table {
+    min-width: 620px;
+  }
+
+  .table th,
+  .table td {
+    padding: 12px 14px;
+  }
+
+  .modal {
+    max-width: 100%;
+    margin: 0 8px;
+    border-radius: 12px;
+  }
+
+  .modalOverlay {
+    padding: 12px;
+    align-items: flex-end;
+  }
+
+  .modalActions {
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+
+  .cancelBtn,
+  .saveBtn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .titleBlock h1 {
+    font-size: 18px;
+  }
+
+  .tierBadge,
+  .statusBadge {
+    font-size: 9px;
+    padding: 3px 6px;
+  }
+}
+

@@ -435,3 +435,77 @@
 .saveBtn:disabled {
   opacity: 0.6;
 }
+
+/* ── Mobile Responsive ────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .page {
+    gap: 16px;
+  }
+
+  .titleBlock h1 {
+    font-size: 20px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .card {
+    padding: 16px;
+  }
+
+  .radioGroup {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .modal {
+    max-width: 100%;
+    margin: 0 8px;
+    border-radius: 12px;
+  }
+
+  .modalOverlay {
+    padding: 12px;
+    align-items: flex-end;
+  }
+
+  .formRow {
+    grid-template-columns: 1fr;
+  }
+
+  .modalActions {
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+
+  .cancelBtn,
+  .saveBtn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .titleBlock h1 {
+    font-size: 18px;
+  }
+
+  .cardFooter {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .actionRow {
+    width: 100%;
+  }
+
+  .rejectBtn,
+  .approveBtn {
+    flex: 1;
+    justify-content: center;
+  }
+}
+

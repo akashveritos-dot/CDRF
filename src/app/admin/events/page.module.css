@@ -343,3 +343,58 @@
   font-size: 13px;
   max-width: 320px;
 }
+
+/* ── Mobile Responsive ────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .page {
+    gap: 16px;
+  }
+
+  .titleBlock {
+    gap: 10px;
+  }
+
+  .titleBlock h1 {
+    font-size: 20px;
+  }
+
+  .controls {
+    padding: 16px;
+  }
+
+  .filters {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .tableWrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table {
+    min-width: 640px;
+  }
+
+  .table th,
+  .table td {
+    padding: 12px 14px;
+  }
+
+  .actionCell {
+    gap: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .titleBlock h1 {
+    font-size: 18px;
+  }
+
+  .roleBadge,
+  .statusBadge {
+    font-size: 10px;
+    padding: 3px 7px;
+  }
+}
+

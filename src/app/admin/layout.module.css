@@ -201,6 +201,7 @@
   background-color: #050811;
   min-height: 100vh;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .contentInner {
@@ -229,7 +230,7 @@
 
   .content {
     margin-left: 0;
-    padding: 24px;
+    padding: 16px;
     padding-top: 80px;
   }
 
@@ -278,5 +279,17 @@
     background-color: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(4px);
     z-index: 45;
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: 12px;
+    padding-top: 76px;
+  }
+
+  .mobileHeader {
+    height: 56px;
+    padding: 0 16px;
   }
 }
