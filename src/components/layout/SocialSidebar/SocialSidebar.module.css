@@ -187,30 +187,30 @@
 @media (max-width: 768px) {
   .socialSidebar {
     left: 0;
-    top: 50%;
+    top: 62%;
     transform: translateY(-50%);
     bottom: auto;
   }
 
   .socialContainer {
     flex-direction: column;
-    padding: 10px 8px 10px 6px;
-    gap: 12px;
+    padding: 6px 5px 6px 3px;
+    gap: 8px;
   }
 
   .socialContainer::before {
-    border-radius: 0 16px 16px 0;
+    border-radius: 0 12px 12px 0;
     border-left: none;
   }
 
   .socialLink {
-    width: 34px;
-    height: 34px;
+    width: 28px;
+    height: 28px;
   }
 
   .brandSvg {
-    width: 22px;
-    height: 22px;
+    width: 16px;
+    height: 16px;
   }
 
   .socialLabel {
@@ -226,26 +226,28 @@
 @media (max-width: 480px) {
   .socialSidebar {
     left: 0;
+    top: 62%;
   }
 
   .socialContainer {
-    padding: 8px 6px 8px 4px;
-    gap: 10px;
+    padding: 4px 4px 4px 2px;
+    gap: 6px;
   }
 
   .socialContainer::before {
-    border-radius: 0 12px 12px 0;
+    border-radius: 0 8px 8px 0;
   }
 
   .socialLink {
-    width: 30px;
-    height: 30px;
+    width: 24px;
+    height: 24px;
   }
 
   .brandSvg {
-    width: 20px;
-    height: 20px;
+    width: 14px;
+    height: 14px;
   }
 }
+
 
 

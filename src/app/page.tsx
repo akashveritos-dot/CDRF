@@ -20,20 +20,20 @@ import ClimateGauge from '@/components/insights/ClimateGauge/ClimateGauge';
 import LossChart from '@/components/insights/LossChart/LossChart';
 import DonutChart from '@/components/insights/DonutChart/DonutChart';
 import Heatmap from '@/components/insights/Heatmap/Heatmap';
-import { 
-  Shield, 
-  ArrowRight, 
-  Calendar, 
-  Users, 
-  FileText, 
-  Globe, 
-  Waves, 
-  Flame, 
-  Wind, 
-  Mountain, 
-  Droplets, 
-  Activity, 
-  AlertTriangle, 
+import {
+  Shield,
+  ArrowRight,
+  Calendar,
+  Users,
+  FileText,
+  Globe,
+  Waves,
+  Flame,
+  Wind,
+  Mountain,
+  Droplets,
+  Activity,
+  AlertTriangle,
   ExternalLink,
   BookOpen,
   Thermometer,
@@ -151,23 +151,23 @@ export default function Home() {
               const weatherData = await weatherRes.json();
               if (Array.isArray(weatherData)) {
                 const updatedTemps = [
-                  { 
-                    city: 'Chennai', 
+                  {
+                    city: 'Chennai',
                     temp: Math.round(weatherData[0].current.temperature_2m),
                     percentage: Math.round((weatherData[0].current.temperature_2m / 50) * 100)
                   },
-                  { 
-                    city: 'Delhi', 
+                  {
+                    city: 'Delhi',
                     temp: Math.round(weatherData[1].current.temperature_2m),
                     percentage: Math.round((weatherData[1].current.temperature_2m / 50) * 100)
                   },
-                  { 
-                    city: 'Kolkata', 
+                  {
+                    city: 'Kolkata',
                     temp: Math.round(weatherData[2].current.temperature_2m),
                     percentage: Math.round((weatherData[2].current.temperature_2m / 50) * 100)
                   },
-                  { 
-                    city: 'Mumbai', 
+                  {
+                    city: 'Mumbai',
                     temp: Math.round(weatherData[3].current.temperature_2m),
                     percentage: Math.round((weatherData[3].current.temperature_2m / 50) * 100)
                   }
@@ -281,7 +281,7 @@ export default function Home() {
       {/* HERO SECTION - REDESIGNED PREMIUM LIGHT THEME */}
       <section className={styles.hero}>
         <div className={styles.heroBg} />
-        
+
         <div className={styles.heroContent}>
           <ScrollReveal direction="up" delay={0.1}>
             <div className={styles.heroEyebrow}>
@@ -313,15 +313,15 @@ export default function Home() {
           {/* Right Climate Widget Panel - Light Glassmorphic */}
           <ScrollReveal direction="left" delay={0.3}>
             <div className={`${styles.heroPanel} ${styles.heroPanelLight}`} style={{ padding: '0', overflow: 'hidden' }}>
-              
+
               <div style={{ position: 'relative', height: '120px', width: '100%', overflow: 'hidden' }}>
-                <img 
-                  src="/climate_radar_dashboard.png" 
-                  alt="DCRF India Climate Radar Monitor" 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 1, filter: 'brightness(1.2)' }} 
+                <img
+                  src="/climate_radar_dashboard.png"
+                  alt="DCRF India Climate Radar Monitor"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 1, filter: 'brightness(1.2)' }}
                 />
               </div>
-              
+
               <div style={{ padding: '24px 28px 28px' }}>
                 <div className={styles.panelTitle}>
                   <span className="pulse-dot sonar-emitter">
@@ -329,15 +329,14 @@ export default function Home() {
                   </span>
                   India Climate Monitor • Live telemetry
                 </div>
-                
+
                 <div className={styles.dstatGrid}>
                   {stats.map((stat) => (
                     <div key={stat.id} className={styles.dstat}>
-                      <div className={`${styles.dstatNum} ${
-                        stat.type === 'red' ? styles.numRed : 
-                        stat.type === 'amber' ? styles.numAmber : 
-                        stat.type === 'teal' ? styles.numTeal : styles.numBlue
-                      }`}>
+                      <div className={`${styles.dstatNum} ${stat.type === 'red' ? styles.numRed :
+                        stat.type === 'amber' ? styles.numAmber :
+                          stat.type === 'teal' ? styles.numTeal : styles.numBlue
+                        }`}>
                         <CountUp end={stat.count} suffix={stat.suffix} decimals={stat.count % 1 !== 0 ? 1 : 0} />
                       </div>
                       <div className={styles.dstatLabel}>{stat.label}</div>
@@ -351,8 +350,8 @@ export default function Home() {
                     <div key={city.city} className={styles.tempRow}>
                       <span className={styles.tempCity}>{city.city}</span>
                       <div className={styles.tempBarWrap}>
-                        <motion.div 
-                          className={styles.tempBarFill} 
+                        <motion.div
+                          className={styles.tempBarFill}
                           initial={{ width: 0 }}
                           whileInView={{ width: `${city.percentage}%` }}
                           viewport={{ once: true }}
@@ -424,13 +423,12 @@ export default function Home() {
                     </div>
                     <div className={styles.barTrack}>
                       <motion.div
-                        className={`${styles.barFill} ${
-                          (item.class_name || item.class) === 'bf-floods' ? styles.bfFloods :
+                        className={`${styles.barFill} ${(item.class_name || item.class) === 'bf-floods' ? styles.bfFloods :
                           (item.class_name || item.class) === 'bf-heat' ? styles.bfHeat :
-                          (item.class_name || item.class) === 'bf-cyclone' ? styles.bfCyclone :
-                          (item.class_name || item.class) === 'bf-land' ? styles.bfLand :
-                          (item.class_name || item.class) === 'bf-drought' ? styles.bfDrought : styles.bfQuake
-                        }`}
+                            (item.class_name || item.class) === 'bf-cyclone' ? styles.bfCyclone :
+                              (item.class_name || item.class) === 'bf-land' ? styles.bfLand :
+                                (item.class_name || item.class) === 'bf-drought' ? styles.bfDrought : styles.bfQuake
+                          }`}
                         initial={{ width: 0 }}
                         whileInView={{ width: item.percentage }}
                         viewport={{ once: true }}
@@ -487,9 +485,9 @@ export default function Home() {
                 <ScrollReveal key={story.id} direction="up" delay={idx * 0.1}>
                   <div className={styles.feedCard}>
                     <div className={styles.feedCardImgWrapper}>
-                      <img 
-                        src={story.image_url || fallbackImg} 
-                        alt={story.headline} 
+                      <img
+                        src={story.image_url || fallbackImg}
+                        alt={story.headline}
                         className={styles.feedCardImg}
                         onError={(e) => { (e.target as HTMLImageElement).src = fallbackImg; }}
                       />
@@ -511,10 +509,10 @@ export default function Home() {
                       </div>
                       <h3 className={styles.feedCardTitle}>{story.headline}</h3>
                       <p className={styles.feedCardExcerpt}>{story.excerpt}</p>
-                      <a 
-                        href={story.external_link || '#'} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
+                      <a
+                        href={story.external_link || '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className={styles.feedCardBtn}
                       >
                         Read Original Article
@@ -560,7 +558,7 @@ export default function Home() {
                   <div className={styles.reportCategoryBadge}>{report.category}</div>
                   <h3>{report.title}</h3>
                   <p className={styles.reportDesc}>{report.description}</p>
-                  
+
                   <div className={styles.reportMetaGrid}>
                     <div>
                       <strong>Source:</strong> <span>{report.source || 'DCRF'}</span>
@@ -575,11 +573,11 @@ export default function Home() {
                       <strong>Severity:</strong> <span>{report.severity_level || 'Medium'}</span>
                     </div>
                   </div>
-                  
+
                   <div className={styles.reportFooter}>
                     <span className={styles.reportPages}>{report.year} • {report.page_count} pages</span>
-                    <a 
-                      href={report.download_url || '#'} 
+                    <a
+                      href={report.download_url || '#'}
                       className={styles.reportDownloadBtn}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -696,15 +694,15 @@ export default function Home() {
           {councilMembers.map((member, idx) => {
             const isHighlight = member.id === 'bm';
             const [imageError, setImageError] = React.useState(false);
-            
+
             return (
               <ScrollReveal key={member.id} direction="up" delay={0.05 * idx}>
                 <div className={`${styles.councilCard} ${isHighlight ? styles.councilCardHighlight : ''}`}>
                   <div className={styles.councilProfileHeader}>
                     <div className={`${styles.councilAvatar} ${isHighlight ? styles.councilAvatarGold : ''}`}>
                       {member.profileImage && !imageError ? (
-                        <img 
-                          src={member.profileImage} 
+                        <img
+                          src={member.profileImage}
                           alt={member.name}
                           style={{
                             width: '100%',
@@ -720,10 +718,9 @@ export default function Home() {
                     </div>
                     <div className={styles.councilIdentity}>
                       <h3>{member.name}</h3>
-                      <span className={`${styles.councilBadge} ${
-                        member.roleBadgeColor === 'gold' ? styles.councilBadgeGold :
+                      <span className={`${styles.councilBadge} ${member.roleBadgeColor === 'gold' ? styles.councilBadgeGold :
                         member.roleBadgeColor === 'finance' ? styles.councilBadgeFinance : ''
-                      }`}>
+                        }`}>
                         {member.role}
                       </span>
                     </div>
@@ -777,3 +774,4 @@ export default function Home() {
     </div>
   );
 }
+
