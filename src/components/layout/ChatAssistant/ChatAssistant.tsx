@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
-import { MessageSquare, X, Send } from 'lucide-react';
+import { MessageSquare, X, Send, Sparkles } from 'lucide-react';
 import styles from './ChatAssistant.module.css';
 
 interface Message {
@@ -377,7 +377,12 @@ export default function ChatAssistant() {
       {/* Floating Greeting Tooltip */}
       {!isOpen && showTooltip && (
         <div className={styles.greetingTooltip} onClick={() => setIsOpen(true)}>
-          <span className={styles.tooltipText}>👋 Need help? Ask how to join DCRF or get passes!</span>
+          <div className={styles.tooltipContent}>
+            <div className={styles.aiIconWrapper}>
+              <Sparkles size={11} className={styles.aiIcon} />
+            </div>
+            <span className={styles.tooltipText}>Need help? Ask about memberships or conclave passes!</span>
+          </div>
           <button
             className={styles.tooltipClose}
             onClick={(e) => {
@@ -386,7 +391,7 @@ export default function ChatAssistant() {
             }}
             aria-label="Dismiss tooltip"
           >
-            <X size={10} />
+            <X size={11} />
           </button>
           <div className={styles.tooltipArrow} />
         </div>
