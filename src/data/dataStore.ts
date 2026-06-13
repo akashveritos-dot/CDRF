@@ -376,6 +376,7 @@ export const councilMembers: CouncilMember[] = [
     name: 'Mr. Ashish Jha',
     role: 'Secretary General, DCRF',
     avatarInitials: 'AJ',
+    profileImage: '/councils/ashish-jha.jpg',
     bio: 'Founder of TheCSRUniverse and Chief Advisor — Strategy & Growth. 19+ years in media, communications and social impact. Has built India’s leading CSR and sustainability media platform, and co-created flagship events CASCA and SICA. Formerly at Press Trust of India, Exchange4media and Careers360.',
     linkedinUrl: 'https://www.linkedin.com/in/ashish-jha-2020'
   },
@@ -392,6 +393,7 @@ export const councilMembers: CouncilMember[] = [
     name: 'Mr. Govind Kumar',
     role: 'Deputy Secretary General, DCRF',
     avatarInitials: 'GK',
+    profileImage: '/councils/govind-kumar.jpg',
     bio: 'Deputy Secretary General of DCRF and primary operational point of contact for TCUIF in the federation. Drives day-to-day coordination of the DCRF Secretariat, member engagement and cross-partner communications. Deeply engaged in DCRF’s knowledge, events and outreach agenda.',
     linkedinUrl: 'https://www.linkedin.com/in/govind1729/'
   },
