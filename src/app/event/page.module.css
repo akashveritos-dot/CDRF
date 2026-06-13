@@ -457,9 +457,21 @@
     font-size: 9px;
   }
   .registerSec {
-    padding: 24px 16px;
+    padding: 20px 14px;
+    border-radius: var(--radius-md);
   }
   .regFormTitle {
-    font-size: 22px;
+    font-size: 18px;
+    letter-spacing: -0.5px;
+  }
+  .formGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .submitBtn {
+    width: 100%;
+    padding: 12px;
+    font-size: 13px;
+    margin-top: 6px;
   }
 }
