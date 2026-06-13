@@ -7,13 +7,33 @@ import styles from './Footer.module.css';
 export default function Footer() {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const [subscribedMessage, setSubscribedMessage] = useState('✓ Thank you for subscribing!');
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
     if (email.trim()) {
-      setSubscribed(true);
-      setEmail('');
-      setTimeout(() => setSubscribed(false), 5000);
+      try {
+        const response = await fetch('/api/subscriptions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email })
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.alreadyExists) {
+            setSubscribedMessage('You are already subscribed!');
+          } else {
+            setSubscribedMessage('✓ Thank you for subscribing!');
+          }
+          setSubscribed(true);
+          setEmail('');
+          setTimeout(() => setSubscribed(false), 5000);
+        }
+      } catch (error) {
+        console.error('Failed to subscribe:', error);
+      }
     }
   };
 
@@ -30,7 +50,7 @@ export default function Footer() {
             <h4>Subscribe to Policy Briefs</h4>
             {subscribed ? (
               <p style={{ color: 'var(--red-light)', fontSize: '13px', fontWeight: 600 }}>
-                ✓ Thank you for subscribing!
+                {subscribedMessage}
               </p>
             ) : (
               <form onSubmit={handleSubscribe} className={styles.formGroup}>

@@ -279,6 +279,10 @@
     display: none;
   }
 
+  .subscribeBtn {
+    display: none;
+  }
+
   .hamburger {
     display: block;
   }
@@ -291,4 +295,209 @@
     padding: 80px 24px 24px;
     gap: 16px;
   }
+}
+
+/* Subscribe buttons styling */
+.subscribeBtn {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+  padding: 8px 20px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  animation: floatSubscribe 1.8s ease-in-out infinite;
+}
+
+@keyframes floatSubscribe {
+  0% {
+    transform: translateY(0);
+    border-color: var(--border-color);
+    box-shadow: none;
+  }
+  50% {
+    transform: translateY(-4px);
+    border-color: var(--red-primary);
+    box-shadow: 0 4px 12px rgba(192, 57, 43, 0.22);
+  }
+  100% {
+    transform: translateY(0);
+    border-color: var(--border-color);
+    box-shadow: none;
+  }
+}
+
+.subscribeBtn:hover {
+  border-color: var(--red-primary);
+  color: var(--red-primary);
+  box-shadow: 0 4px 12px rgba(192, 57, 43, 0.12);
+}
+
+.drawerSubscribeBtn {
+  text-align: center;
+  background: transparent;
+  color: var(--text-default);
+  border: 1px solid var(--border-color);
+  padding: 14px 28px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.drawerSubscribeBtn:hover {
+  border-color: var(--red-primary);
+  color: var(--red-primary);
+}
+
+/* Glassmorphic Subscription Modal */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(10, 20, 36, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.modalOverlayActive {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.modal {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 40px;
+  width: 90%;
+  max-width: 440px;
+  box-shadow: var(--shadow-premium);
+  position: relative;
+  transform: scale(0.9);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modalOverlayActive .modal {
+  transform: scale(1);
+}
+
+.modalClose {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: color var(--transition-fast);
+}
+
+.modalClose:hover {
+  color: var(--red-primary);
+}
+
+.modalTitle {
+  font-family: var(--font-display);
+  font-size: 24px;
+  color: var(--text-default);
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.modalDesc {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.modalForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.formLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-default);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.formInput {
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: var(--bg-default);
+  color: var(--text-default);
+  font-size: 14px;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.formInput:focus {
+  border-color: var(--red-primary);
+}
+
+.modalSubmit {
+  margin-top: 8px;
+  background: var(--red-primary);
+  color: var(--text-inverse);
+  border: none;
+  padding: 14px 28px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  box-shadow: 0 4px 12px rgba(192, 57, 43, 0.2);
+}
+
+.modalSubmit:hover {
+  background: var(--red-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(192, 57, 43, 0.3);
+}
+
+.successMessage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  padding: 20px 0;
+}
+
+.successTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-default);
+}
+
+.successDesc {
+  font-size: 14px;
+  color: var(--text-muted);
 }

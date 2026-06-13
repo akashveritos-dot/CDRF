@@ -14,7 +14,8 @@ import {
   Globe,
   Menu,
   X,
-  UserCog
+  UserCog,
+  Mail
 } from 'lucide-react';
 import styles from './layout.module.css';
 import './admin-theme.css';
@@ -66,6 +67,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: 'Manage News', path: '/admin/news', icon: <Newspaper size={18} /> },
     { name: 'Manage Reports', path: '/admin/reports', icon: <FileArchive size={18} /> },
     { name: 'Memberships', path: '/admin/memberships', icon: <Users size={18} /> },
+    { name: 'Subscriptions', path: '/admin/subscriptions', icon: <Mail size={18} /> },
     { name: 'Scraper Queue', path: '/admin/scrape', icon: <Radio size={18} /> }
   ];
 

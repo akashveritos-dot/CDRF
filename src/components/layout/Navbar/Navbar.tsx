@@ -107,6 +107,56 @@ export default function Navbar() {
     return pathname.startsWith(path);
   };
 
+  const [isSubscribeOpen, setIsSubscribeOpen] = useState(false);
+  const [subName, setSubName] = useState('');
+  const [subEmail, setSubEmail] = useState('');
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [subLoading, setSubLoading] = useState(false);
+  const [subError, setSubError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
+
+  const handleModalSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubError('');
+    setSubLoading(true);
+
+    try {
+      const response = await fetch('/api/subscriptions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email: subEmail, name: subName })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.alreadyExists) {
+          setSubError(data.message);
+        } else {
+          setSuccessMsg('You have successfully subscribed to the DCRF Policy Briefs and newsletter updates.');
+          setIsSubmitted(true);
+          setSubName('');
+          setSubEmail('');
+        }
+      } else {
+        const errData = await response.json();
+        setSubError(errData.error || 'Failed to subscribe');
+      }
+    } catch (err) {
+      setSubError('An unexpected error occurred. Please try again.');
+    } finally {
+      setSubLoading(false);
+    }
+  };
+
+  const closeSubscribeModal = () => {
+    setIsSubscribeOpen(false);
+    setIsSubmitted(false);
+    setSubError('');
+    setSuccessMsg('');
+  };
+
   return (
     <>
       <nav className={`${styles.navbar} ${scrolled ? styles.scrolled : ''} ${!visible ? styles.hidden : ''}`}>
@@ -129,6 +179,9 @@ export default function Navbar() {
               {link.name}
             </Link>
           ))}
+          <button onClick={() => setIsSubscribeOpen(true)} className={styles.subscribeBtn}>
+            Subscribe
+          </button>
           <Link href="/membership#join" className={styles.cta}>
             Join DCRF
           </Link>
@@ -151,6 +204,16 @@ export default function Navbar() {
               {link.name}
             </Link>
           ))}
+          <button
+            onClick={() => {
+              setIsSubscribeOpen(true);
+              closeMenu();
+            }}
+            className={styles.drawerSubscribeBtn}
+            style={{ width: '100%', marginTop: '10px' }}
+          >
+            Subscribe
+          </button>
           <Link href="/membership#join" className={styles.drawerCta} onClick={closeMenu}>
             Join DCRF
           </Link>
@@ -162,6 +225,74 @@ export default function Navbar() {
           onClick={closeMenu}
         />
       </nav>
+
+      {/* Subscription Modal */}
+      <div
+        className={`${styles.modalOverlay} ${isSubscribeOpen ? styles.modalOverlayActive : ''}`}
+        onClick={closeSubscribeModal}
+      >
+        <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+          <button className={styles.modalClose} onClick={closeSubscribeModal} aria-label="Close modal">
+            <X size={20} />
+          </button>
+
+          {isSubmitted ? (
+            <div className={styles.successMessage}>
+              <div style={{ fontSize: '40px', color: 'var(--red-primary)' }}>✓</div>
+              <h4 className={styles.successTitle}>Thank You!</h4>
+              <p className={styles.successDesc}>
+                {successMsg}
+              </p>
+              <button onClick={closeSubscribeModal} className={styles.modalSubmit} style={{ minWidth: '120px' }}>
+                Close
+              </button>
+            </div>
+          ) : (
+            <>
+              <h3 className={styles.modalTitle}>Subscribe to DCRF</h3>
+              <p className={styles.modalDesc}>
+                Stay updated with the latest disaster briefs, policy guidelines, and climate action notifications.
+              </p>
+              
+              <form onSubmit={handleModalSubscribe} className={styles.modalForm}>
+                <label className={styles.formLabel}>
+                  Full Name
+                  <input
+                    type="text"
+                    className={styles.formInput}
+                    placeholder="e.g. Rahul Sharma"
+                    value={subName}
+                    onChange={(e) => setSubName(e.target.value)}
+                    required
+                  />
+                </label>
+
+                <label className={styles.formLabel}>
+                  Email Address
+                  <input
+                    type="email"
+                    className={styles.formInput}
+                    placeholder="name@organization.org"
+                    value={subEmail}
+                    onChange={(e) => setSubEmail(e.target.value)}
+                    required
+                  />
+                </label>
+
+                {subError && (
+                  <p style={{ color: 'var(--red-primary)', fontSize: '12px', fontWeight: 600, marginTop: '4px' }}>
+                    ⚠️ {subError}
+                  </p>
+                )}
+
+                <button type="submit" disabled={subLoading} className={styles.modalSubmit}>
+                  {subLoading ? 'Subscribing...' : 'Submit Subscription'}
+                </button>
+              </form>
+            </>
+          )}
+        </div>
+      </div>
     </>
   );
 }

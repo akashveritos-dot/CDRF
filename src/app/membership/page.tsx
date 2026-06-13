@@ -80,7 +80,7 @@ const tierOptions = [
 ];
 
 export default function MembershipPage() {
-  const { success } = useToast();
+  const { success, warning } = useToast();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -131,11 +131,19 @@ export default function MembershipPage() {
           throw new Error('Application submission failed');
         }
 
-        setIsSubmitted(true);
-        success(
-          'Application Logged',
-          `Your request for ${formData.tier} tier is staged for review.`
-        );
+        const data = await res.json();
+        if (data.alreadyExists) {
+          warning(
+            'Already Applied',
+            data.message || 'This email is already registered for membership.'
+          );
+        } else {
+          setIsSubmitted(true);
+          success(
+            'Application Logged',
+            `Your request for ${formData.tier} tier is staged for review.`
+          );
+        }
       } catch (err) {
         console.error('Membership form error:', err);
         alert('Failed to submit application. Please try again later.');

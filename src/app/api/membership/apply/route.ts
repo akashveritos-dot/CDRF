@@ -15,13 +15,29 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const cleanEmail = email.toLowerCase().trim();
+
+    // Check if duplicate exists in memberships table
+    const existing = await query<any[]>(
+      'SELECT id FROM memberships WHERE email = ?',
+      [cleanEmail]
+    );
+
+    if (existing.length > 0) {
+      return NextResponse.json({
+        success: true,
+        alreadyExists: true,
+        message: 'This email is already registered for membership.'
+      });
+    }
+
     // Insert into memberships table
     const result = await query<any>(
       `INSERT INTO memberships (name, email, organization, title, tier, message, status, pay_status) 
        VALUES (?, ?, ?, ?, ?, ?, 'Pending', 'Unpaid')`,
       [
         name,
-        email,
+        cleanEmail,
         organization,
         title || '',
         tier,

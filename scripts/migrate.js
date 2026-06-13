@@ -56,6 +56,47 @@ async function migrate() {
 
     // Verify and patch existing tables if needed
     try {
+      await conn.query(`
+        CREATE TABLE IF NOT EXISTS subscriptions (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          name VARCHAR(255) DEFAULT NULL,
+          email VARCHAR(255) NOT NULL UNIQUE,
+          created_at DATETIME NOT NULL,
+          updated_at DATETIME NOT NULL
+        ) ENGINE=InnoDB;
+      `);
+      console.log('Verified or created subscriptions table.');
+    } catch (err) {
+      console.warn('Could not create subscriptions table:', err.message);
+    }
+
+    // Safely create indexes
+    try {
+      await conn.query('CREATE INDEX idx_news_category_date ON news (category, published_date);');
+      console.log('Created index idx_news_category_date');
+    } catch (err) {}
+    try {
+      await conn.query('CREATE INDEX idx_news_published_date ON news (published_date);');
+      console.log('Created index idx_news_published_date');
+    } catch (err) {}
+    try {
+      await conn.query('CREATE INDEX idx_reports_category_year ON reports (category, year);');
+      console.log('Created index idx_reports_category_year');
+    } catch (err) {}
+    try {
+      await conn.query('CREATE INDEX idx_reports_year ON reports (year);');
+      console.log('Created index idx_reports_year');
+    } catch (err) {}
+    try {
+      await conn.query('CREATE INDEX idx_scraped_status_date ON scraped_content (status, scrape_date);');
+      console.log('Created index idx_scraped_status_date');
+    } catch (err) {}
+    try {
+      await conn.query('CREATE INDEX idx_subscriptions_email ON subscriptions (email);');
+      console.log('Created index idx_subscriptions_email');
+    } catch (err) {}
+
+    try {
       await conn.query('ALTER TABLE scraped_content ADD COLUMN image_url VARCHAR(512) DEFAULT NULL;');
       console.log('Added image_url column to scraped_content table.');
     } catch (err) {}

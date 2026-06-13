@@ -299,12 +299,18 @@ ON DUPLICATE KEY UPDATE intensity=VALUES(intensity);
 
 
 -- ==========================================
--- PERFORMANCE TUNING INDEXES
+-- PERFORMANCE TUNING INDEXES (created dynamically in migrate.js)
 -- ==========================================
-CREATE INDEX idx_news_category_date ON news (category, published_date);
-CREATE INDEX idx_news_published_date ON news (published_date);
-CREATE INDEX idx_reports_category_year ON reports (category, year);
-CREATE INDEX idx_reports_year ON reports (year);
-CREATE INDEX idx_scraped_status_date ON scraped_content (status, scrape_date);
+
+-- 14. Subscriptions Table
+CREATE TABLE IF NOT EXISTS subscriptions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) DEFAULT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL
+) ENGINE=InnoDB;
+
+
 
 
