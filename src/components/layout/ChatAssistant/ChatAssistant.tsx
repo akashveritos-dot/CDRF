@@ -24,6 +24,7 @@ export default function ChatAssistant() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [streamContent, setStreamContent] = useState('');
+  const [showTooltip, setShowTooltip] = useState(true);
 
   const pathname = usePathname();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -279,12 +280,7 @@ export default function ChatAssistant() {
         <div className={styles.chatWindow}>
           {/* Header */}
           <div className={styles.header}>
-            <div className={styles.headerBrand}>
-              <div className={styles.title}>Resilience AI Assistant</div>
-              <div className={styles.locationBadge}>
-                Watching: {getPageTitle(pathname || '/')}
-              </div>
-            </div>
+            <div className={styles.title}>DCRF Assistant</div>
             <button className={styles.closeButton} onClick={() => setIsOpen(false)} aria-label="Close Chat">
               <X size={16} />
             </button>
@@ -375,6 +371,24 @@ export default function ChatAssistant() {
               <Send size={14} />
             </button>
           </form>
+        </div>
+      )}
+
+      {/* Floating Greeting Tooltip */}
+      {!isOpen && showTooltip && (
+        <div className={styles.greetingTooltip} onClick={() => setIsOpen(true)}>
+          <span className={styles.tooltipText}>👋 Need help? Ask how to join DCRF or get passes!</span>
+          <button
+            className={styles.tooltipClose}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowTooltip(false);
+            }}
+            aria-label="Dismiss tooltip"
+          >
+            <X size={10} />
+          </button>
+          <div className={styles.tooltipArrow} />
         </div>
       )}
 

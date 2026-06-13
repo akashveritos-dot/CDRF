@@ -25,21 +25,39 @@
   transition: transform var(--transition-spring), box-shadow var(--transition-base), background var(--transition-base);
   position: relative;
   outline: none;
+  /* Idle nudge animation to draw user's eye periodically */
+  animation: idleNudge 8s infinite ease-in-out;
+}
+
+@keyframes idleNudge {
+  0%, 90%, 100% { transform: scale(1); }
+  92% { transform: scale(1.1) rotate(-8deg); }
+  94% { transform: scale(1.1) rotate(8deg); }
+  96% { transform: scale(1.1) rotate(-4deg); }
+  98% { transform: scale(1.1) rotate(0deg); }
 }
 
 .floatingButton:hover {
-  transform: scale(1.08);
   box-shadow: 0 12px 28px rgba(153, 27, 27, 0.45), var(--shadow-md);
   background: linear-gradient(135deg, var(--gold-light) 0%, #E03B2C 100%);
+  /* Playful wiggle on hover */
+  animation: wiggle 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes wiggle {
+  0% { transform: scale(1.08) rotate(-5deg); }
+  100% { transform: scale(1.08) rotate(5deg); }
 }
 
 .floatingButtonActive {
   background: var(--navy-primary);
   box-shadow: var(--shadow-premium);
+  animation: none; /* Disable idle wiggle when open */
 }
 .floatingButtonActive:hover {
   background: var(--navy-hover);
   box-shadow: var(--shadow-premium);
+  animation: none; /* Disable hover wiggle when open */
 }
 
 /* Sonar Pulse Animation */
@@ -348,6 +366,81 @@
   transform: none;
 }
 
+/* Floating Greeting Tooltip Bubble */
+.greetingTooltip {
+  position: absolute;
+  right: 62px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 230px;
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  box-shadow: 0 4px 14px -2px rgba(15, 23, 42, 0.12), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  cursor: pointer;
+  z-index: 9998;
+  animation: fadeInTooltip 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.greetingTooltip:hover {
+  transform: translateY(-52%) scale(1.02);
+  box-shadow: 0 6px 18px -2px rgba(15, 23, 42, 0.16), 0 3px 8px -1px rgba(15, 23, 42, 0.06);
+}
+
+@keyframes fadeInTooltip {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+}
+
+.tooltipText {
+  font-size: 11px;
+  color: var(--text-default);
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.tooltipClose {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border-radius: var(--radius-xs);
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.tooltipClose:hover {
+  color: var(--text-default);
+  background: rgba(15, 23, 42, 0.06);
+}
+
+.tooltipArrow {
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 6px solid rgba(255, 255, 255, 0.98);
+}
+
 /* Responsive Overrides */
 @media (max-width: 480px) {
   .chatWindow {
@@ -364,5 +457,35 @@
   .chatWidget {
     bottom: 16px;
     right: 16px;
+  }
+  .greetingTooltip {
+    right: 0;
+    bottom: 60px;
+    top: auto;
+    transform: none;
+    width: 200px;
+    animation: fadeInTooltipMobile 0.4s ease-out both;
+  }
+  .greetingTooltip:hover {
+    transform: scale(1.02);
+  }
+  @keyframes fadeInTooltipMobile {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .tooltipArrow {
+    right: 20px;
+    bottom: -6px;
+    top: auto;
+    transform: none;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid rgba(255, 255, 255, 0.98);
   }
 }

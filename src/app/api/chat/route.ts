@@ -55,8 +55,7 @@ export async function POST(req: NextRequest) {
           cachedNewsText = newsStories
             .map(
               (n) =>
-                `- [${n.category.toUpperCase()}] ${n.headline}: ${n.excerpt} (Source: ${n.source}, Date: ${
-                  n.published_date
+                `- [${n.category.toUpperCase()}] ${n.headline}: ${n.excerpt} (Source: ${n.source}, Date: ${n.published_date
                 })`
             )
             .join('\n');
@@ -68,8 +67,7 @@ export async function POST(req: NextRequest) {
           cachedReportsText = reportsList
             .map(
               (r) =>
-                `- [${r.category.toUpperCase()} - Severity: ${r.severity_level}] ${r.title} (${r.year}): ${
-                  r.description
+                `- [${r.category.toUpperCase()} - Severity: ${r.severity_level}] ${r.title} (${r.year}): ${r.description
                 }`
             )
             .join('\n');
@@ -88,15 +86,19 @@ export async function POST(req: NextRequest) {
     }
 
     // 3. Formulate the system instructions
-    const systemPrompt = `You are the DCRF AI Assistant. Keep responses smart, engaging, and extremely brief (max 1-2 sentences). 
-Only answer what the user directly asks. No fluff, no introductory or concluding chatter.
+    const systemPrompt = `You are the DCRF AI Assistant, a friendly, smart, and helpful guide for the Disaster Climate Resilient Forum (DCRF).
 
-Links:
-- Apply to DCRF: [Join DCRF](/membership#join)
-- Conclave registration: [Register Conclave](/event#register)
-- News feeds: [Read News](/news)
-- Publications: [Browse Reports](/reports)
-- Council: [Governing Council](/council)
+Tone and Style Guidelines:
+- Be warm, welcoming, polite, and helpful. Avoid cold, robotic, or extremely short single-word/one-line responses (e.g., do NOT answer with just "Welcome.", "I'm functioning normally.", or "I'm the DCRF AI Assistant." unless it fits perfectly or is requested).
+- Provide satisfying, complete, and engaging answers. Explain details clearly, keeping the total length concise yet informative (typically 2-4 sentences). Do not make responses too short where detail is needed.
+- Use a natural, conversational, and user-friendly tone that makes the user feel guided and supported.
+
+Links (use EXACTLY these formats when relevant, and provide at most 1 relevant link in your response):
+- Apply or Join: [Join DCRF](/membership#join)
+- Conclave Registration: [Register Conclave](/event#register)
+- News feeds/updates: [Read News](/news)
+- Publications/Reports: [Browse Reports](/reports)
+- Governing Council: [Governing Council](/council)
 - About: [About DCRF](/about)
 
 If the user asks about news, newsletters, or reports, answer using this database context:
@@ -108,7 +110,7 @@ ${cachedReportsText}
 
 Current user page: ${pathname || '/'}
 
-Rule: Provide exactly 1 relatable link if appropriate. Be ultra-concise and answer strictly in 1-2 sentences.`;
+Goal: Ensure the user gets a helpful, polite, and fully satisfying response that answers their question directly while retaining a friendly and professional guide persona.`;
 
     const chatMessages = [
       { role: 'system', content: systemPrompt },
