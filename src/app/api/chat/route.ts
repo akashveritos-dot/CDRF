@@ -4,14 +4,12 @@ import { query } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
-const isProduction = process.env.NODE_ENV === 'production' || !!process.env.NVIDIA_API_KEY;
+const useNvidia = !!process.env.NVIDIA_API_KEY;
 
-// Use local Ollama in dev, cloud Nvidia in production (Vercel)
+// Use local Ollama in dev, cloud Nvidia in production when NVIDIA_API_KEY is configured
 const client = new OpenAI({
-  apiKey: isProduction
-    ? (process.env.NVIDIA_API_KEY || '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')
-    : 'ollama',
-  baseURL: isProduction
+  apiKey: process.env.NVIDIA_API_KEY || 'ollama',
+  baseURL: useNvidia
     ? 'https://integrate.api.nvidia.com/v1'
     : 'http://127.0.0.1:11434/v1',
 });
@@ -124,7 +122,7 @@ Goal: Ensure the user gets a helpful, polite, and fully satisfying response that
       async start(controller) {
         try {
           const completion: any = await client.chat.completions.create({
-            model: isProduction ? 'meta/llama-3.1-8b-instruct' : 'llama3.1:8b',
+            model: useNvidia ? 'meta/llama-3.1-8b-instruct' : 'llama3.1:8b',
             messages: chatMessages,
             temperature: 0.7,
             top_p: 0.95,
