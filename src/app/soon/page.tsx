@@ -24,6 +24,18 @@ export default function ComingSoonPage() {
   const [isLive, setIsLive] = useState(false);
   const [tabExpanded, setTabExpanded] = useState(false);
 
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+
+  const interestOptions = [
+    "Excited supporter",
+    "Volunteer",
+    "Organization",
+    "Partner",
+    "Early supporter / investor",
+    "Media / press"
+  ];
+
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
 
@@ -255,6 +267,17 @@ export default function ComingSoonPage() {
       clearTimeout(openTimer);
       clearTimeout(closeTimer);
     };
+  }, []);
+
+  // 8. Custom Select Click-Outside Effect
+  useEffect(() => {
+    const clickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", clickOutside);
+    return () => document.removeEventListener("mousedown", clickOutside);
   }, []);
 
   return (
@@ -1008,16 +1031,6 @@ export default function ComingSoonPage() {
           overflow: hidden; 
         }
 
-        .coming-soon-wrapper .form-card::before { 
-          content: ""; 
-          position: absolute; 
-          top: 0; 
-          left: 0; 
-          right: 0; 
-          height: 2px; 
-          background: linear-gradient(90deg,var(--ember),var(--hazard),var(--alert)); 
-        }
-
         .coming-soon-wrapper .field-row { 
           margin-bottom: 1.15rem; 
         }
@@ -1432,6 +1445,107 @@ export default function ComingSoonPage() {
           }
         }
 
+        /* ===== Custom Select Dropdown UI ===== */
+        .coming-soon-wrapper .custom-select-container {
+          position: relative;
+          width: 100%;
+        }
+
+        .coming-soon-wrapper .custom-select-trigger {
+          width: 100%;
+          font-family: var(--body);
+          font-size: 16px;
+          padding: .85rem 1rem;
+          border-radius: 8px;
+          color: var(--muted-2);
+          background: rgba(243,238,229,.7);
+          border: 1px solid var(--line);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          cursor: pointer;
+          text-align: left;
+          transition: border-color .25s, background .25s, box-shadow .25s;
+        }
+
+        .coming-soon-wrapper .custom-select-trigger.has-val {
+          color: var(--ink);
+          font-weight: 500;
+        }
+
+        .coming-soon-wrapper .custom-select-trigger:focus,
+        .coming-soon-wrapper .custom-select-trigger.open {
+          outline: none;
+          border-color: var(--ember);
+          background: #fff;
+          box-shadow: 0 0 0 3px rgba(224,83,29,.15);
+        }
+
+        .coming-soon-wrapper .custom-select-trigger .chevron-icon {
+          color: var(--muted);
+          transition: transform .25s var(--ease);
+        }
+
+        .coming-soon-wrapper .custom-select-trigger.open .chevron-icon {
+          transform: rotate(180deg);
+        }
+
+        .coming-soon-wrapper .custom-select-options {
+          position: absolute;
+          top: calc(100% + 6px);
+          left: 0;
+          right: 0;
+          z-index: 10;
+          background: #FFFDF9;
+          border: 1px solid var(--line);
+          border-radius: 8px;
+          box-shadow: 0 12px 30px rgba(34,27,22,.12);
+          list-style: none;
+          padding: .4rem;
+          margin: 0;
+          overflow: hidden;
+          animation: slideSelectOptions .2s var(--ease) forwards;
+          transform-origin: top center;
+        }
+
+        @keyframes slideSelectOptions {
+          from {
+            opacity: 0;
+            transform: scaleY(.95);
+          }
+          to {
+            opacity: 1;
+            transform: scaleY(1);
+          }
+        }
+
+        .coming-soon-wrapper .custom-select-option {
+          padding: .75rem .85rem;
+          border-radius: 5px;
+          cursor: pointer;
+          font-size: .95rem;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          color: var(--muted);
+          transition: background .2s, color .2s;
+        }
+
+        .coming-soon-wrapper .custom-select-option:hover {
+          background: rgba(224,83,29,.07);
+          color: var(--ember);
+        }
+
+        .coming-soon-wrapper .custom-select-option.selected {
+          background: rgba(224,83,29,.1);
+          color: var(--ember);
+          font-weight: 600;
+        }
+
+        .coming-soon-wrapper .custom-select-option .check-icon {
+          color: var(--ember);
+        }
+
         /* ===== Reduced motion ===== */
         @media (prefers-reduced-motion: reduce) {
           .coming-soon-wrapper * { 
@@ -1680,23 +1794,47 @@ export default function ComingSoonPage() {
                     />
                   </div>
 
-                  <div className="field-row">
-                    <label htmlFor="f-interest">Area of interest</label>
-                    <select
-                      id="f-interest"
-                      name="interest"
-                      required
-                      value={interest}
-                      onChange={(e) => setInterest(e.target.value)}
-                    >
-                      <option value="" disabled>Select one…</option>
-                      <option value="Excited supporter">Excited supporter</option>
-                      <option value="Volunteer">Volunteer</option>
-                      <option value="Organization">Organization</option>
-                      <option value="Partner">Partner</option>
-                      <option value="Early supporter / investor">Early supporter / investor</option>
-                      <option value="Media / press">Media / press</option>
-                    </select>
+                  <div className="field-row" ref={dropdownRef}>
+                    <label id="l-interest">Area of interest</label>
+                    <div className="custom-select-container">
+                      <button
+                        type="button"
+                        className={`custom-select-trigger ${interest ? 'has-val' : ''} ${dropdownOpen ? 'open' : ''}`}
+                        onClick={() => setDropdownOpen(!dropdownOpen)}
+                        aria-haspopup="listbox"
+                        aria-expanded={dropdownOpen}
+                        aria-labelledby="l-interest"
+                      >
+                        <span>{interest || "Select one…"}</span>
+                        <svg className="chevron-icon" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                        </svg>
+                      </button>
+
+                      {dropdownOpen && (
+                        <ul className="custom-select-options" role="listbox" aria-labelledby="l-interest">
+                          {interestOptions.map((opt) => (
+                            <li
+                              key={opt}
+                              role="option"
+                              aria-selected={interest === opt}
+                              className={`custom-select-option ${interest === opt ? 'selected' : ''}`}
+                              onClick={() => {
+                                setInterest(opt);
+                                setDropdownOpen(false);
+                              }}
+                            >
+                              {opt}
+                              {interest === opt && (
+                                <svg className="check-icon" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                                </svg>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
                   </div>
 
                   <button type="submit" className="btn btn-primary" id="submitBtn" disabled={isSubmitting}>
