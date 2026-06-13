@@ -367,6 +367,7 @@ export const councilMembers: CouncilMember[] = [
     role: 'Convener, DCRF',
     roleBadgeColor: 'gold',
     avatarInitials: 'BM',
+    profileImage: '/councils/brijendra-kumar-mishra.jpg',
     bio: 'Specialist in Climate Change, Disaster Risk Management & Geospatial Technology. Former Consultant at NDMA, Senior Manager at MapmyIndia, and Researcher at DRDO & ICMR. Currently Associate Director — Climate & DRM at KPMG India. PhD with 15+ years spanning GIS, risk-vulnerability analysis and disaster resilience.',
     linkedinUrl: 'https://in.linkedin.com/in/dr-brijendra-kumar-mishra'
   },
@@ -408,6 +409,7 @@ export const councilMembers: CouncilMember[] = [
     role: 'Finance Controller & Treasurer',
     roleBadgeColor: 'finance',
     avatarInitials: 'RK',
+    profileImage: '/councils/ruchika-kumar.jpg',
     bio: 'Finance Controller and Treasurer of DCRF, and Steering Committee Member representing TCUIF. Oversees financial governance, revenue reconciliation and budgetary planning across all three pillars. Brings financial management expertise from the social impact and sustainability sector.',
     linkedinUrl: 'https://www.linkedin.com/in/ruchika-kumar-tcu'
   }

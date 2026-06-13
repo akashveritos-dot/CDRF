@@ -43,6 +43,7 @@ export interface CouncilMember {
   role: string;
   roleBadgeColor?: 'gold' | 'default' | 'finance';
   avatarInitials: string;
+  profileImage?: string;
   bio: string;
   linkedinUrl?: string;
   organization?: string;

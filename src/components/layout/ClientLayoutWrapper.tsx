@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import TickerBar from '@/components/layout/Ticker/TickerBar';
 import Navbar from '@/components/layout/Navbar/Navbar';
 import Footer from '@/components/layout/Footer/Footer';
+import SocialSidebar from '@/components/layout/SocialSidebar/SocialSidebar';
 
 export default function ClientLayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -18,6 +19,7 @@ export default function ClientLayoutWrapper({ children }: { children: React.Reac
     <>
       <TickerBar />
       <Navbar />
+      <SocialSidebar />
       <main>{children}</main>
       <Footer />
     </>

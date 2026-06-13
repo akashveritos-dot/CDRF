@@ -9,7 +9,7 @@ import {
   cityTemps as fallbackCityTemps,
   disasterEvents as fallbackDisasterEvents,
   partners,
-  councilMembers
+  councilMembers as fallbackCouncilMembers
 } from '@/data/dataStore';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
 import CountUp from '@/components/ui/CountUp/CountUp';
@@ -116,6 +116,7 @@ export default function Home() {
   const [lossesData, setLossesData] = useState<any[] | undefined>(undefined);
   const [shareData, setShareData] = useState<any[] | undefined>(undefined);
   const [heatmapData, setHeatmapData] = useState<number[][] | undefined>(undefined);
+  const [councilMembers, setCouncilMembers] = useState<any[]>(fallbackCouncilMembers);
 
   // Dynamic statistics, news, and reports
   const [homeStats, setHomeStats] = useState<any>({
@@ -200,9 +201,10 @@ export default function Home() {
 
     async function loadContent() {
       try {
-        const [newsRes, reportsRes] = await Promise.all([
+        const [newsRes, reportsRes, councilRes] = await Promise.all([
           fetch('/api/news'),
-          fetch('/api/reports')
+          fetch('/api/reports'),
+          fetch('/api/councils')
         ]);
         if (newsRes.ok) {
           const newsData = await newsRes.json();
@@ -211,6 +213,12 @@ export default function Home() {
         if (reportsRes.ok) {
           const reportsData = await reportsRes.json();
           setLatestReports(reportsData.slice(0, 3));
+        }
+        if (councilRes.ok) {
+          const councilData = await councilRes.json();
+          if (councilData && councilData.length > 0) {
+            setCouncilMembers(councilData);
+          }
         }
       } catch (err) {
         console.warn('Failed to fetch content feeds:', err);
@@ -306,7 +314,7 @@ export default function Home() {
           <ScrollReveal direction="left" delay={0.3}>
             <div className={`${styles.heroPanel} ${styles.heroPanelLight}`} style={{ padding: '0', overflow: 'hidden' }}>
               
-              <div style={{ position: 'relative', height: '180px', width: '100%', overflow: 'hidden' }}>
+              <div style={{ position: 'relative', height: '120px', width: '100%', overflow: 'hidden' }}>
                 <img 
                   src="/climate_radar_dashboard.png" 
                   alt="DCRF India Climate Radar Monitor" 
@@ -687,12 +695,28 @@ export default function Home() {
         <div className={styles.councilGrid}>
           {councilMembers.map((member, idx) => {
             const isHighlight = member.id === 'bm';
+            const [imageError, setImageError] = React.useState(false);
+            
             return (
               <ScrollReveal key={member.id} direction="up" delay={0.05 * idx}>
                 <div className={`${styles.councilCard} ${isHighlight ? styles.councilCardHighlight : ''}`}>
                   <div className={styles.councilProfileHeader}>
                     <div className={`${styles.councilAvatar} ${isHighlight ? styles.councilAvatarGold : ''}`}>
-                      {member.avatarInitials}
+                      {member.profileImage && !imageError ? (
+                        <img 
+                          src={member.profileImage} 
+                          alt={member.name}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            borderRadius: '50%'
+                          }}
+                          onError={() => setImageError(true)}
+                        />
+                      ) : (
+                        member.avatarInitials
+                      )}
                     </div>
                     <div className={styles.councilIdentity}>
                       <h3>{member.name}</h3>
