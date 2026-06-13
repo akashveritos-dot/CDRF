@@ -4,11 +4,12 @@ import { query } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
-const useNvidia = !!process.env.NVIDIA_API_KEY;
+const isProduction = process.env.NODE_ENV === 'production';
+const useNvidia = isProduction || !!process.env.NVIDIA_API_KEY;
 
-// Use local Ollama in dev, cloud Nvidia in production when NVIDIA_API_KEY is configured
+// Use local Ollama in dev, cloud Nvidia in production (Vercel)
 const client = new OpenAI({
-  apiKey: process.env.NVIDIA_API_KEY || 'ollama',
+  apiKey: process.env.NVIDIA_API_KEY || (isProduction ? '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' : 'ollama'),
   baseURL: useNvidia
     ? 'https://integrate.api.nvidia.com/v1'
     : 'http://127.0.0.1:11434/v1',
