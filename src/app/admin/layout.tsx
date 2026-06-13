@@ -13,7 +13,8 @@ import {
   LogOut,
   Globe,
   Menu,
-  X
+  X,
+  UserCog
 } from 'lucide-react';
 import styles from './layout.module.css';
 import './admin-theme.css';
@@ -70,7 +71,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   // Add Users menu item only for SUPERADMIN
   if (adminUser?.role === 'SUPERADMIN') {
-    menuItems.push({ name: 'Users', path: '/admin/users', icon: <Users size={18} /> });
+    menuItems.push({ name: 'Users', path: '/admin/users', icon: <UserCog size={18} /> });
   }
 
   return (
