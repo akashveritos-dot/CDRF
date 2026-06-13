@@ -16,7 +16,7 @@ export async function proxy(req: NextRequest) {
     }
 
     const payload = await verifyToken(token);
-    if (!payload || payload.role !== 'ADMIN') {
+    if (!payload || (payload.role !== 'ADMIN' && payload.role !== 'SUPERADMIN')) {
       // Redirect to admin login if token is invalid or user is not an admin
       const loginUrl = new URL('/admin/login', req.url);
       // Delete invalid cookie
@@ -38,7 +38,7 @@ export async function proxy(req: NextRequest) {
     }
 
     const payload = await verifyToken(token);
-    if (!payload || payload.role !== 'ADMIN') {
+    if (!payload || (payload.role !== 'ADMIN' && payload.role !== 'SUPERADMIN')) {
       return new NextResponse(
         JSON.stringify({ error: 'Administrator access required' }),
         { status: 403, headers: { 'Content-Type': 'application/json' } }
