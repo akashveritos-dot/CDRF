@@ -121,25 +121,17 @@ export default function Navbar() {
   }, [isOpen]);
 
   useEffect(() => {
-    if (!isOpen) return;
-
-    const handleScrollWhileMenuOpen = () => {
-      setIsOpen(false);
-    };
-
-    window.addEventListener('scroll', handleScrollWhileMenuOpen, { passive: true });
-    return () => window.removeEventListener('scroll', handleScrollWhileMenuOpen);
-  }, [isOpen]);
-
-  useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      document.body.classList.add('public-menu-open');
     } else {
       document.body.style.overflow = '';
+      document.body.classList.remove('public-menu-open');
     }
 
     return () => {
       document.body.style.overflow = '';
+      document.body.classList.remove('public-menu-open');
     };
   }, [isOpen]);
 

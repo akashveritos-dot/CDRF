@@ -17,6 +17,13 @@
   visibility: hidden;
 }
 
+/* Hide ChatAssistant when public navigation menu drawer is open */
+:global(body.public-menu-open) .chatWidget {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
 /* Floating Trigger Button */
 .floatingButton {
   width: 50px;
