@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
     let adminEmail = '';
     let adminContext = '';
 
-    if (token) {
+    if (token && pathname?.startsWith('/admin')) {
       try {
         const session = await verifyToken(token);
         if (session && (session.role === 'ADMIN' || session.role === 'SUPERADMIN')) {
