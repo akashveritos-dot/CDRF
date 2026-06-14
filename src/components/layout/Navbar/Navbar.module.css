@@ -1236,6 +1236,7 @@
 
   /* Mobile Social Dropdown Container */
   .mobileSocialDropdownContainer {
+    display: block !important;
     position: absolute;
     top: 100%;
     right: 16px;
