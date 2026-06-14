@@ -907,6 +907,14 @@
   }
 }
 
+.mobileSubscribeBtn {
+  display: none;
+}
+
+.mobileSocialDropdownContainer {
+  display: none;
+}
+
 /* ── Mobile Glassmorphic Bottom Navigation Dock ────────────────────────── */
 .bottomNav {
   display: none;
@@ -1312,12 +1320,4 @@
     background: var(--wine-red-pale);
     transform: scale(0.9);
   }
-}
-
-.mobileSubscribeBtn {
-  display: none;
-}
-
-.mobileSocialDropdownContainer {
-  display: none;
-}
+}
