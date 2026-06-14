@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, use, useRef } from 'react';
-import { Loader2, Calendar, MapPin, CheckCircle, AlertTriangle, ChevronDown, Check } from 'lucide-react';
+import { Loader2, Calendar, MapPin, CheckCircle, AlertTriangle, ChevronDown, Check, Clock } from 'lucide-react';
+import { motion } from 'framer-motion';
 import styles from './page.module.css';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
 import DisasterEffects from '@/components/ui/DisasterEffects/DisasterEffects';
@@ -162,6 +163,149 @@ export default function EventSubpage(props: { params: Promise<{ slug: string }> 
   // Resolve dummy image fallback
   const displayImage = pageData.imageUrl || (!pageData.videoUrl ? getFallbackImage(slug) : undefined);
 
+  if (slug === 'monthly-webinars') {
+    return (
+      <div className={styles.page}>
+        {/* Page Header */}
+        <ScrollReveal direction="down">
+          <div className={styles.header}>
+            <h1 className={styles.title}>{pageData.title}</h1>
+            <p className={styles.subtitle}>{pageData.description}</p>
+          </div>
+        </ScrollReveal>
+
+        {/* Two Column Layout */}
+        <div className={styles.webinarLayout}>
+          {/* Left Column: Dynamic CMS Content */}
+          <div className={styles.webinarMain}>
+            <ScrollReveal direction="right" delay={0.1}>
+              <div 
+                className={styles.bodyText}
+                dangerouslySetInnerHTML={{ __html: pageData.content }}
+              />
+            </ScrollReveal>
+
+            {/* Video Presentation if present in database */}
+            {pageData.videoUrl && (
+              <ScrollReveal direction="up" delay={0.2}>
+                <div className={styles.mediaSection}>
+                  <div className={styles.webinarVideoWrapper}>
+                    <iframe
+                      src={pageData.videoUrl}
+                      title={`${pageData.title} Video Presentation`}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                </div>
+              </ScrollReveal>
+            )}
+          </div>
+
+          {/* Right Column: Registration Card */}
+          <div className={styles.webinarAside}>
+            <ScrollReveal direction="left" delay={0.15}>
+              <div className={styles.registrationCard}>
+                {isSuccess ? (
+                  <div className={styles.successBox}>
+                    <CheckCircle size={40} style={{ color: 'var(--accessible-green)', marginBottom: '16px', display: 'inline-block' }} />
+                    <h3 className={styles.successTitle}>Registration Received</h3>
+                    <p className={styles.successText}>{successMsg}</p>
+                    <button 
+                      onClick={() => setIsSuccess(false)} 
+                      className={styles.submitBtn} 
+                      style={{ margin: '20px auto 0' }}
+                    >
+                      Register Another Delegate
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <h3 className={styles.cardTitle}>Register for Webinars</h3>
+                    <p className={styles.cardSubtitle}>
+                      Sign up once to receive calendar invitations, links, and PDF briefs for all upcoming DCRF knowledge webinars.
+                    </p>
+
+                    <form onSubmit={handleSubmit} className={styles.form}>
+                      <div className={styles.formGroup}>
+                        <label className={styles.label}>Full Name</label>
+                        <input
+                          type="text"
+                          className={styles.input}
+                          placeholder="e.g. Priyanjali Sen"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          required
+                        />
+                      </div>
+
+                      <div className={styles.formGroup}>
+                        <label className={styles.label}>Email Address</label>
+                        <input
+                          type="email"
+                          className={styles.input}
+                          placeholder="name@organization.org"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                        />
+                      </div>
+
+                      <div className={styles.formGroup}>
+                        <label className={styles.label}>Organization / Institution</label>
+                        <input
+                          type="text"
+                          className={styles.input}
+                          placeholder="e.g. TCU Impact Foundation"
+                          value={company}
+                          onChange={(e) => setCompany(e.target.value)}
+                          required
+                        />
+                      </div>
+
+                      <div className={styles.formGroup}>
+                        <label className={styles.label}>Designation (Optional)</label>
+                        <input
+                          type="text"
+                          className={styles.input}
+                          placeholder="e.g. Lead Climate Advisor"
+                          value={designation}
+                          onChange={(e) => setDesignation(e.target.value)}
+                        />
+                      </div>
+
+                      {formError && (
+                        <div className={styles.errorText}>
+                          <AlertTriangle size={14} />
+                          <span>{formError}</span>
+                        </div>
+                      )}
+
+                      <button 
+                        type="submit" 
+                        disabled={isSubmitting} 
+                        className={styles.submitBtn}
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <Loader2 size={16} className={styles.spinner} />
+                            Registering...
+                          </>
+                        ) : (
+                          'Register for Knowledge Stream'
+                        )}
+                      </button>
+                    </form>
+                  </>
+                )}
+              </div>
+            </ScrollReveal>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.page}>
       <DisasterEffects theme="general" intensity="low" />
@@ -169,9 +313,6 @@ export default function EventSubpage(props: { params: Promise<{ slug: string }> 
       <ScrollReveal direction="down">
         <div className={styles.header}>
           <h1 className={styles.title}>{pageData.title}</h1>
-          <p style={{ color: 'var(--wine-red-primary)', fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '8px' }}>
-            DCRF Upcoming Convening
-          </p>
           <p className={styles.subtitle}>{pageData.description}</p>
         </div>
       </ScrollReveal>
@@ -181,7 +322,7 @@ export default function EventSubpage(props: { params: Promise<{ slug: string }> 
         <div className={styles.leftColumn}>
           <ScrollReveal direction="right" delay={0.1}>
             <div 
-              className={styles.bodyText}
+              className={`${styles.bodyText} ${slug === 'dcrc-26' ? styles.conclaveContent : ''}`}
               dangerouslySetInnerHTML={{ __html: pageData.content }}
             />
           </ScrollReveal>

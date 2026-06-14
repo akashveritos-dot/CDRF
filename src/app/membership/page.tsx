@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import styles from './page.module.css';
 import { membershipTiers, membershipFeatures, honoraryMembersList } from '@/data/dataStore';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
-import { Check, Minus, Star, Shield, Zap, Crown, ChevronDown } from 'lucide-react';
+import { Check, Minus, Star, Shield, Zap, Crown, ChevronDown, User, Mail, Building, Award, MessageSquare } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast/ToastContext';
 
 // ─── Per-tier design tokens ────────────────────────────────────────────────────
@@ -98,10 +98,70 @@ export default function MembershipPage() {
   const [mockOrderId, setMockOrderId] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [highlightForm, setHighlightForm] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setIsMounted(true);
+  }, []);
+
+  const triggerScrollToForm = (e?: Event) => {
+    if (e) {
+      e.preventDefault();
+    }
+    const formElement = formRef.current || document.getElementById('join');
+    if (formElement) {
+      setTimeout(() => {
+        const offset = 100;
+        const bodyRect = document.body.getBoundingClientRect().top;
+        const elementRect = formElement.getBoundingClientRect().top;
+        const elementPosition = elementRect - bodyRect;
+        const offsetPosition = elementPosition - offset;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+
+        // Trigger highlight pulse
+        setHighlightForm(true);
+        const timer = setTimeout(() => {
+          setHighlightForm(false);
+        }, 2200);
+        return () => clearTimeout(timer);
+      }, 100);
+    }
+  };
+
+  useEffect(() => {
+    // Check hash on mount
+    if (window.location.hash === '#join') {
+      triggerScrollToForm();
+    }
+
+    // Listen for hashchange events (for clicks when already on page)
+    const handleHashChange = () => {
+      if (window.location.hash === '#join') {
+        triggerScrollToForm();
+      }
+    };
+    window.addEventListener('hashchange', handleHashChange);
+
+    // Listen for global clicks on DCRF CTA to trigger smooth scrolling
+    const handleGlobalClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const anchor = target.closest('a');
+      if (anchor && anchor.getAttribute('href')?.endsWith('#join')) {
+        triggerScrollToForm(e);
+      }
+    };
+    document.addEventListener('click', handleGlobalClick);
+
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+      document.removeEventListener('click', handleGlobalClick);
+    };
   }, []);
 
   // Close dropdown when clicking outside
@@ -406,7 +466,7 @@ export default function MembershipPage() {
                   className={styles.cardAction}
                   onClick={() => {
                     setFormData(prev => ({ ...prev, tier: tier.name }));
-                    document.getElementById('join')?.scrollIntoView({ behavior: 'smooth' });
+                    triggerScrollToForm();
                   }}
                 >
                   Select {tier.name}
@@ -533,7 +593,7 @@ export default function MembershipPage() {
 
       {/* ── Registration Form ──────────────────────────────────────────── */}
       <ScrollReveal direction="up">
-        <div id="join" className={styles.formSec}>
+        <div id="join" ref={formRef} className={`${styles.formSec} ${highlightForm ? styles.highlightedForm : ''}`}>
           {flowStep === 'success' ? (
             <div className={styles.successBox}>
               <div className={styles.successIcon}>
@@ -679,19 +739,31 @@ export default function MembershipPage() {
               <div className={styles.formGrid}>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>Full Name</label>
-                  <input type="text" name="name" required placeholder="Dr./Mr./Ms. Name" className={styles.input} value={formData.name} onChange={handleInputChange} />
+                  <div className={styles.inputWrapper}>
+                    <User className={styles.inputIcon} size={18} />
+                    <input type="text" name="name" required placeholder="Dr./Mr./Ms. Name" className={styles.input} value={formData.name} onChange={handleInputChange} />
+                  </div>
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>Corporate Email</label>
-                  <input type="email" name="email" required placeholder="name@organization.org" className={styles.input} value={formData.email} onChange={handleInputChange} />
+                  <div className={styles.inputWrapper}>
+                    <Mail className={styles.inputIcon} size={18} />
+                    <input type="email" name="email" required placeholder="name@organization.org" className={styles.input} value={formData.email} onChange={handleInputChange} />
+                  </div>
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>Organization / Institution</label>
-                  <input type="text" name="organization" required placeholder="Full Company Name" className={styles.input} value={formData.organization} onChange={handleInputChange} />
+                  <div className={styles.inputWrapper}>
+                    <Building className={styles.inputIcon} size={18} />
+                    <input type="text" name="organization" required placeholder="Full Company Name" className={styles.input} value={formData.organization} onChange={handleInputChange} />
+                  </div>
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>Job Title / Designation</label>
-                  <input type="text" name="title" placeholder="e.g. Director Sustainability" className={styles.input} value={formData.title} onChange={handleInputChange} />
+                  <div className={styles.inputWrapper}>
+                    <Award className={styles.inputIcon} size={18} />
+                    <input type="text" name="title" placeholder="e.g. Director Sustainability" className={styles.input} value={formData.title} onChange={handleInputChange} />
+                  </div>
                 </div>
                 <div className={`${styles.formGroup} ${styles.fieldFull}`}>
                   <label className={styles.label}>Select Target Membership Tier</label>
@@ -753,7 +825,10 @@ export default function MembershipPage() {
                 </div>
                 <div className={`${styles.formGroup} ${styles.fieldFull}`}>
                   <label className={styles.label}>Resilience Focus / Brief Description</label>
-                  <textarea name="message" rows={4} placeholder="Briefly describe your interest in DCRF working groups..." className={styles.textarea} value={formData.message} onChange={handleInputChange} />
+                  <div className={styles.textareaWrapper}>
+                    <MessageSquare className={styles.textareaIcon} size={18} />
+                    <textarea name="message" rows={4} placeholder="Briefly describe your interest in DCRF working groups..." className={styles.textarea} value={formData.message} onChange={handleInputChange} />
+                  </div>
                 </div>
                 <button type="submit" className={`${styles.submitBtn} ${styles.fieldFull}`}>
                   Submit Application

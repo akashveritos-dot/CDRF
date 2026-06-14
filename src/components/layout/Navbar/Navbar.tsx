@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, ChevronDown } from 'lucide-react';
+import { Menu, X, ChevronDown, Mail, User, Bell, CheckCircle2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import styles from './Navbar.module.css';
 
 interface Submenu {
@@ -351,75 +352,102 @@ export default function Navbar() {
           className={`${styles.backdrop} ${isOpen ? styles.backdropVisible : ''}`}
           onClick={closeMenu}
         />
-      </nav>
-
+        
       {/* Subscription Modal */}
-      <div
-        className={`${styles.modalOverlay} ${isSubscribeOpen ? styles.modalOverlayActive : ''}`}
-        onClick={closeSubscribeModal}
-      >
-        <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-          <button className={styles.modalClose} onClick={closeSubscribeModal} aria-label="Close modal">
-            <X size={20} />
-          </button>
-
-          {isSubmitted ? (
-            <div className={styles.successMessage}>
-              <div style={{ fontSize: '40px', color: 'var(--wine-red-primary)' }}>✓</div>
-              <h4 className={styles.successTitle}>Thank You!</h4>
-              <p className={styles.successDesc}>
-                {successMsg}
-              </p>
-              <button onClick={closeSubscribeModal} className={styles.modalSubmit} style={{ minWidth: '120px' }}>
-                Close
+      <AnimatePresence>
+        {isSubscribeOpen && (
+          <motion.div
+            className={styles.modalOverlay}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={closeSubscribeModal}
+          >
+            <motion.div
+              className={styles.modal}
+              initial={{ scale: 0.9, y: 20, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.95, y: 15, opacity: 0 }}
+              transition={{ ease: [0.16, 1, 0.3, 1], duration: 0.32 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button className={styles.modalClose} onClick={closeSubscribeModal} aria-label="Close modal">
+                <X size={20} />
               </button>
-            </div>
-          ) : (
-            <>
-              <h3 className={styles.modalTitle}>Subscribe to DCRF</h3>
-              <p className={styles.modalDesc}>
-                Stay updated with the latest disaster briefs, policy guidelines, and climate action notifications.
-              </p>
-              
-              <form onSubmit={handleModalSubscribe} className={styles.modalForm}>
-                <label className={styles.formLabel}>
-                  Full Name
-                  <input
-                    type="text"
-                    className={styles.formInput}
-                    placeholder="e.g. Rahul Sharma"
-                    value={subName}
-                    onChange={(e) => setSubName(e.target.value)}
-                    required
-                  />
-                </label>
 
-                <label className={styles.formLabel}>
-                  Email Address
-                  <input
-                    type="email"
-                    className={styles.formInput}
-                    placeholder="name@organization.org"
-                    value={subEmail}
-                    onChange={(e) => setSubEmail(e.target.value)}
-                    required
-                  />
-                </label>
-
-                {subError && (
-                  <div className={styles.errorText}>
-                    <span>⚠️ {subError}</span>
+              {isSubmitted ? (
+                <motion.div 
+                  className={styles.successMessage}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.1 }}
+                >
+                  <div className={styles.successIconWrapper}>
+                    <CheckCircle2 size={36} className={styles.successIcon} />
                   </div>
-                )}
+                  <h4 className={styles.successTitle}>Subscription Confirmed!</h4>
+                  <p className={styles.successDesc}>
+                    {successMsg || "You have successfully subscribed to the DCRF Policy Briefs and newsletter updates."}
+                  </p>
+                  <button onClick={closeSubscribeModal} className={styles.modalSubmit} style={{ minWidth: '150px', marginTop: '10px' }}>
+                    Awesome, Thanks!
+                  </button>
+                </motion.div>
+              ) : (
+                <>
+                  <div className={styles.modalIconWrapper}>
+                    <div className={styles.modalIconCircle}>
+                      <Bell size={24} className={styles.modalIcon} />
+                    </div>
+                  </div>
+                  
+                  <h3 className={styles.modalTitle}>Subscribe to DCRF</h3>
+                  <p className={styles.modalDesc}>
+                    Get real-time crisis bulletins, policy reports, and climate resilience briefings delivered directly to your inbox.
+                  </p>
+                  
+                  <form onSubmit={handleModalSubscribe} className={styles.modalForm}>
+                    <div className={styles.inputWrapper}>
+                      <User size={16} className={styles.inputIcon} />
+                      <input
+                        type="text"
+                        className={styles.formInput}
+                        placeholder="Full Name"
+                        value={subName}
+                        onChange={(e) => setSubName(e.target.value)}
+                        required
+                      />
+                    </div>
 
-                <button type="submit" disabled={subLoading} className={styles.modalSubmit}>
-                  {subLoading ? 'Subscribing...' : 'Submit Subscription'}
-                </button>
-              </form>
-            </>
-          )}
-        </div>
-      </div>
+                    <div className={styles.inputWrapper}>
+                      <Mail size={16} className={styles.inputIcon} />
+                      <input
+                        type="email"
+                        className={styles.formInput}
+                        placeholder="Email Address"
+                        value={subEmail}
+                        onChange={(e) => setSubEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    {subError && (
+                      <div className={styles.errorText}>
+                        <span>⚠️ {subError}</span>
+                      </div>
+                    )}
+
+                    <button type="submit" disabled={subLoading} className={styles.modalSubmit}>
+                      {subLoading ? 'Subscribing...' : 'Subscribe Now'}
+                    </button>
+                  </form>
+                </>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      </nav>
     </>
   );
 }

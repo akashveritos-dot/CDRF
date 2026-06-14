@@ -3,6 +3,7 @@
 import React, { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, Linkedin, AlertTriangle } from 'lucide-react';
+import { motion } from 'framer-motion';
 import styles from './page.module.css';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
 
@@ -112,13 +113,142 @@ export default function AboutSubpage(props: { params: Promise<{ slug: string }> 
   // Resolve dummy image fallback if no image/video is present
   const displayImage = pageData.imageUrl || (!pageData.videoUrl ? getFallbackImage(slug) : undefined);
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { type: 'spring' as const, stiffness: 100, damping: 15 }
+    }
+  };
+
+  // Council pages custom layout (fully dynamic members filtering based on role)
+  if (slug === 'governing-council' || slug === 'advisory-council') {
+    const displayMembers = slug === 'advisory-council'
+      ? councilMembers.filter(m => m.role.toLowerCase().includes('advisor'))
+      : councilMembers.filter(m => !m.role.toLowerCase().includes('advisor'));
+    
+    return (
+      <div className={styles.page}>
+        {/* Page Header */}
+        <ScrollReveal direction="down">
+          <div className={styles.header}>
+            <h1 className={styles.title}>{pageData.title}</h1>
+            <p className={styles.subtitle}>{pageData.description}</p>
+          </div>
+        </ScrollReveal>
+
+        {/* Intro Card Section */}
+        {pageData.content && (
+          <ScrollReveal direction="up" delay={0.1}>
+            <div className={styles.introCard}>
+              <div 
+                className={styles.bodyText}
+                dangerouslySetInnerHTML={{ __html: pageData.content }}
+              />
+            </div>
+          </ScrollReveal>
+        )}
+
+        {/* Council Members Section */}
+        {displayMembers.length > 0 && (
+          <section className={styles.councilSection}>
+            <ScrollReveal direction="up" delay={0.15}>
+              <h2 className={styles.sectionTitle}>
+                {slug === 'governing-council' ? 'Council Leadership' : 'Advisory Board Scholars'}
+              </h2>
+            </ScrollReveal>
+            
+            <motion.div 
+              className={styles.premiumCouncilGrid}
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              {displayMembers.map((member) => {
+                // Determine badge style
+                let badgeClass = styles.badgeDefault;
+                if (member.roleBadgeColor === 'gold') badgeClass = styles.badgeGold;
+                else if (member.roleBadgeColor === 'finance') badgeClass = styles.badgeFinance;
+                
+                return (
+                  <motion.div 
+                    key={member.id} 
+                    className={styles.premiumMemberCard}
+                    variants={cardVariants}
+                  >
+                    <div className={styles.memberCardTop}>
+                      {member.profileImage ? (
+                        <div className={styles.memberCardImageWrap}>
+                          <img
+                            src={member.profileImage}
+                            alt={member.name}
+                            className={styles.memberCardImage}
+                          />
+                        </div>
+                      ) : (
+                        <div className={styles.memberCardAvatar}>
+                          {member.avatarInitials}
+                        </div>
+                      )}
+
+                      <div className={styles.memberCardMeta}>
+                        <h3 className={styles.memberNameText}>{member.name}</h3>
+                        <span className={`${styles.roleBadge} ${badgeClass}`}>
+                          {member.role}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className={styles.memberCardDivider} />
+
+                    <p className={styles.memberCardBio}>{member.bio}</p>
+
+                    {member.organization && (
+                      <div className={styles.memberCardOrg}>
+                        <span>Organization:</span> {member.organization}
+                      </div>
+                    )}
+
+                    {member.linkedinUrl && (
+                      <a
+                        href={member.linkedinUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.premiumLinkedinLink}
+                        aria-label={`${member.name} LinkedIn Profile`}
+                      >
+                        <Linkedin size={16} />
+                        <span>Profile</span>
+                      </a>
+                    )}
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          </section>
+        )}
+      </div>
+    );
+  }
+
+  // Fallback layout (used for mission-vision, charter-10-point-agenda, working-group, etc.)
   return (
     <div className={styles.page}>
       {/* Page Header */}
       <ScrollReveal direction="down">
         <div className={styles.header}>
           <h1 className={styles.title}>{pageData.title}</h1>
-          <p style={{ color: 'var(--wine-red-primary)', fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '8px' }}>DCRF Operational Node</p>
           <p className={styles.subtitle}>{pageData.description}</p>
         </div>
       </ScrollReveal>
@@ -127,7 +257,13 @@ export default function AboutSubpage(props: { params: Promise<{ slug: string }> 
       <div className={styles.grid}>
         <ScrollReveal direction="right" delay={0.1}>
           <div 
-            className={styles.bodyText}
+            className={`${styles.bodyText} ${
+              slug === 'working-group' ? styles.workingGroupContent : ''
+            } ${
+              slug === 'mission-vision' ? styles.missionVisionContent : ''
+            } ${
+              slug === 'charter-10-point-agenda' ? styles.charterContent : ''
+            }`}
             dangerouslySetInnerHTML={{ __html: pageData.content }}
           />
         </ScrollReveal>
@@ -160,122 +296,6 @@ export default function AboutSubpage(props: { params: Promise<{ slug: string }> 
           </ScrollReveal>
         )}
       </div>
-
-      {/* Dynamic Section: The Paradigm Shift for Mission & Vision */}
-      {slug === 'mission-vision' && (
-        <ScrollReveal direction="up" delay={0.25}>
-          <section className={styles.comparisonSection}>
-            <h2 className={styles.comparisonTitle}>The Resilient Shift</h2>
-            <div className={styles.comparisonGrid}>
-              
-              {/* Old Paradigm Column */}
-              <div className={styles.comparisonColumn}>
-                <h3 className={`${styles.comparisonColumnHeader} ${styles.oldHeader}`}>
-                  Traditional Relief (Reactive)
-                </h3>
-                <div className={styles.comparisonItem}>
-                  <span className={styles.comparisonItemTitle}>Post-Event Funding</span>
-                  <span className={styles.comparisonItemDesc}>
-                    Capital flows primarily after devastation has occurred, acting as emergency charity checkouts.
-                  </span>
-                </div>
-                <div className={styles.comparisonItem}>
-                  <span className={styles.comparisonItemTitle}>Uncoordinated Action</span>
-                  <span className={styles.comparisonItemDesc}>
-                    Disjointed relief efforts by isolated agencies leading to delays and duplication of resources.
-                  </span>
-                </div>
-                <div className={styles.comparisonItem}>
-                  <span className={styles.comparisonItemTitle}>Ad-Hoc Preparedness</span>
-                  <span className={styles.comparisonItemDesc}>
-                    Lack of active warning sensor arrays and parameters, keeping communities vulnerable.
-                  </span>
-                </div>
-              </div>
-
-              {/* New Paradigm Column */}
-              <div className={styles.comparisonColumn}>
-                <h3 className={`${styles.comparisonColumnHeader} ${styles.newHeader}`}>
-                  DCRF Resilience (Proactive)
-                </h3>
-                <div className={styles.comparisonItem}>
-                  <span className={styles.comparisonItemTitle}>Pre-Event Capital Routing</span>
-                  <span className={styles.comparisonItemDesc}>
-                    Strategic ESG/CSR funds directed permanently into structural safeguards and telemetry setups.
-                  </span>
-                </div>
-                <div className={styles.comparisonItem}>
-                  <span className={styles.comparisonItemTitle}>Multi-Stakeholder Convergence</span>
-                  <span className={styles.comparisonItemDesc}>
-                    Unifying corporates, researchers, NGOs, and municipal authorities under one command node.
-                  </span>
-                </div>
-                <div className={styles.comparisonItem}>
-                  <span className={styles.comparisonItemTitle}>Telemetry Early Warnings</span>
-                  <span className={styles.comparisonItemDesc}>
-                    Real-time landslide, GLOF, heatwave, and river flooding sensors keeping communities safe.
-                  </span>
-                </div>
-              </div>
-
-            </div>
-          </section>
-        </ScrollReveal>
-      )}
-
-      {/* Council Members List (Plain on White Paper design) */}
-      {(slug === 'governing-council' || slug === 'advisory-council') && councilMembers.length > 0 && (
-        <section className={styles.councilSection}>
-          <ScrollReveal direction="up">
-            <h2 className={styles.sectionTitle}>
-              {slug === 'governing-council' ? 'Council Leadership' : 'Advisory Experts'}
-            </h2>
-          </ScrollReveal>
-          
-          <div className={styles.councilGrid}>
-            {councilMembers.map((member, idx) => (
-              <ScrollReveal 
-                key={member.id} 
-                direction="up" 
-                delay={0.05 * idx}
-              >
-                <div className={styles.memberCard}>
-                  {member.profileImage ? (
-                    <img
-                      src={member.profileImage}
-                      alt={member.name}
-                      className={styles.memberImage}
-                    />
-                  ) : (
-                    <div className={styles.avatar}>
-                      {member.avatarInitials}
-                    </div>
-                  )}
-
-                  <h3 className={styles.memberName}>{member.name}</h3>
-                  <div className={styles.memberRole}>{member.role}</div>
-                  {member.organization && (
-                    <div className={styles.memberOrg}>{member.organization}</div>
-                  )}
-                  <p className={styles.memberBio}>{member.bio}</p>
-
-                  {member.linkedinUrl && (
-                    <a
-                      href={member.linkedinUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={styles.linkedinLink}
-                      aria-label={`${member.name} LinkedIn Profile`}
-                    >
-                      <Linkedin size={18} />
-                    </a>
-                  )}
-                </div>
-              </ScrollReveal>
-            ))}
-          </div>
-        </section>
-      )}
     </div>
   );
 }

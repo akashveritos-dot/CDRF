@@ -455,3 +455,390 @@
   overflow: visible;
 }
 
+/* Widescreen Hero Banner (Matching about subpages) */
+.heroBanner {
+  position: relative;
+  width: 100%;
+  height: 380px;
+  border-radius: 24px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #310815 0%, #0f172a 100%);
+  margin-bottom: 48px;
+  box-shadow: var(--shadow-md);
+}
+
+.heroGlassCard {
+  position: relative;
+  z-index: 2;
+  padding: 36px 24px;
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+  color: #ffffff;
+}
+
+.badge {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  color: var(--gold-primary);
+  font-weight: 800;
+}
+
+.heroTitle {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 4.2vw, 44px);
+  color: #ffffff;
+  font-weight: 800;
+  margin: 8px 0 0;
+  line-height: 1.2;
+}
+
+.badgeLine {
+  width: 60px;
+  height: 3px;
+  background: var(--gold-primary);
+  margin: 18px auto;
+  border-radius: 10px;
+}
+
+.heroSubtitle {
+  font-size: 16px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.9);
+  max-width: 600px;
+  margin: 0 auto;
+  font-weight: 400;
+}
+
+/* Webinars Dashboard Layout */
+.webinarLayout {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 48px;
+  align-items: start;
+}
+
+.webinarMain {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.webinarAside {
+  display: flex;
+  flex-direction: column;
+}
+
+.upcomingHighlight {
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-color);
+  border-left: 4px solid var(--gold-primary);
+  border-radius: 20px;
+  padding: 36px;
+  box-shadow: var(--shadow-sm);
+  text-align: left;
+}
+
+.featuredBadge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--gold-primary);
+  background: rgba(217, 119, 6, 0.1);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  margin-bottom: 16px;
+}
+
+.upcomingTitle {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-default);
+  margin-bottom: 16px;
+  line-height: 1.3;
+}
+
+.upcomingMeta {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.metaField {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--text-muted);
+}
+
+.metaField svg {
+  color: var(--wine-red-primary);
+}
+
+.upcomingDesc {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.upcomingSpeaker {
+  font-size: 14px;
+  color: var(--text-default);
+  background: var(--bg-surface-alt);
+  padding: 12px 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.archiveSection {
+  text-align: left;
+}
+
+.archiveHeader {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--wine-red-primary);
+  margin-bottom: 24px;
+  border-bottom: 1.5px solid var(--border-color);
+  padding-bottom: 10px;
+}
+
+.archiveGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.archiveCard {
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-color);
+  border-radius: 20px;
+  box-shadow: var(--shadow-sm);
+  transition: all 250ms ease;
+  overflow: hidden;
+}
+
+.archiveCard:hover {
+  border-color: color-mix(in srgb, var(--wine-red-primary) 20%, var(--border-color));
+  box-shadow: var(--shadow-md);
+}
+
+.archiveCardBody {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.archiveCardHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.archiveDuration {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--wine-red-primary);
+  background: var(--wine-red-pale);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+}
+
+.archiveDate {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.archiveCardTitle {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-default);
+  line-height: 1.35;
+}
+
+.archiveCardSpeaker {
+  font-size: 13.5px;
+  color: var(--text-default);
+}
+
+.archiveCardDesc {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.webinarVideoWrapper {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+  background: #000;
+  margin-top: 12px;
+}
+
+.webinarVideoWrapper iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+@media (max-width: 992px) {
+  .webinarLayout {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+}
+
+@media (max-width: 768px) {
+  .heroBanner {
+    height: auto;
+    padding: 48px 16px;
+    border-radius: 16px;
+    margin-bottom: 32px;
+  }
+  
+  .heroGlassCard {
+    padding: 24px 0;
+    margin: 0;
+  }
+  
+  .upcomingHighlight {
+    padding: 24px;
+    border-radius: 16px;
+  }
+  
+  .archiveCardBody {
+    padding: 20px;
+  }
+}
+
+/* Conclave Page Content Card Design */
+.conclaveContent {
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-color);
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: var(--shadow-sm);
+  transition: all 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: left;
+}
+
+.conclaveContent:hover {
+  border-color: rgba(136, 19, 55, 0.1);
+  box-shadow: 
+    0 16px 36px -8px rgba(136, 19, 55, 0.04),
+    var(--shadow-lg);
+}
+
+.conclaveContent h3 {
+  font-family: var(--font-display) !important;
+  font-size: 22px !important;
+  color: var(--wine-red-primary) !important;
+  margin-top: 32px !important;
+  margin-bottom: 16px !important;
+  font-weight: 700 !important;
+  border-left: 3.5px solid var(--wine-red-primary) !important;
+  padding-left: 14px !important;
+  line-height: 1.3 !important;
+}
+
+.conclaveContent h3:first-of-type {
+  margin-top: 0 !important;
+}
+
+.conclaveContent .event-details-box {
+  background: var(--bg-default) !important;
+  border: 1.5px solid var(--border-color) !important;
+  border-left: 4px solid var(--wine-red-primary) !important;
+  border-radius: 16px !important;
+  padding: 24px !important;
+  margin: 32px 0 !important;
+}
+
+.conclaveContent .event-details-box p {
+  margin-bottom: 10px !important;
+  font-size: 15px !important;
+}
+
+.conclaveContent .event-details-box p:last-child {
+  margin-bottom: 0 !important;
+}
+
+.conclaveContent ul {
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 24px 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+}
+
+.conclaveContent ul li {
+  background: var(--bg-default) !important;
+  border: 1.5px solid var(--border-color) !important;
+  border-radius: 12px !important;
+  padding: 16px 20px 16px 48px !important;
+  position: relative !important;
+  font-size: 14.5px !important;
+  line-height: 1.6 !important;
+  transition: all 0.25s ease !important;
+  margin-bottom: 0 !important;
+}
+
+.conclaveContent ul li:hover {
+  transform: translateY(-2px) !important;
+  border-color: var(--wine-red-primary) !important;
+  background: var(--bg-surface) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+.conclaveContent ul li::before {
+  content: "✓" !important;
+  position: absolute !important;
+  left: 20px !important;
+  top: 14px !important;
+  font-weight: 800 !important;
+  color: var(--wine-red-primary) !important;
+  font-size: 16px !important;
+}
+
+@media (max-width: 768px) {
+  .conclaveContent {
+    padding: 24px;
+    border-radius: 16px;
+  }
+  
+  .conclaveContent .event-details-box {
+    padding: 18px !important;
+    margin: 24px 0 !important;
+  }
+  
+  .conclaveContent ul li {
+    padding: 14px 16px 14px 40px !important;
+  }
+  
+  .conclaveContent ul li::before {
+    left: 16px !important;
+    top: 13px !important;
+  }
+}
+

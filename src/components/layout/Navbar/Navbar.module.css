@@ -100,7 +100,7 @@
     font-size: 13px;
     letter-spacing: 0.3px;
   }
-  
+
   .nameSpan {
     font-size: 9px;
     letter-spacing: 0.5px;
@@ -122,7 +122,8 @@
   transition: color var(--transition-fast), transform var(--transition-fast);
   position: relative;
   padding: 6px 0;
-  white-space: nowrap; /* Prevent menu links from wrapping words */
+  white-space: nowrap;
+  /* Prevent menu links from wrapping words */
 }
 
 .navLinks a:not(.cta):hover {
@@ -168,7 +169,8 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 12px rgba(21, 128, 61, 0.2);
-  white-space: nowrap; /* Prevent button text wrapping */
+  white-space: nowrap;
+  /* Prevent button text wrapping */
 }
 
 .cta:hover {
@@ -322,11 +324,13 @@
     border-color: var(--border-color);
     box-shadow: none;
   }
+
   50% {
     transform: translateY(-4px);
     border-color: var(--red-primary);
     box-shadow: 0 4px 12px rgba(192, 57, 43, 0.22);
   }
+
   100% {
     transform: translateY(0);
     border-color: var(--border-color);
@@ -367,38 +371,25 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(10, 20, 36, 0.4);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(10, 20, 36, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   z-index: 99999;
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-}
-
-.modalOverlayActive {
-  opacity: 1;
-  pointer-events: all;
 }
 
 .modal {
-  background: var(--bg-surface);
+  background: var(--white);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: 40px;
-  width: 90%;
-  max-width: 440px;
-  box-shadow: var(--shadow-premium);
+  padding: 44px 36px 40px;
+  width: 95%;
+  max-width: 420px;
+  box-shadow: 0 30px 60px -15px rgba(15, 23, 42, 0.18);
   position: relative;
-  transform: scale(0.9);
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.modalOverlayActive .modal {
-  transform: scale(1);
+  overflow: hidden;
 }
 
 .modalClose {
@@ -409,26 +400,86 @@
   border: none;
   cursor: pointer;
   color: var(--text-muted);
-  transition: color var(--transition-fast);
+  transition: color var(--transition-fast), transform var(--transition-fast);
+  z-index: 10;
 }
 
 .modalClose:hover {
   color: var(--red-primary);
+  transform: scale(1.1);
+}
+
+.modalIconWrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.modalIconCircle {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-full);
+  background: radial-gradient(circle at center, var(--wine-red-pale), rgba(185, 28, 28, 0.04));
+  border: 1.5px solid rgba(185, 28, 28, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 8px 20px rgba(185, 28, 28, 0.05);
+}
+
+.modalIconCircle::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: var(--radius-full);
+  border: 1px dashed rgba(185, 28, 28, 0.15);
+  animation: rotateDashed 24s linear infinite;
+}
+
+@keyframes rotateDashed {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.modalIcon {
+  color: var(--red-primary);
+  animation: pulseIcon 2s infinite ease-in-out;
+}
+
+@keyframes pulseIcon {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.08);
+  }
 }
 
 .modalTitle {
   font-family: var(--font-display);
   font-size: 24px;
   color: var(--text-default);
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   font-weight: 700;
+  text-align: center;
+  letter-spacing: -0.3px;
 }
 
 .modalDesc {
   font-size: 14px;
   color: var(--text-muted);
   margin-bottom: 24px;
-  line-height: 1.5;
+  line-height: 1.55;
+  text-align: center;
 }
 
 .modalForm {
@@ -437,30 +488,41 @@
   gap: 16px;
 }
 
-.formLabel {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-default);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+.inputWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+  transition: color var(--transition-fast);
+}
+
+.inputWrapper:focus-within .inputIcon {
+  color: var(--red-primary);
 }
 
 .formInput {
-  padding: 12px 16px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-color);
+  width: 100%;
+  padding: 14px 16px 14px 44px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--border-color);
   background: var(--bg-default);
   color: var(--text-default);
   font-size: 14px;
   outline: none;
-  transition: border-color var(--transition-fast);
+  transition: all var(--transition-fast);
 }
 
 .formInput:focus {
   border-color: var(--red-primary);
+  background: var(--white);
+  box-shadow: 0 0 0 4px rgba(185, 28, 28, 0.08);
 }
 
 .errorText {
@@ -479,7 +541,7 @@
 }
 
 .modalSubmit {
-  margin-top: 8px;
+  margin-top: 6px;
   background: var(--accessible-green);
   color: var(--text-inverse);
   border: none;
@@ -496,8 +558,15 @@
 
 .modalSubmit:hover {
   background: var(--accessible-green-dark);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(21, 128, 61, 0.3);
+  transform: translateY(-1.5px);
+  box-shadow: 0 6px 20px rgba(21, 128, 61, 0.35);
+}
+
+.modalSubmit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .successMessage {
@@ -505,20 +574,54 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 12px;
-  padding: 20px 0;
+  padding: 12px 0;
+}
+
+.successIconWrapper {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-full);
+  background: radial-gradient(circle at center, var(--accessible-green-light), rgba(21, 128, 61, 0.03));
+  border: 1.5px solid rgba(21, 128, 61, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 24px rgba(21, 128, 61, 0.08);
+  animation: scaleCheck 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes scaleCheck {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.successIcon {
+  color: var(--accessible-green);
 }
 
 .successTitle {
-  font-size: 20px;
+  font-family: var(--font-display);
+  font-size: 22px;
   font-weight: 700;
   color: var(--text-default);
+  margin-bottom: 10px;
 }
 
 .successDesc {
   font-size: 14px;
   color: var(--text-muted);
+  line-height: 1.55;
+  margin-bottom: 24px;
 }
+
 
 /* Desktop Dropdowns styles */
 .dropdownContainer {
@@ -531,7 +634,8 @@
   align-items: center;
   gap: 6px;
   cursor: pointer;
-  white-space: nowrap; /* Prevent dropdown trigger text from wrapping */
+  white-space: nowrap;
+  /* Prevent dropdown trigger text from wrapping */
 }
 
 .caret {
@@ -547,13 +651,15 @@
 
 .dropdownMenu {
   position: absolute;
-  top: calc(100% + 16px); /* Floating cleanly below the menu bar */
+  top: calc(100% + 16px);
+  /* Floating cleanly below the menu bar */
   left: 50%;
   transform: translateX(-50%) translateY(4px);
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--border-color); /* Uniform border, no top edge line */
+  border: 1px solid var(--border-color);
+  /* Uniform border, no top edge line */
   border-radius: var(--radius-md);
   padding: 12px 0;
   min-width: 240px;
@@ -602,7 +708,8 @@
 }
 
 .dropdownMenu a::after {
-  display: none !important; /* Remove line animation for submenus */
+  display: none !important;
+  /* Remove line animation for submenus */
 }
 
 .activeSubLink {
@@ -655,7 +762,8 @@
 }
 
 .mobileAccordionMenuExpanded {
-  max-height: 500px; /* Safe upper limit for animations */
+  max-height: 500px;
+  /* Safe upper limit for animations */
 }
 
 .mobileSubLink {
@@ -729,6 +837,7 @@
     transform: scale(0.8);
     opacity: 0.8;
   }
+
   100% {
     transform: scale(2.2);
     opacity: 0;
@@ -759,10 +868,12 @@
     gap: 4px;
     margin-left: 2px;
   }
+
   .weatherNavDot {
     width: 4px;
     height: 4px;
   }
+
   .weatherNavDot::after {
     top: -2px;
     left: -2px;
