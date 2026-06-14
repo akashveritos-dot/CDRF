@@ -84,6 +84,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return () => clearInterval(interval);
   }, [isLoginPage, adminUser]);
 
+  // Close sidebar automatically on navigation
+  useEffect(() => {
+    setIsSidebarOpen(false);
+  }, [pathname]);
+
   const handleLogout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
@@ -163,7 +168,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 key={item.path}
                 href={item.path}
                 className={`${styles.navLink} ${isActive ? styles.navLinkActive : ''}`}
-                onClick={() => setIsSidebarOpen(false)}
               >
                 <div className={styles.navLinkContent}>
                   {item.icon}
@@ -189,12 +193,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
       </aside>
 
+      {/* Backdrop for mobile */}
+      {isSidebarOpen && (
+        <div className={styles.backdrop} onClick={() => setIsSidebarOpen(false)} />
+      )}
+
       {/* Main Content Area */}
       <main className={styles.content}>
-        {/* Backdrop for mobile */}
-        {isSidebarOpen && (
-          <div className={styles.backdrop} onClick={() => setIsSidebarOpen(false)} />
-        )}
         <div className={styles.contentInner}>
           {children}
         </div>
