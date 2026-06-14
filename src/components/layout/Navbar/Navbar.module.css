@@ -1184,9 +1184,9 @@
 
   .mobileSubscribeBtn {
     display: inline-block;
-    background: transparent;
-    color: var(--text-muted);
-    border: 1px solid var(--border-color);
+    background: linear-gradient(135deg, var(--wine-red-primary), var(--wine-red-dark)) !important;
+    color: #ffffff !important;
+    border: none !important;
     padding: 8px 18px;
     border-radius: var(--radius-full);
     font-size: 11px;
@@ -1195,23 +1195,112 @@
     text-transform: uppercase;
     cursor: pointer;
     transition: all var(--transition-base);
-    animation: floatSubscribe 1.8s ease-in-out infinite;
+    animation: pulseWiggleSubscribe 2.5s ease-in-out infinite;
     z-index: 101;
     margin-left: auto;
     margin-right: 12px;
+    box-shadow: 0 4px 12px rgba(185, 28, 28, 0.25) !important;
     -webkit-tap-highlight-color: transparent !important;
     outline: none !important;
   }
 
   .mobileSubscribeBtn:hover,
   .mobileSubscribeBtn:active {
-    border-color: var(--red-primary);
-    color: var(--red-primary);
-    box-shadow: 0 4px 12px rgba(192, 57, 43, 0.12);
+    background: var(--wine-red-dark) !important;
+    box-shadow: 0 6px 16px rgba(185, 28, 28, 0.4) !important;
     outline: none !important;
+  }
+
+  @keyframes pulseWiggleSubscribe {
+    0%, 100% {
+      transform: scale(1) rotate(0deg);
+    }
+    15%, 35% {
+      transform: scale(1.05) rotate(-3deg);
+    }
+    25%, 45% {
+      transform: scale(1.05) rotate(3deg);
+    }
+    55% {
+      transform: scale(1) rotate(0deg);
+    }
+  }
+
+  /* Mobile Social Dropdown Container */
+  .mobileSocialDropdownContainer {
+    position: absolute;
+    top: 100%;
+    right: 16px;
+    z-index: 99998;
+    margin-top: 10px;
+  }
+
+  .mobileSocialToggle {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 1.5px solid rgba(185, 28, 28, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--wine-red-primary);
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+    transition: all var(--transition-base);
+    -webkit-tap-highlight-color: transparent !important;
+    outline: none !important;
+  }
+
+  .mobileSocialToggle:active {
+    transform: scale(0.92);
+  }
+
+  .mobileSocialCaret {
+    transition: transform var(--transition-fast);
+  }
+
+  .mobileSocialCaretRotated {
+    transform: rotate(180deg);
+  }
+
+  .mobileSocialMenu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: #ffffff;
+    border: 1.5px solid var(--border-color);
+    border-radius: 14px;
+    padding: 10px 12px;
+    display: flex;
+    gap: 12px;
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15);
+    z-index: 99999;
+  }
+
+  .mobileSocialIconLink {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--bg-default);
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+    text-decoration: none;
+  }
+
+  .mobileSocialIconLink:active {
+    background: var(--wine-red-pale);
+    transform: scale(0.9);
   }
 }
 
 .mobileSubscribeBtn {
+  display: none;
+}
+
+.mobileSocialDropdownContainer {
   display: none;
 }
