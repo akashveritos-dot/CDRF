@@ -920,10 +920,10 @@
     left: 0;
     right: 0;
     height: calc(64px + env(safe-area-inset-bottom, 16px));
-    background: rgba(255, 255, 255, 0.82);
+    background: rgba(255, 255, 255, 0.35) !important;
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border-top: 1px solid var(--border-color);
+    border-top: 1px solid rgba(255, 255, 255, 0.25) !important;
     box-shadow: 0 -8px 32px rgba(15, 23, 42, 0.08);
     z-index: 99999; /* Higher than other content, below modal overlays */
     padding-bottom: env(safe-area-inset-bottom, 16px);
@@ -997,10 +997,10 @@
   }
 
   .bottomSubmenuCard {
-    background: rgba(255, 255, 255, 0.94);
+    background: rgba(255, 255, 255, 0.45) !important;
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    border: 1.5px solid rgba(185, 28, 28, 0.15); /* Subtle wine red border to match branding */
+    border: 1.5px solid rgba(185, 28, 28, 0.12) !important;
     border-radius: 18px;
     box-shadow: 0 16px 40px rgba(15, 23, 42, 0.15), 0 4px 12px rgba(185, 28, 28, 0.05);
     padding: 18px;
