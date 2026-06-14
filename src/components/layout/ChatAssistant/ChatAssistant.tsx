@@ -24,7 +24,7 @@ export default function ChatAssistant() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [streamContent, setStreamContent] = useState('');
-  const [showTooltip, setShowTooltip] = useState(true);
+  const [showTooltip, setShowTooltip] = useState(false);
   const [typewriterText, setTypewriterText] = useState('');
 
   const latestStreamRef = useRef('');
@@ -79,6 +79,19 @@ export default function ChatAssistant() {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, isOpen]);
+
+  // Show tooltip only on homepage, and auto-dismiss after 4 seconds
+  useEffect(() => {
+    if (pathname === '/') {
+      setShowTooltip(true);
+      const timer = setTimeout(() => {
+        setShowTooltip(false);
+      }, 4000); // 4 seconds
+      return () => clearTimeout(timer);
+    } else {
+      setShowTooltip(false);
+    }
+  }, [pathname]);
 
   // Focus input
   useEffect(() => {
