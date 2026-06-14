@@ -3,6 +3,7 @@ import { query } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { hashPassword } from '@/lib/auth-node';
 import { cookies } from 'next/headers';
+import { logAction } from '@/lib/audit';
 
 // Password validation function
 function validatePassword(password: string): { valid: boolean; message: string } {
@@ -103,6 +104,14 @@ export async function POST(req: NextRequest) {
     const result = await query<any>(
       'INSERT INTO users (email, password_hash, name, role, is_active) VALUES (?, ?, ?, ?, ?)',
       [email, passwordHash, name, role, is_active !== false]
+    );
+
+    await logAction(
+      req,
+      session,
+      'ADD',
+      'Users',
+      `Created user: ${name} (${email}) with role: ${role}`
     );
 
     return NextResponse.json({

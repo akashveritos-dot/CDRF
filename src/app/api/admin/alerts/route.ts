@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
+import { logAction } from '@/lib/audit';
 
 // GET /api/admin/alerts - Fetch all ticker alerts (Admin Secured)
 export async function GET(req: NextRequest) {
@@ -57,6 +58,14 @@ export async function POST(req: NextRequest) {
     const result = await query<any>(
       'INSERT INTO ticker_alerts (text) VALUES (?)',
       [text.trim()]
+    );
+
+    await logAction(
+      req,
+      session,
+      'ADD',
+      'Alert Ticker',
+      `Created ticker alert: "${text.trim()}" (ID: ${result.insertId})`
     );
 
     return NextResponse.json({

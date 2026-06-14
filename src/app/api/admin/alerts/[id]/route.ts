@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
+import { logAction } from '@/lib/audit';
 
 // GET /api/admin/alerts/[id] - Fetch single ticker alert (Admin Secured)
 export async function GET(
@@ -79,6 +80,14 @@ export async function PUT(
       [text.trim(), id]
     );
 
+    await logAction(
+      req,
+      session,
+      'UPDATE',
+      'Alert Ticker',
+      `Updated ticker alert: "${text.trim()}" (ID: ${id})`
+    );
+
     return NextResponse.json({
       success: true,
       message: 'Ticker alert updated successfully'
@@ -115,12 +124,23 @@ export async function DELETE(
     }
 
     // Verify alert exists
-    const existing = await query<any[]>('SELECT id FROM ticker_alerts WHERE id = ?', [id]);
+    const existing = await query<any[]>('SELECT id, text FROM ticker_alerts WHERE id = ?', [id]);
     if (existing.length === 0) {
       return NextResponse.json({ error: 'Ticker alert not found' }, { status: 404 });
     }
 
+    const [alertItem] = existing;
+    const alertText = alertItem.text || `ID ${id}`;
+
     await query('DELETE FROM ticker_alerts WHERE id = ?', [id]);
+
+    await logAction(
+      req,
+      session,
+      'DELETE',
+      'Alert Ticker',
+      `Deleted ticker alert: "${alertText}" (ID: ${id})`
+    );
 
     return NextResponse.json({
       success: true,

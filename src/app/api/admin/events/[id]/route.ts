@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
+import { logAction } from '@/lib/audit';
 
 // GET /api/admin/events/[id] - Fetch single conclave registration details (Admin Secured)
 export async function GET(
@@ -69,7 +70,7 @@ export async function PUT(
     }
 
     // Verify registration exists
-    const existing = await query<any[]>('SELECT id FROM event_registrations WHERE id = ?', [id]);
+    const existing = await query<any[]>('SELECT id, name, email FROM event_registrations WHERE id = ?', [id]);
     if (existing.length === 0) {
       return NextResponse.json({ error: 'Registration not found' }, { status: 404 });
     }
@@ -77,6 +78,15 @@ export async function PUT(
     await query(
       'UPDATE event_registrations SET status = ? WHERE id = ?',
       [status, id]
+    );
+
+    const [reg] = existing;
+    await logAction(
+      req,
+      session,
+      'UPDATE',
+      'Event Registrations',
+      `Updated conclave registration for ${reg.name} (${reg.email}) - Status: ${status}`
     );
 
     return NextResponse.json({
@@ -115,12 +125,22 @@ export async function DELETE(
     }
 
     // Verify registration exists
-    const existing = await query<any[]>('SELECT id FROM event_registrations WHERE id = ?', [id]);
+    const existing = await query<any[]>('SELECT id, name, email FROM event_registrations WHERE id = ?', [id]);
     if (existing.length === 0) {
       return NextResponse.json({ error: 'Registration not found' }, { status: 404 });
     }
 
+    const [reg] = existing;
+
     await query('DELETE FROM event_registrations WHERE id = ?', [id]);
+
+    await logAction(
+      req,
+      session,
+      'DELETE',
+      'Event Registrations',
+      `Deleted conclave registration for ${reg.name} (${reg.email})`
+    );
 
     return NextResponse.json({
       success: true,

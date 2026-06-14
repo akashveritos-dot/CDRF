@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
+import { logAction } from '@/lib/audit';
 
 // GET all CMS pages
 export async function GET() {
@@ -50,6 +51,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
+    const existing = await query<any[]>('SELECT id FROM cms_pages WHERE slug = ?', [slug]);
+    const isUpdate = existing.length > 0;
+
     await query(`
       INSERT INTO cms_pages (slug, title, category, description, video_url, image_url, content)
       VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -61,6 +65,14 @@ export async function POST(req: NextRequest) {
         image_url = VALUES(image_url),
         content = VALUES(content)
     `, [slug, title, category, description || null, videoUrl || null, imageUrl || null, content || null]);
+
+    await logAction(
+      req,
+      session,
+      isUpdate ? 'UPDATE' : 'ADD',
+      'CMS Pages',
+      `${isUpdate ? 'Updated' : 'Created'} CMS page: "${title}" (Slug: ${slug})`
+    );
 
     return NextResponse.json({ success: true, message: 'Page content updated successfully' });
   } catch (error: any) {

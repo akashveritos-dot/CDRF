@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
+import { logAction } from '@/lib/audit';
 
 // GET /api/news/[id] - Fetch single news story
 export async function GET(
@@ -109,6 +110,14 @@ export async function PUT(
       ]
     );
 
+    await logAction(
+      req,
+      session,
+      'UPDATE',
+      'News',
+      `Updated news story: "${headline}" (ID: ${id})`
+    );
+
     return NextResponse.json({
       success: true,
       message: 'News story updated successfully'
@@ -145,12 +154,23 @@ export async function DELETE(
     }
 
     // Verify item exists
-    const existing = await query<any[]>('SELECT id FROM news WHERE id = ?', [id]);
+    const existing = await query<any[]>('SELECT id, headline FROM news WHERE id = ?', [id]);
     if (existing.length === 0) {
       return NextResponse.json({ error: 'News story not found' }, { status: 404 });
     }
 
+    const [story] = existing;
+    const headline = story.headline || `ID ${id}`;
+
     await query('DELETE FROM news WHERE id = ?', [id]);
+
+    await logAction(
+      req,
+      session,
+      'DELETE',
+      'News',
+      `Deleted news story: "${headline}" (ID: ${id})`
+    );
 
     return NextResponse.json({
       success: true,

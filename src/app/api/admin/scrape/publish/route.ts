@@ -1,13 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+import { verifyToken } from '@/lib/auth';
+import { cookies } from 'next/headers';
+import { logAction } from '@/lib/audit';
 
-// POST /api/admin/scrape/publish - Approve and publish scraped item, or reject it
+// POST /api/admin/scrape/publish - Approve and publish scraped item, or reject/restore/delete/unpublish it
 export async function POST(req: NextRequest) {
   try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('auth_token')?.value;
+
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const session = await verifyToken(token);
+    if (!session || (session.role !== 'ADMIN' && session.role !== 'SUPERADMIN')) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const body = await req.json();
     const {
       scrapedId,
-      action, // 'publish' | 'reject'
+      action, // 'publish' | 'reject' | 'unpublish' | 'restore' | 'delete'
       publishType, // 'News' | 'Report' (if publish)
       headline,
       excerpt,
@@ -32,7 +47,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Verify item exists and is Pending
+    // Verify item exists
     const existing = await query<any[]>(
       'SELECT * FROM scraped_content WHERE id = ? LIMIT 1',
       [scrapedId]
@@ -44,17 +59,102 @@ export async function POST(req: NextRequest) {
 
     const item = existing[0];
 
+    // Reject Action
     if (action === 'reject') {
       await query(
         "UPDATE scraped_content SET status = 'Rejected' WHERE id = ?",
         [scrapedId]
       );
+      
+      await logAction(
+        req,
+        session,
+        'UPDATE',
+        'Scraper Queue',
+        `Rejected scraped item: "${item.headline}" (ID: ${scrapedId})`
+      );
+
       return NextResponse.json({
         success: true,
         message: 'Scraped article rejected and removed from queue.'
       });
     }
 
+    // Restore Action
+    if (action === 'restore') {
+      await query(
+        "UPDATE scraped_content SET status = 'Pending' WHERE id = ?",
+        [scrapedId]
+      );
+
+      await logAction(
+        req,
+        session,
+        'RESTORE',
+        'Scraper Queue',
+        `Restored scraped item: "${item.headline}" to review queue (ID: ${scrapedId})`
+      );
+
+      return NextResponse.json({
+        success: true,
+        message: 'Scraped article restored to review queue.'
+      });
+    }
+
+    // Delete Action
+    if (action === 'delete') {
+      await query(
+        "DELETE FROM scraped_content WHERE id = ?",
+        [scrapedId]
+      );
+
+      await logAction(
+        req,
+        session,
+        'DELETE',
+        'Scraper Queue',
+        `Permanently deleted scraped item: "${item.headline}" (ID: ${scrapedId})`
+      );
+
+      return NextResponse.json({
+        success: true,
+        message: 'Scraped article permanently deleted.'
+      });
+    }
+
+    // Unpublish Action
+    if (action === 'unpublish') {
+      const pubId = item.published_id;
+      const pubType = item.published_type;
+
+      if (pubId && pubType) {
+        if (pubType === 'News') {
+          await query('DELETE FROM news WHERE id = ?', [pubId]);
+        } else if (pubType === 'Report') {
+          await query('DELETE FROM reports WHERE id = ?', [pubId]);
+        }
+      }
+
+      await query(
+        "UPDATE scraped_content SET status = 'Pending', published_id = NULL, published_type = NULL WHERE id = ?",
+        [scrapedId]
+      );
+
+      await logAction(
+        req,
+        session,
+        'UNPUBLISH',
+        'Scraper Queue',
+        `Unpublished scraped item: "${item.headline}" (Deleted correspondig ${pubType} ID: ${pubId})`
+      );
+
+      return NextResponse.json({
+        success: true,
+        message: 'Scraped article unpublished and restored to pending queue.'
+      });
+    }
+
+    // Publish Action
     if (action === 'publish') {
       if (!publishType) {
         return NextResponse.json(
@@ -94,6 +194,14 @@ export async function POST(req: NextRequest) {
         await query(
           "UPDATE scraped_content SET status = 'Published', published_id = ?, published_type = 'News' WHERE id = ?",
           [newNewsId, scrapedId]
+        );
+
+        await logAction(
+          req,
+          session,
+          'PUBLISH',
+          'Scraper Queue',
+          `Published scraped item: "${headlineText}" as News (News ID: ${newNewsId})`
         );
 
         return NextResponse.json({
@@ -137,6 +245,14 @@ export async function POST(req: NextRequest) {
         await query(
           "UPDATE scraped_content SET status = 'Published', published_id = ?, published_type = 'Report' WHERE id = ?",
           [newReportId, scrapedId]
+        );
+
+        await logAction(
+          req,
+          session,
+          'PUBLISH',
+          'Scraper Queue',
+          `Published scraped item: "${titleText}" as Report (Report ID: ${newReportId})`
         );
 
         return NextResponse.json({

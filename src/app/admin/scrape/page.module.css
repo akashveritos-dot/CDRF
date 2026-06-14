@@ -509,3 +509,63 @@
   }
 }
 
+/* ── Tabs Styling ────────────────────────────────────────────────────────── */
+.tabsContainer {
+  display: flex;
+  gap: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 16px;
+  margin-top: 10px;
+}
+
+.tabButton {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: #94a3b8;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tabButton:hover {
+  background-color: rgba(255, 255, 255, 0.02);
+  color: #ffffff;
+}
+
+.tabButtonActive {
+  background-color: rgba(239, 68, 68, 0.08);
+  border-color: #ef4444;
+  color: #ffffff;
+}
+
+.liveBadge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #10b981;
+  background-color: rgba(16, 185, 129, 0.06);
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+  border: 1px solid rgba(16, 185, 129, 0.15);
+}
+
+.rejectedBadge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.06);
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+  border: 1px solid rgba(239, 68, 68, 0.15);
+}
+
+

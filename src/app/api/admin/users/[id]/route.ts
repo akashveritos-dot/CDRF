@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
+import { logAction } from '@/lib/audit';
 
 // PUT - Update user (SUPERADMIN only)
 export async function PUT(
@@ -70,9 +71,25 @@ export async function PUT(
     updates.push('updated_at = NOW()');
     values.push(userId);
 
+    const existingUserRes = await query<any[]>('SELECT email, name FROM users WHERE id = ?', [userId]);
+    if (existingUserRes.length === 0) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+    const oldUser = existingUserRes[0];
+
     await query(
       `UPDATE users SET ${updates.join(', ')} WHERE id = ?`,
       values
+    );
+
+    const changes = Object.keys(body).filter(k => body[k] !== undefined).map(k => `${k}: ${body[k]}`).join(', ');
+
+    await logAction(
+      req,
+      session,
+      'UPDATE',
+      'Users',
+      `Updated user: ${oldUser.name} (${oldUser.email}) - changes: [${changes}]`
     );
 
     return NextResponse.json({ success: true });
@@ -115,8 +132,22 @@ export async function DELETE(
       );
     }
 
+    const existingUserRes = await query<any[]>('SELECT email, name FROM users WHERE id = ?', [userId]);
+    if (existingUserRes.length === 0) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+    const oldUser = existingUserRes[0];
+
     // Delete user
     await query('DELETE FROM users WHERE id = ?', [userId]);
+
+    await logAction(
+      req,
+      session,
+      'DELETE',
+      'Users',
+      `Deleted user: ${oldUser.name} (${oldUser.email})`
+    );
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

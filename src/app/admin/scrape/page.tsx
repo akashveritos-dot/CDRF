@@ -10,14 +10,15 @@ import {
   X, 
   Loader2, 
   AlertCircle,
-  FileText,
   Newspaper,
   BookOpen,
-  Image as ImageIcon
+  Image as ImageIcon,
+  RotateCcw
 } from 'lucide-react';
 import styles from './page.module.css';
 
 export default function AdminScrapeQueue() {
+  const [activeTab, setActiveTab] = useState<'Pending' | 'Published' | 'Rejected'>('Pending');
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -43,7 +44,7 @@ export default function AdminScrapeQueue() {
   const fetchQueue = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/scrape?status=Pending');
+      const res = await fetch(`/api/admin/scrape?status=${activeTab}`);
       const data = await res.json();
       setItems(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -51,7 +52,7 @@ export default function AdminScrapeQueue() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [activeTab]);
 
   useEffect(() => {
     fetchQueue();
@@ -131,6 +132,69 @@ export default function AdminScrapeQueue() {
     }
   };
 
+  const handleUnpublish = async (id: number) => {
+    // eslint-disable-next-line no-alert
+    if (!confirm('Are you sure you want to unpublish this item? It will be removed from the live website and restored to the review queue.')) return;
+
+    try {
+      const res = await fetch('/api/admin/scrape/publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          scrapedId: id,
+          action: 'unpublish'
+        })
+      });
+
+      if (!res.ok) throw new Error('Failed to unpublish');
+      fetchQueue();
+    } catch (err) {
+      // eslint-disable-next-line no-alert
+      alert('Error unpublishing item.');
+    }
+  };
+
+  const handleRestore = async (id: number) => {
+    try {
+      const res = await fetch('/api/admin/scrape/publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          scrapedId: id,
+          action: 'restore'
+        })
+      });
+
+      if (!res.ok) throw new Error('Failed to restore');
+      fetchQueue();
+    } catch (err) {
+      // eslint-disable-next-line no-alert
+      alert('Error restoring item.');
+    }
+  };
+
+  const handleDeletePermanently = async (id: number) => {
+    // eslint-disable-next-line no-alert
+    if (!confirm('Are you sure you want to permanently delete this item from the database? This action is irreversible.')) return;
+
+    try {
+      const res = await fetch('/api/admin/scrape/publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          scrapedId: id,
+          action: 'delete'
+        })
+      });
+
+      if (!res.ok) throw new Error('Failed to delete');
+      fetchQueue();
+    } catch (err) {
+      // eslint-disable-next-line no-alert
+      alert('Error deleting item.');
+    }
+  };
+
   return (
     <div className={styles.page}>
       {/* Title */}
@@ -142,6 +206,31 @@ export default function AdminScrapeQueue() {
             <p>Inspect warnings and alerts retrieved by automated indexing, categorize text, and deploy to live feeds.</p>
           </div>
         </div>
+      </div>
+
+      {/* Tabs */}
+      <div className={styles.tabsContainer}>
+        <button 
+          onClick={() => setActiveTab('Pending')} 
+          className={`${styles.tabButton} ${activeTab === 'Pending' ? styles.tabButtonActive : ''}`}
+        >
+          <Clock size={15} />
+          Pending Review ({items.length && activeTab === 'Pending' ? items.length : '0'})
+        </button>
+        <button 
+          onClick={() => setActiveTab('Published')} 
+          className={`${styles.tabButton} ${activeTab === 'Published' ? styles.tabButtonActive : ''}`}
+        >
+          <CheckSquare size={15} />
+          Published Live ({items.length && activeTab === 'Published' ? items.length : '0'})
+        </button>
+        <button 
+          onClick={() => setActiveTab('Rejected')} 
+          className={`${styles.tabButton} ${activeTab === 'Rejected' ? styles.tabButtonActive : ''}`}
+        >
+          <Trash2 size={15} />
+          Rejected List ({items.length && activeTab === 'Rejected' ? items.length : '0'})
+        </button>
       </div>
 
       {/* Main Staged Grid */}
@@ -159,9 +248,21 @@ export default function AdminScrapeQueue() {
                   <Globe size={13} />
                   <span>{item.source}</span>
                 </div>
-                <span className={styles.suggestedCat}>
-                  Category: {item.category}
-                </span>
+                {activeTab === 'Pending' && (
+                  <span className={styles.suggestedCat}>
+                    Suggested: {item.category}
+                  </span>
+                )}
+                {activeTab === 'Published' && (
+                  <span className={styles.liveBadge}>
+                    Live: {item.published_type}
+                  </span>
+                )}
+                {activeTab === 'Rejected' && (
+                  <span className={styles.rejectedBadge}>
+                    Rejected
+                  </span>
+                )}
               </div>
               
               <div className={styles.cardBody} style={{ minHeight: '85px' }}>
@@ -189,21 +290,56 @@ export default function AdminScrapeQueue() {
                     })}
                   </span>
                 </div>
+                
+                {/* Dynamic Actions Based on activeTab */}
                 <div className={styles.actionRow}>
-                  <button 
-                    onClick={() => handleReject(item.id)} 
-                    className={styles.rejectBtn}
-                    title="Reject and discard"
-                  >
-                    <Trash2 size={13} /> Reject
-                  </button>
-                  <button 
-                    onClick={() => handleOpenPublish(item)} 
-                    className={styles.approveBtn}
-                    title="Publish to Live feeds"
-                  >
-                    <CheckSquare size={13} /> Publish...
-                  </button>
+                  {activeTab === 'Pending' && (
+                    <>
+                      <button 
+                        onClick={() => handleReject(item.id)} 
+                        className={styles.rejectBtn}
+                        title="Reject and discard"
+                      >
+                        <Trash2 size={13} /> Reject
+                      </button>
+                      <button 
+                        onClick={() => handleOpenPublish(item)} 
+                        className={styles.approveBtn}
+                        title="Publish to Live feeds"
+                      >
+                        <CheckSquare size={13} /> Publish...
+                      </button>
+                    </>
+                  )}
+
+                  {activeTab === 'Published' && (
+                    <button 
+                      onClick={() => handleUnpublish(item.id)} 
+                      className={styles.rejectBtn}
+                      title="Unpublish item and restore to queue"
+                    >
+                      <X size={13} /> Unpublish
+                    </button>
+                  )}
+
+                  {activeTab === 'Rejected' && (
+                    <>
+                      <button 
+                        onClick={() => handleDeletePermanently(item.id)} 
+                        className={styles.rejectBtn}
+                        title="Delete permanently from database"
+                      >
+                        <Trash2 size={13} /> Delete
+                      </button>
+                      <button 
+                        onClick={() => handleRestore(item.id)} 
+                        className={styles.approveBtn}
+                        title="Restore to pending review queue"
+                      >
+                        <RotateCcw size={13} /> Restore
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -212,8 +348,12 @@ export default function AdminScrapeQueue() {
       ) : (
         <div className={styles.emptyState}>
           <AlertCircle size={36} />
-          <h3>Review queue is empty.</h3>
-          <p>Go to the Dashboard page and trigger the scraper engine manually to harvest live articles.</p>
+          <h3>No articles found in this status.</h3>
+          <p>
+            {activeTab === 'Pending' 
+              ? 'Go to the Dashboard page and trigger the scraper engine manually to harvest live articles.' 
+              : `There are currently no articles marked as ${activeTab.toLowerCase()}.`}
+          </p>
         </div>
       )}
 

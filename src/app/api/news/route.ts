@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
+import { logAction } from '@/lib/audit';
 
 // GET /api/news - Fetch news stories
 export async function GET(req: NextRequest) {
@@ -115,6 +116,14 @@ export async function POST(req: NextRequest) {
         image_url || '',
         category.toLowerCase()
       ]
+    );
+
+    await logAction(
+      req,
+      session,
+      'ADD',
+      'News',
+      `Created news story: "${headline}" (ID: ${result.insertId})`
     );
 
     return NextResponse.json({

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
+import { logAction } from '@/lib/audit';
 
 // POST a new gallery item
 export async function POST(req: NextRequest) {
@@ -25,9 +26,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Image URL and Caption are required' }, { status: 400 });
     }
 
-    await query(
+    const result = await query<any>(
       'INSERT INTO gallery_items (image_url, caption, content, display_order) VALUES (?, ?, ?, ?)',
       [imageUrl, caption, content || null, displayOrder]
+    );
+
+    await logAction(
+      req,
+      session,
+      'ADD',
+      'Gallery',
+      `Added gallery item: "${caption}"`
     );
 
     return NextResponse.json({ success: true, message: 'Gallery item added successfully' });
@@ -59,7 +68,23 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
     }
 
+    const existing = await query<any[]>('SELECT caption FROM gallery_items WHERE id = ?', [id]);
+    if (existing.length === 0) {
+      return NextResponse.json({ error: 'Gallery item not found' }, { status: 404 });
+    }
+    const [item] = existing;
+    const caption = item.caption || `ID ${id}`;
+
     await query('DELETE FROM gallery_items WHERE id = ?', [id]);
+
+    await logAction(
+      req,
+      session,
+      'DELETE',
+      'Gallery',
+      `Deleted gallery item: "${caption}" (ID: ${id})`
+    );
+
     return NextResponse.json({ success: true, message: 'Gallery item deleted successfully' });
   } catch (error: any) {
     console.error('Admin delete gallery error:', error);

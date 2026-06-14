@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
+import { logAction } from '@/lib/audit';
 
 export async function GET() {
   try {
@@ -48,7 +49,23 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
     }
 
+    const existing = await query<any[]>('SELECT name, email FROM contact_messages WHERE id = ?', [id]);
+    if (existing.length === 0) {
+      return NextResponse.json({ error: 'Message not found' }, { status: 404 });
+    }
+
+    const [msg] = existing;
+
     await query('DELETE FROM contact_messages WHERE id = ?', [id]);
+
+    await logAction(
+      req,
+      session,
+      'DELETE',
+      'Query Messages',
+      `Deleted query message from ${msg.name} (${msg.email})`
+    );
+
     return NextResponse.json({ success: true, message: 'Message deleted successfully' });
   } catch (error: any) {
     console.error('Admin delete contact message error:', error);

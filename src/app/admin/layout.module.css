@@ -139,6 +139,7 @@
 .navLink {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
   padding: 12px 16px;
   border-radius: 8px;
@@ -146,15 +147,30 @@
   font-weight: 500;
   color: #94a3b8;
   transition: all 0.2s ease;
-}
-
-.navLink svg {
-  transition: color 0.2s ease;
+  width: 100%;
 }
 
 .navLink:hover {
   color: #ffffff;
   background-color: rgba(255, 255, 255, 0.03);
+}
+
+.navLinkContent {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.badge {
+  background-color: #ef4444;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 99px;
+  min-width: 18px;
+  text-align: center;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
 }
 
 .navLinkActive {

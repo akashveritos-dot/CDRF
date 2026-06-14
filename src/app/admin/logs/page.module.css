@@ -1,0 +1,266 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.titleBlock {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.headerIcon {
+  color: #ef4444;
+  filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.3));
+}
+
+.titleBlock h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 4px;
+}
+
+.titleBlock p {
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+/* ── Filter Controls ───────────────────────────────────────────────────────── */
+.controls {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  background-color: #0a0f1d;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 16px 20px;
+}
+
+.searchField {
+  flex: 1;
+  background-color: #050811;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 10px 16px;
+  color: #ffffff;
+  outline: none;
+  font-size: 13px;
+}
+
+.searchField:focus {
+  border-color: #ef4444;
+}
+
+.selectField {
+  background-color: #050811;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 10px 16px;
+  color: #ffffff;
+  outline: none;
+  font-size: 13px;
+  min-width: 180px;
+}
+
+.selectField:focus {
+  border-color: #ef4444;
+}
+
+/* ── Table Styling ────────────────────────────────────────────────────────── */
+.tableContainer {
+  background-color: #0a0f1d;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+
+.table th {
+  background-color: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 14px 20px;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 11px;
+  color: #64748b;
+  letter-spacing: 0.05em;
+}
+
+.table td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 16px 20px;
+  color: #f1f5f9;
+  vertical-align: top;
+  line-height: 1.5;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.table tr:hover td {
+  background-color: rgba(255, 255, 255, 0.01);
+}
+
+/* ── Badge Classes ────────────────────────────────────────────────────────── */
+.userBadge {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.userName {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.userEmail {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.userRole {
+  align-self: flex-start;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  background-color: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+  border: 1px solid rgba(239, 68, 68, 0.15);
+}
+
+.userRoleAdmin {
+  background-color: rgba(59, 130, 246, 0.08);
+  color: #3b82f6;
+  border-color: rgba(59, 130, 246, 0.15);
+}
+
+.actionBadge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+}
+
+.actionAdd { background-color: rgba(16, 185, 129, 0.08); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.15); }
+.actionUpdate { background-color: rgba(59, 130, 246, 0.08); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.15); }
+.actionDelete { background-color: rgba(239, 68, 68, 0.08); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.15); }
+.actionPublish { background-color: rgba(245, 158, 11, 0.08); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.15); }
+.actionUnpublish { background-color: rgba(168, 85, 247, 0.08); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.15); }
+.actionRestore { background-color: rgba(20, 184, 166, 0.08); color: #14b8a6; border: 1px solid rgba(20, 184, 166, 0.15); }
+.actionOther { background-color: rgba(100, 116, 139, 0.08); color: #64748b; border: 1px solid rgba(100, 116, 139, 0.15); }
+
+.detailsCol {
+  max-width: 300px;
+  word-break: break-word;
+}
+
+.networkCol {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ipAddress {
+  font-family: monospace;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.location {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.timestamp {
+  font-size: 12px;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+/* ── Empty State ──────────────────────────────────────────────────────────── */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+  color: #475569;
+  text-align: center;
+  gap: 12px;
+}
+
+.emptyState h3 {
+  color: #94a3b8;
+  font-size: 16px;
+}
+
+.emptyState p {
+  font-size: 13px;
+  max-width: 320px;
+}
+
+/* ── States ── */
+.loadingBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px;
+  gap: 16px;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+  color: #ef4444;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .selectField {
+    width: 100%;
+  }
+
+  .table th, .table td {
+    padding: 12px 14px;
+  }
+
+  .timestamp {
+    white-space: normal;
+  }
+}

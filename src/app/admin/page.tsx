@@ -12,7 +12,10 @@ import {
   AlertTriangle,
   Loader2,
   CheckCircle,
-  Clock
+  Clock,
+  MessageSquare,
+  Mail,
+  Calendar
 } from 'lucide-react';
 import styles from './page.module.css';
 
@@ -20,9 +23,10 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<any>({
     newsCount: 0,
     reportsCount: 0,
-    membershipsTotal: 0,
+    queriesPending: 0,
     membershipsPending: 0,
-    membershipsApproved: 0,
+    registrationsPending: 0,
+    subscriptionsCount: 0,
     scrapedPending: 0
   });
   const [isLoading, setIsLoading] = useState(true);
@@ -33,29 +37,24 @@ export default function AdminDashboard() {
 
   const fetchDashboardStats = async () => {
     try {
-      // Fetch news, reports, registrations, and scraped queue
-      const [newsRes, reportsRes, membershipsRes, scrapedRes] = await Promise.all([
+      const [newsRes, reportsRes, countsRes] = await Promise.all([
         fetch('/api/news'),
         fetch('/api/reports'),
-        fetch('/api/admin/memberships'),
-        fetch('/api/admin/scrape?status=Pending')
+        fetch('/api/admin/sidebar-counts')
       ]);
 
       const newsData = await newsRes.json();
       const reportsData = await reportsRes.json();
-      const membershipsData = await membershipsRes.json();
-      const scrapedData = await scrapedRes.json();
-
-      const pendingMemberships = membershipsData.filter((m: any) => m.status === 'Pending').length;
-      const approvedMemberships = membershipsData.filter((m: any) => m.status === 'Approved').length;
+      const countsData = await countsRes.json();
 
       setStats({
-        newsCount: newsData.length,
-        reportsCount: reportsData.length,
-        membershipsTotal: membershipsData.length,
-        membershipsPending: pendingMemberships,
-        membershipsApproved: approvedMemberships,
-        scrapedPending: scrapedData.length
+        newsCount: Array.isArray(newsData) ? newsData.length : 0,
+        reportsCount: Array.isArray(reportsData) ? reportsData.length : 0,
+        queriesPending: countsData.queries || 0,
+        membershipsPending: countsData.memberships || 0,
+        registrationsPending: countsData.registrations || 0,
+        subscriptionsCount: countsData.subscriptions || 0,
+        scrapedPending: countsData.scraper || 0
       });
     } catch (err) {
       console.error('Failed to load dashboard stats:', err);
@@ -170,28 +169,68 @@ export default function AdminDashboard() {
         {/* Memberships Card */}
         <div className={styles.card}>
           <div className={styles.cardHeader}>
-            <span className={styles.cardTitle}>Total Registrations</span>
+            <span className={styles.cardTitle}>Pending Memberships</span>
             <Users className={styles.cardIconGold} size={22} />
           </div>
-          <div className={styles.cardValue}>{stats.membershipsTotal}</div>
+          <div className={styles.cardValue}>{stats.membershipsPending}</div>
           <div className={styles.cardFooterSplit}>
-            <span className={styles.subStat}>
-              <Clock size={12} className={styles.clockIcon} /> {stats.membershipsPending} Pending
+            <span className={stats.membershipsPending > 0 ? styles.subStat : styles.cardLink}>
+              <Clock size={12} className={styles.clockIcon} /> Awaiting approval
             </span>
             <Link href="/admin/memberships" className={styles.cardLink}>Review list ↗</Link>
+          </div>
+        </div>
+
+        {/* Conclave Registrations Card */}
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <span className={styles.cardTitle}>Pending Conclave</span>
+            <Calendar className={styles.cardIconGold} style={{ color: '#f59e0b' }} size={22} />
+          </div>
+          <div className={styles.cardValue}>{stats.registrationsPending}</div>
+          <div className={styles.cardFooterSplit}>
+            <span className={stats.registrationsPending > 0 ? styles.subStat : styles.cardLink}>
+              <Clock size={12} className={styles.clockIcon} /> Applications staging
+            </span>
+            <Link href="/admin/events" className={styles.cardLink}>Verify list ↗</Link>
           </div>
         </div>
 
         {/* Scrape Queue Card */}
         <div className={styles.card}>
           <div className={styles.cardHeader}>
-            <span className={styles.cardTitle}>Scraped Queue</span>
+            <span className={styles.cardTitle}>Scrape Review Queue</span>
             <Radio className={styles.cardIconRed} size={22} />
           </div>
           <div className={styles.cardValue}>{stats.scrapedPending}</div>
           <div className={styles.cardFooterSplit}>
-            <span className={styles.subStatRed}>Unpublished items</span>
+            <span className={stats.scrapedPending > 0 ? styles.subStatRed : styles.cardLink}>Unprocessed articles</span>
             <Link href="/admin/scrape" className={styles.cardLinkRed}>Verify queue ↗</Link>
+          </div>
+        </div>
+
+        {/* Query Messages Card */}
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <span className={styles.cardTitle}>Query Messages</span>
+            <MessageSquare className={styles.cardIconRed} style={{ color: '#ef4444' }} size={22} />
+          </div>
+          <div className={styles.cardValue}>{stats.queriesPending}</div>
+          <div className={styles.cardFooterSplit}>
+            <span className={stats.queriesPending > 0 ? styles.subStatRed : styles.cardLink}>Inbox queries</span>
+            <Link href="/admin/contacts" className={styles.cardLinkRed}>Query inbox ↗</Link>
+          </div>
+        </div>
+
+        {/* Subscriptions Card */}
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <span className={styles.cardTitle}>Subscribers</span>
+            <Mail className={styles.cardIconBlue} style={{ color: '#3b82f6' }} size={22} />
+          </div>
+          <div className={styles.cardValue}>{stats.subscriptionsCount}</div>
+          <div className={styles.cardFooter}>
+            <Link href="/admin/subscriptions" className={styles.cardLink}>Manage lists ↗</Link>
           </div>
         </div>
       </div>

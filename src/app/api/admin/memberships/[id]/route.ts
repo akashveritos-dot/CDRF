@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+import { verifyToken } from '@/lib/auth';
+import { cookies } from 'next/headers';
+import { logAction } from '@/lib/audit';
 
 // PUT /api/admin/memberships/[id] - Update registration status and payment logs
 export async function PUT(
@@ -9,6 +12,18 @@ export async function PUT(
   try {
     const params = await props.params;
     const { id } = params;
+    const cookieStore = await cookies();
+    const token = cookieStore.get('auth_token')?.value;
+
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const session = await verifyToken(token);
+    if (!session || (session.role !== 'ADMIN' && session.role !== 'SUPERADMIN')) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const body = await req.json();
     const { status, pay_status, payment_details } = body;
 
@@ -20,7 +35,7 @@ export async function PUT(
     }
 
     // Verify application exists
-    const existing = await query<any[]>('SELECT id FROM memberships WHERE id = ?', [id]);
+    const existing = await query<any[]>('SELECT id, name, email FROM memberships WHERE id = ?', [id]);
     if (existing.length === 0) {
       return NextResponse.json({ error: 'Membership application not found' }, { status: 404 });
     }
@@ -30,6 +45,15 @@ export async function PUT(
        SET status = ?, pay_status = ?, payment_details = ? 
        WHERE id = ?`,
       [status, pay_status, payment_details || '', id]
+    );
+
+    const [member] = existing;
+    await logAction(
+      req,
+      session,
+      'UPDATE',
+      'Memberships',
+      `Updated membership application for ${member.name} (${member.email}) - Status: ${status}, Payment: ${pay_status}`
     );
 
     return NextResponse.json({
@@ -55,13 +79,35 @@ export async function DELETE(
     const params = await props.params;
     const { id } = params;
 
+    const cookieStore = await cookies();
+    const token = cookieStore.get('auth_token')?.value;
+
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const session = await verifyToken(token);
+    if (!session || (session.role !== 'ADMIN' && session.role !== 'SUPERADMIN')) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     // Verify application exists
-    const existing = await query<any[]>('SELECT id FROM memberships WHERE id = ?', [id]);
+    const existing = await query<any[]>('SELECT id, name, email FROM memberships WHERE id = ?', [id]);
     if (existing.length === 0) {
       return NextResponse.json({ error: 'Membership application not found' }, { status: 404 });
     }
 
+    const [member] = existing;
+
     await query('DELETE FROM memberships WHERE id = ?', [id]);
+
+    await logAction(
+      req,
+      session,
+      'DELETE',
+      'Memberships',
+      `Deleted membership application for ${member.name} (${member.email})`
+    );
 
     return NextResponse.json({
       success: true,
