@@ -123,7 +123,7 @@ function DraftCard({ type, initialData }: DraftCardProps) {
         payload = { text: formData.text };
       }
 
-      const res = await fetch(`https://cdrf.vercel.app${endpoint}`, {
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -419,7 +419,11 @@ export default function ChatAssistant() {
   // Focus input (desktop only to prevent mobile virtual keyboard from auto-opening)
   useEffect(() => {
     if (isOpen && inputRef.current) {
-      const isMobile = window.matchMedia('(max-width: 768px)').matches;
+      const isMobile = typeof window !== 'undefined' && (
+        window.innerWidth <= 768 ||
+        /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) || 
+        ('ontouchstart' in window)
+      );
       if (!isMobile) {
         setTimeout(() => inputRef.current?.focus(), 150);
       }
@@ -450,7 +454,7 @@ export default function ChatAssistant() {
     typewriterLengthRef.current = 0;
 
     try {
-      const response = await fetch('https://cdrf.vercel.app/api/chat', {
+      const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
