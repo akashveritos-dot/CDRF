@@ -118,6 +118,7 @@
   visibility: hidden;
   transition: opacity var(--transition-fast), visibility var(--transition-fast), transform var(--transition-fast);
   z-index: 10;
+  width: max-content !important; /* Force background box to cover full text width */
   max-width: none !important; /* Override global max-width: 100% to prevent clipping */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
