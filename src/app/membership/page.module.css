@@ -1052,3 +1052,265 @@
     padding: 9px 12px;
   }
 }
+
+/* ─── Razorpay Payment Step & Unlocked Features ───────────────────── */
+.paymentBox {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.paymentTitle {
+  font-family: var(--font-display);
+  font-size: 26px;
+  color: var(--text-default);
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.paymentSubtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+.paymentSummary {
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  color: var(--text-default);
+}
+
+.summaryLabel {
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.summaryValue {
+  font-weight: 600;
+}
+
+.summaryDivider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 4px 0;
+}
+
+.summaryTotal {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gold-primary);
+}
+
+.paymentFields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.secureBadge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #059669;
+  background: #ecfdf5;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-top: 8px;
+}
+
+.payActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.backBtn {
+  background: transparent;
+  color: var(--text-default);
+  border: 1px solid var(--border-color);
+  padding: 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 150ms ease;
+  text-align: center;
+}
+
+.backBtn:hover {
+  background: var(--bg-surface-alt);
+  border-color: var(--text-muted);
+}
+
+/* Unlocked Features list on success screen */
+.unlockedSection {
+  width: 100%;
+  background: rgba(14, 122, 107, 0.04);
+  border: 1px solid rgba(14, 122, 107, 0.15);
+  border-radius: 14px;
+  padding: 24px;
+  margin-top: 8px;
+  text-align: left;
+}
+
+.unlockedTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0e7a6b;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.unlockedList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.unlockedItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-default);
+  font-weight: 500;
+}
+
+.unlockedCheck {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #e0f5f1;
+  color: #0e7a6b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.receiptBox {
+  background: var(--bg-surface-alt);
+  border: 1px dashed var(--border-color);
+  border-radius: 10px;
+  padding: 16px;
+  width: 100%;
+  font-size: 12px;
+  font-family: monospace;
+  color: var(--text-muted);
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.receiptRow {
+  display: flex;
+  justify-content: space-between;
+}
+
+.successActions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+/* Mock Modal Popup Overlay */
+.mockModalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 200ms ease;
+  padding: 16px;
+}
+
+.mockModal {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 440px;
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  animation: mockModalSlideIn 250ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes mockModalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mockModalHeader {
+  background: #0e7a6b;
+  color: #fff;
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mockModalTitle {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.mockModalBody {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  color: var(--text-default);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.mockModalFooter {
+  background: var(--bg-surface-alt);
+  padding: 16px 24px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}

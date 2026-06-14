@@ -89,7 +89,13 @@ export default function MembershipPage() {
     title: '',
     message: ''
   });
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [flowStep, setFlowStep] = useState<'form' | 'payment' | 'success'>('form');
+  const [applicationId, setApplicationId] = useState<number | null>(null);
+  const [razorpayOrderId, setRazorpayOrderId] = useState<string>('');
+  const [paymentDetails, setPaymentDetails] = useState<{ paymentId: string; orderId: string } | null>(null);
+  const [isPaying, setIsPaying] = useState(false);
+  const [showMockModal, setShowMockModal] = useState(false);
+  const [mockOrderId, setMockOrderId] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -105,12 +111,12 @@ export default function MembershipPage() {
         setDropdownOpen(false);
       }
     };
-    
+
     if (dropdownOpen) {
       document.addEventListener('mousedown', handleClickOutside);
       document.addEventListener('touchstart', handleClickOutside);
     }
-    
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('touchstart', handleClickOutside);
@@ -121,10 +127,15 @@ export default function MembershipPage() {
     e.preventDefault();
     if (formData.name && formData.email && formData.organization) {
       try {
+        const isPaidTier = formData.tier !== 'Basic';
+        
         const res = await fetch('/api/membership/apply', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
+          body: JSON.stringify({
+            ...formData,
+            checkOnly: isPaidTier
+          })
         });
 
         if (!res.ok) {
@@ -138,11 +149,17 @@ export default function MembershipPage() {
             data.message || 'This email is already registered for membership.'
           );
         } else {
-          setIsSubmitted(true);
-          success(
-            'Application Logged',
-            `Your request for ${formData.tier} tier is staged for review.`
-          );
+          if (!isPaidTier) {
+            setApplicationId(data.applicationId);
+            setFlowStep('success');
+            success(
+              'Application Logged',
+              `Your request for ${formData.tier} tier is staged for review.`
+            );
+          } else {
+            // Paid tier: transition to payment screen silently (no success toast)
+            setFlowStep('payment');
+          }
         }
       } catch (err) {
         console.error('Membership form error:', err);
@@ -150,6 +167,160 @@ export default function MembershipPage() {
       }
     }
   };
+
+  const handlePayment = async () => {
+    setIsPaying(true);
+
+    try {
+      // 1. Fetch Order ID from server
+      const orderRes = await fetch('/api/membership/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tier: formData.tier })
+      });
+
+      if (!orderRes.ok) {
+        throw new Error('Failed to generate payment order from server.');
+      }
+
+      const orderData = await orderRes.json();
+      const { orderId, isMock } = orderData;
+      setRazorpayOrderId(orderId);
+
+      if (isMock) {
+        setMockOrderId(orderId);
+        setShowMockModal(true);
+        setIsPaying(false);
+        return;
+      }
+
+      // 2. Open real Razorpay checkout popup
+      if (!(window as any).Razorpay) {
+        await new Promise<void>((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+          script.async = true;
+          script.onload = () => resolve();
+          script.onerror = () => reject(new Error('Failed to load Razorpay SDK'));
+          document.body.appendChild(script);
+        });
+      }
+
+      let amountPaisa = 0;
+      if (formData.tier === 'Prime') amountPaisa = 2000000;
+      else if (formData.tier === 'Premium') amountPaisa = 5000000;
+      else if (formData.tier === 'Gold') amountPaisa = 10000000;
+
+      const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_L88P4F2zUqI2lX';
+
+      const options = {
+        key: keyId,
+        amount: amountPaisa,
+        currency: 'INR',
+        name: 'DCRF Federation',
+        description: `${formData.tier} Tier Membership`,
+        order_id: orderId,
+        prefill: {
+          name: formData.name,
+          email: formData.email,
+          contact: ''
+        },
+        theme: {
+          color: '#0e7a6b'
+        },
+        handler: async function (response: any) {
+          try {
+            setIsPaying(true);
+            const verifyRes = await fetch('/api/membership/payment-success', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                ...formData,
+                paymentId: response.razorpay_payment_id,
+                orderId: response.razorpay_order_id,
+                signature: response.razorpay_signature
+              })
+            });
+
+            if (!verifyRes.ok) {
+              throw new Error('Payment storage verification failed');
+            }
+
+            const verifyData = await verifyRes.json();
+            setApplicationId(verifyData.applicationId);
+
+            setPaymentDetails({
+              paymentId: response.razorpay_payment_id,
+              orderId: response.razorpay_order_id
+            });
+
+            setFlowStep('success');
+            success('Membership Active!', 'Congratulations! You are now a member of DCRF.');
+          } catch (err: any) {
+            console.error('Payment verification API error:', err);
+            toastError('Verification Error', 'Payment was successful, but we failed to update your account. Please contact Secretariat.');
+          } finally {
+            setIsPaying(false);
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            setIsPaying(false);
+            warning('Payment Cancelled', 'Razorpay checkout window was closed.');
+          }
+        }
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+
+    } catch (err: any) {
+      console.error('Razorpay process error:', err);
+      toastError('Payment Error', err.message || 'Failed to process Razorpay payment order.');
+      setIsPaying(false);
+    }
+  };
+
+  const handleMockPaymentSuccess = async () => {
+    setIsPaying(true);
+    setShowMockModal(false);
+
+    try {
+      const mockPaymentId = `pay_mock_${Math.random().toString(36).substring(2, 10)}${Date.now().toString().slice(-4)}`;
+      
+      const verifyRes = await fetch('/api/membership/payment-success', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          paymentId: mockPaymentId,
+          orderId: mockOrderId,
+          signature: 'sig_mock_verified'
+        })
+      });
+
+      if (!verifyRes.ok) {
+        throw new Error('Mock payment verification failed');
+      }
+
+      const verifyData = await verifyRes.json();
+      setApplicationId(verifyData.applicationId);
+
+      setPaymentDetails({
+        paymentId: mockPaymentId,
+        orderId: mockOrderId
+      });
+
+      setFlowStep('success');
+      success('Membership Active!', 'Congratulations! You are now a member of DCRF.');
+    } catch (err: any) {
+      console.error('Mock payment verify error:', err);
+      toastError('Payment Error', 'Failed to store mock payment details.');
+    } finally {
+      setIsPaying(false);
+    }
+  };
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -176,10 +347,10 @@ export default function MembershipPage() {
               <div
                 className={`${styles.tierCard} ${tier.isPopular ? styles.popularCard : ''}`}
                 style={{
-                  '--tier-accent':  cfg.accentColor,
-                  '--tier-pale':    cfg.accentPale,
-                  '--tier-glow':    cfg.accentGlow,
-                  '--tier-btn':     cfg.btnBg,
+                  '--tier-accent': cfg.accentColor,
+                  '--tier-pale': cfg.accentPale,
+                  '--tier-glow': cfg.accentGlow,
+                  '--tier-btn': cfg.btnBg,
                   '--tier-btn-hover': cfg.btnHover,
                 } as React.CSSProperties}
               >
@@ -249,7 +420,7 @@ export default function MembershipPage() {
       {/* ── Comparison Table ───────────────────────────────────────────── */}
       <ScrollReveal direction="up">
         <h2 className={styles.compareTitle}>Benefit Comparison</h2>
-        
+
         {/* Desktop Table View */}
         <div className={styles.tableWrapper}>
           <table className={styles.table}>
@@ -363,18 +534,140 @@ export default function MembershipPage() {
       {/* ── Registration Form ──────────────────────────────────────────── */}
       <ScrollReveal direction="up">
         <div id="join" className={styles.formSec}>
-          {isSubmitted ? (
+          {flowStep === 'success' ? (
             <div className={styles.successBox}>
               <div className={styles.successIcon}>
                 <Check size={32} />
               </div>
-              <h3 className={styles.successTitle}>Application Received!</h3>
+              <h3 className={styles.successTitle}>
+                {formData.tier === 'Basic' ? 'Application Received!' : 'Congratulations!'}
+              </h3>
               <p className={styles.successMsg}>
-                Thank you for applying for <strong>{formData.tier} Membership</strong>. The DCRF Secretariat will review your organization credentials and write back within 3–5 business days.
+                {formData.tier === 'Basic' ? (
+                  <>
+                    Thank you for applying for <strong>{formData.tier} Membership</strong>. The DCRF Secretariat will review your organization credentials and write back within 3–5 business days.
+                  </>
+                ) : (
+                  <>
+                    You are now a registered <strong>{formData.tier} member</strong> of our organization! You have successfully unlocked premium features and resources.
+                  </>
+                )}
               </p>
-              <button className={styles.submitBtn} style={{ width: '160px' }} onClick={() => setIsSubmitted(false)}>
+
+              {/* Unlocked Features based on user feedback */}
+              <div className={styles.unlockedSection}>
+                <div className={styles.unlockedTitle}>
+                  <Star size={16} fill="currentColor" style={{ marginRight: '6px' }} /> Unlocked Tier Privileges ({formData.tier})
+                </div>
+                <ul className={styles.unlockedList}>
+                  {membershipFeatures
+                    .filter(feat => {
+                      const tierObj = membershipTiers.find(t => t.name === formData.tier);
+                      return tierObj ? (tierObj.features as Record<string, boolean>)[feat] : false;
+                    })
+                    .map(feat => (
+                      <li key={feat} className={styles.unlockedItem}>
+                        <span className={styles.unlockedCheck}>
+                          <Check size={11} strokeWidth={3} />
+                        </span>
+                        <span>{feat}</span>
+                      </li>
+                    ))}
+                </ul>
+              </div>
+
+              {/* Display payment details if paid tier */}
+              {paymentDetails && (
+                <div className={styles.receiptBox}>
+                  <div className={styles.receiptRow}>
+                    <span>Transaction ID:</span>
+                    <span>{paymentDetails.paymentId}</span>
+                  </div>
+                  <div className={styles.receiptRow}>
+                    <span>Order ID:</span>
+                    <span>{paymentDetails.orderId}</span>
+                  </div>
+                  <div className={styles.receiptRow}>
+                    <span>Status:</span>
+                    <span style={{ color: '#059669', fontWeight: 'bold' }}>SUCCESSFUL (PAID)</span>
+                  </div>
+                </div>
+              )}
+
+              <button
+                className={styles.submitBtn}
+                style={{ width: '200px', marginTop: '16px' }}
+                onClick={() => {
+                  setFlowStep('form');
+                  setFormData({
+                    name: '',
+                    email: '',
+                    organization: '',
+                    tier: 'Basic',
+                    title: '',
+                    message: ''
+                  });
+                  setPaymentDetails(null);
+                  setRazorpayOrderId('');
+                }}
+              >
                 Register Another
               </button>
+            </div>
+          ) : flowStep === 'payment' ? (
+            <div className={styles.paymentBox}>
+              <h3 className={styles.paymentTitle}>Complete Membership Payment</h3>
+              <p className={styles.paymentSubtitle}>
+                Please click below to securely initiate the transaction using the Razorpay gateway.
+              </p>
+
+              {/* Summary Card */}
+              <div className={styles.paymentSummary}>
+                <div className={styles.summaryRow}>
+                  <span className={styles.summaryLabel}>Applicant:</span>
+                  <span className={styles.summaryValue}>{formData.name}</span>
+                </div>
+                <div className={styles.summaryRow}>
+                  <span className={styles.summaryLabel}>Email:</span>
+                  <span className={styles.summaryValue}>{formData.email}</span>
+                </div>
+                <div className={styles.summaryRow}>
+                  <span className={styles.summaryLabel}>Membership Tier:</span>
+                  <span className={styles.summaryValue}>{formData.tier}</span>
+                </div>
+                <div className={styles.summaryDivider}></div>
+                <div className={styles.summaryRow}>
+                  <span className={styles.summaryLabel} style={{ fontWeight: 'bold' }}>Total Amount:</span>
+                  <span className={styles.summaryTotal}>
+                    {formData.tier === 'Prime' ? '₹20,000' : formData.tier === 'Premium' ? '₹50,000' : '₹1,00,000'}
+                  </span>
+                </div>
+              </div>
+
+              <div className={styles.secureBadge}>
+                <Shield size={16} /> Secure checkout processed via Razorpay API
+              </div>
+
+              {/* Action Buttons */}
+              <div className={styles.payActions}>
+                <button
+                  type="button"
+                  className={styles.backBtn}
+                  onClick={() => setFlowStep('form')}
+                  disabled={isPaying}
+                >
+                  Go Back
+                </button>
+                <button
+                  type="button"
+                  className={styles.submitBtn}
+                  onClick={handlePayment}
+                  disabled={isPaying}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                >
+                  {isPaying ? 'Processing...' : 'Pay with Razorpay'}
+                </button>
+              </div>
             </div>
           ) : (
             <form onSubmit={handleSubmit}>
@@ -423,8 +716,8 @@ export default function MembershipPage() {
                           </span>
                         </div>
                       </div>
-                      <ChevronDown 
-                        size={18} 
+                      <ChevronDown
+                        size={18}
                         className={`${styles.dropdownChevron} ${dropdownOpen ? styles.dropdownChevronOpen : ''}`}
                       />
                     </button>
@@ -470,6 +763,63 @@ export default function MembershipPage() {
           )}
         </div>
       </ScrollReveal>
+
+      {/* Razorpay Sandbox Mock Terminal Popup */}
+      {showMockModal && (
+        <div className={styles.mockModalOverlay}>
+          <div className={styles.mockModal}>
+            <div className={styles.mockModalHeader}>
+              <Shield size={18} style={{ color: '#fff' }} />
+              <h3 className={styles.mockModalTitle}>DCRF Secure Payment Gate</h3>
+            </div>
+            <div className={styles.mockModalBody}>
+              <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-default)' }}>
+                You are paying securely using DCRF Sandbox Gateway.
+              </p>
+              <div className={styles.receiptBox} style={{ margin: 0 }}>
+                <div className={styles.receiptRow}>
+                  <span>Merchant:</span>
+                  <span>DCRF Federation</span>
+                </div>
+                <div className={styles.receiptRow}>
+                  <span>Membership:</span>
+                  <span>{formData.tier} Tier</span>
+                </div>
+                <div className={styles.receiptRow}>
+                  <span>Amount:</span>
+                  <span style={{ fontWeight: 'bold', color: 'var(--gold-primary)' }}>
+                    {formData.tier === 'Prime' ? '₹20,000' : formData.tier === 'Premium' ? '₹50,000' : '₹1,00,000'}
+                  </span>
+                </div>
+                <div className={styles.receiptRow}>
+                  <span>Order ID:</span>
+                  <span>{mockOrderId}</span>
+                </div>
+              </div>
+              <p style={{ fontSize: '12.5px', color: 'var(--text-muted)', margin: 0 }}>
+                This is a simulated sandbox checkout process. Please click <strong>Simulate Payment</strong> to confirm and process this transaction.
+              </p>
+            </div>
+            <div className={styles.mockModalFooter}>
+              <button 
+                className={styles.backBtn} 
+                style={{ padding: '8px 16px', fontSize: '13px' }}
+                onClick={() => setShowMockModal(false)}
+              >
+                Cancel
+              </button>
+              <button 
+                className={styles.submitBtn} 
+                style={{ padding: '8px 16px', fontSize: '13px', marginTop: 0 }}
+                onClick={handleMockPaymentSuccess}
+                disabled={isPaying}
+              >
+                {isPaying ? 'Processing...' : 'Simulate Payment'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -5,7 +5,7 @@ import { query } from '@/lib/db';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, email, organization, title, tier, message } = body;
+    const { name, email, organization, title, tier, message, checkOnly } = body;
 
     // Validation
     if (!name || !email || !organization || !tier) {
@@ -28,6 +28,14 @@ export async function POST(req: NextRequest) {
         success: true,
         alreadyExists: true,
         message: 'This email is already registered for membership.'
+      });
+    }
+
+    if (checkOnly) {
+      return NextResponse.json({
+        success: true,
+        alreadyExists: false,
+        message: 'Email is available for registration.'
       });
     }
 
