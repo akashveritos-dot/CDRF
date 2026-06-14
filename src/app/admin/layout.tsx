@@ -115,8 +115,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className={styles.profile}>
           <div className={styles.avatar}>A</div>
           <div className={styles.profileInfo}>
-            <div className={styles.profileName}>{adminUser?.name || 'Administrator'}</div>
-            <div className={styles.profileRole}>{adminUser?.role || 'ADMIN'}</div>
+            <div className={styles.profileName}>{adminUser?.name || 'DCRF Administrator'}</div>
+            <div className={styles.profileRole}>{adminUser?.role || 'SUPERADMIN'}</div>
           </div>
         </div>
 
