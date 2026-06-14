@@ -72,9 +72,12 @@ However, I can help you find what you need:
 - To learn about our organization, visit [About DCRF](/about)`;
 }
 
+// Hardcoded Nvidia API Key fallback
+const HARDCODED_NVIDIA_KEY = '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';
+
 // Initialize clients (will be dynamically adjusted if API keys load later)
 const nvidiaClient = new OpenAI({
-  apiKey: process.env.NVIDIA_API_KEY || getApiKeyFromEnvFile() || 'ollama',
+  apiKey: process.env.NVIDIA_API_KEY || getApiKeyFromEnvFile() || HARDCODED_NVIDIA_KEY,
   baseURL: 'https://integrate.api.nvidia.com/v1',
 });
 
@@ -193,7 +196,7 @@ Current user page: ${pathname || '/'}`;
           let activeProvider = '';
 
           // Determine preferred order based on NVIDIA_API_KEY presence (dynamic check)
-          const nvidiaKey = process.env.NVIDIA_API_KEY || getApiKeyFromEnvFile();
+          const nvidiaKey = process.env.NVIDIA_API_KEY || getApiKeyFromEnvFile() || HARDCODED_NVIDIA_KEY;
           const hasNvidiaKey = Boolean(nvidiaKey);
 
           if (hasNvidiaKey) {
