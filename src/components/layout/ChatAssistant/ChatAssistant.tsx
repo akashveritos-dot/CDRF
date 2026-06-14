@@ -93,10 +93,13 @@ export default function ChatAssistant() {
     }
   }, [pathname]);
 
-  // Focus input
+  // Focus input (desktop only to prevent mobile virtual keyboard from auto-opening)
   useEffect(() => {
     if (isOpen && inputRef.current) {
-      setTimeout(() => inputRef.current?.focus(), 150);
+      const isMobile = window.matchMedia('(max-width: 768px)').matches;
+      if (!isMobile) {
+        setTimeout(() => inputRef.current?.focus(), 150);
+      }
     }
   }, [isOpen]);
 
