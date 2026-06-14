@@ -1,0 +1,214 @@
+.page {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 120px 24px 80px;
+  min-height: 100vh;
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding: 90px 16px 60px;
+  }
+}
+
+.loadingState, .errorState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 180px 20px;
+  gap: 16px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.spinner {
+  color: var(--wine-red-primary);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.header {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto 48px;
+  animation: fadeInDown var(--transition-slow) ease-out;
+}
+
+.title {
+  font-size: 44px;
+  color: var(--wine-red-primary);
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin-bottom: 16px;
+}
+
+.subtitle {
+  font-size: 18px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+@keyframes fadeInDown {
+  0% { opacity: 0; transform: translateY(-20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.videoSection {
+  margin-top: 40px;
+  animation: fadeInUp var(--transition-slow) ease-out;
+}
+
+@keyframes fadeInUp {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.videoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 32px;
+}
+
+@media (max-width: 480px) {
+  .videoGrid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+.videoCard {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
+  display: flex;
+  flex-direction: column;
+}
+
+.videoCard:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--wine-red-primary);
+}
+
+.playerWrapper {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 aspect */
+  height: 0;
+  background: #000;
+  overflow: hidden;
+}
+
+.playerWrapper iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  z-index: 2;
+}
+
+.posterContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.posterImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-slow);
+}
+
+.posterContainer:hover .posterImage {
+  transform: scale(1.05);
+}
+
+.playOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(136, 19, 55, 0.15); /* Soft Wine Red tint */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color var(--transition-base);
+}
+
+.posterContainer:hover .playOverlay {
+  background: rgba(136, 19, 55, 0.35);
+}
+
+.playButtonCircle {
+  width: 54px;
+  height: 54px;
+  background: var(--white);
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--wine-red-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  transition: all var(--transition-base);
+}
+
+.posterContainer:hover .playButtonCircle {
+  transform: scale(1.1);
+  background: var(--wine-red-primary);
+  color: var(--white);
+  box-shadow: 0 4px 20px rgba(136, 19, 55, 0.5);
+}
+
+.playIcon {
+  margin-left: 2px;
+}
+
+.videoInfo {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-grow: 1;
+}
+
+.videoBadge {
+  align-self: flex-start;
+  background: var(--wine-red-pale);
+  color: var(--wine-red-primary);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+}
+
+.videoTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-default);
+  line-height: 1.4;
+}
+
+.videoDesc {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  flex-grow: 1;
+}

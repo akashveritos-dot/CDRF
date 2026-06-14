@@ -379,7 +379,7 @@
   padding: 48px;
   box-shadow: var(--shadow-lg);
   position: relative;
-  z-index: 1;
+  z-index: 10;
 }
 
 .formTitle {
@@ -676,7 +676,7 @@
 }
 
 .submitBtn {
-  background: var(--gold-primary);
+  background: var(--accessible-green);
   color: #fff;
   border: none;
   padding: 14px;
@@ -689,7 +689,7 @@
   letter-spacing: 0.3px;
 }
 .submitBtn:hover {
-  background: var(--gold-light);
+  background: var(--accessible-green-dark);
   transform: translateY(-1px);
 }
 

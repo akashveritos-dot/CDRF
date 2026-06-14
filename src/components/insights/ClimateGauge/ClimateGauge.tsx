@@ -28,8 +28,6 @@ export default function ClimateGauge() {
     }
     
     fetchAnomaly();
-    const pollInterval = setInterval(fetchAnomaly, 10000);
-    return () => clearInterval(pollInterval);
   }, []);
 
   useEffect(() => {

@@ -18,7 +18,10 @@ import {
   Mail,
   Award,
   Calendar,
-  Megaphone
+  Megaphone,
+  BookOpen,
+  Image,
+  MessageSquare
 } from 'lucide-react';
 import styles from './layout.module.css';
 import './admin-theme.css';
@@ -67,6 +70,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const menuItems = [
     { name: 'Dashboard', path: '/admin', icon: <LayoutDashboard size={18} /> },
+    { name: 'Manage CMS Pages', path: '/admin/pages', icon: <BookOpen size={18} /> },
+    { name: 'Manage Gallery', path: '/admin/gallery', icon: <Image size={18} /> },
+    { name: 'Query Messages', path: '/admin/contacts', icon: <MessageSquare size={18} /> },
     { name: 'Manage News', path: '/admin/news', icon: <Newspaper size={18} /> },
     { name: 'Manage Reports', path: '/admin/reports', icon: <FileArchive size={18} /> },
     { name: 'Manage Councils', path: '/admin/councils', icon: <Award size={18} /> },

@@ -383,8 +383,6 @@ export default function IndiaMap() {
       }
     }
     loadMapTelemetry();
-    const pollInterval = setInterval(loadMapTelemetry, 8000);
-    return () => clearInterval(pollInterval);
   }, []);
 
   const getHazardClass = (level: 'High' | 'Medium' | 'Low') => {

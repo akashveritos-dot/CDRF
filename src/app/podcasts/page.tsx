@@ -21,7 +21,8 @@ import {
   Tag,
   PlayCircle,
   ChevronRight,
-  Radio
+  Radio,
+  X
 } from 'lucide-react';
 
 // ─── Tag colour mapping ───────────────────────────────────────────────────────
@@ -53,6 +54,7 @@ export default function PodcastsPage() {
   const [isShuffle, setIsShuffle] = useState(false);
   const [isRepeat, setIsRepeat] = useState(false);
   const [activeCategory, setActiveCategory] = useState('All Episodes');
+  const [playingVideoUrl, setPlayingVideoUrl] = useState<string | null>(null);
 
   const progressRef = useRef<HTMLDivElement>(null);
 
@@ -87,9 +89,9 @@ export default function PodcastsPage() {
     setCurrentTime(`${Math.floor(cur / 60)}:${String(cur % 60).padStart(2, '0')}`);
   }, []);
 
-  const handleVideoPlay = useCallback(() => {
-    info('Video player coming soon', 'YouTube integration is on the roadmap for this episode.');
-  }, [info]);
+  const handleVideoPlay = useCallback((url: string) => {
+    setPlayingVideoUrl(url);
+  }, []);
 
   return (
     <div className={styles.page}>
@@ -368,6 +370,7 @@ export default function PodcastsPage() {
               date: 'May 12, 2026',
               guest: 'Mr. Ashish Jha',
               guestTitle: 'Secretary General, DCRF',
+              embedUrl: 'https://www.youtube.com/embed/Q8wzIcrqNnE',
               delay: 0.1
             },
             {
@@ -378,6 +381,7 @@ export default function PodcastsPage() {
               date: 'Apr 28, 2026',
               guest: 'Dr. Brijender Mishra',
               guestTitle: 'Convener, DCRF',
+              embedUrl: 'https://www.youtube.com/embed/U7Jsk748t3w',
               delay: 0.2
             }
           ].map((v, i) => (
@@ -392,7 +396,7 @@ export default function PodcastsPage() {
                   </div>
                   <button
                     className={styles.videoPlayBtn}
-                    onClick={handleVideoPlay}
+                    onClick={() => handleVideoPlay(v.embedUrl)}
                     aria-label={`Play video: ${v.title}`}
                   >
                     <div className={styles.videoPlayRipple} />
@@ -416,7 +420,7 @@ export default function PodcastsPage() {
                     <span className={styles.videoDate}><Calendar size={11} /> {v.date}</span>
                     <button
                       className={styles.videoWatchBtn}
-                      onClick={handleVideoPlay}
+                      onClick={() => handleVideoPlay(v.embedUrl)}
                     >
                       Watch <ChevronRight size={13} />
                     </button>
@@ -453,6 +457,32 @@ export default function PodcastsPage() {
           </div>
         </div>
       </ScrollReveal>
+
+      {/* ── Video Lightbox Modal ─────────────────────────────────────────── */}
+      {playingVideoUrl && (
+        <div 
+          className={styles.videoModalOverlay} 
+          onClick={() => setPlayingVideoUrl(null)}
+        >
+          <div className={styles.videoModal} onClick={(e) => e.stopPropagation()}>
+            <button 
+              className={styles.videoModalClose} 
+              onClick={() => setPlayingVideoUrl(null)}
+              aria-label="Close video player"
+            >
+              <X size={20} />
+            </button>
+            <div className={styles.modalPlayerWrapper}>
+              <iframe
+                src={`${playingVideoUrl}?autoplay=1`}
+                title="DCRF Video Interview"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

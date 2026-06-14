@@ -19,12 +19,12 @@ export function getDbPool(): mysql.Pool {
       database,
       port,
       waitForConnections: true,
-      connectionLimit, // Max 2 concurrent connections
-      maxIdle: 0, // Don't keep any idle connections (close immediately after use)
-      idleTimeout: 1000, // Close idle connections after 1 second
+      connectionLimit: Math.max(connectionLimit, 10),
+      maxIdle: 5, // Keep up to 5 connections open in pool
+      idleTimeout: 60000, // Close idle connections after 60s
       queueLimit: 0,
-      enableKeepAlive: false, // Disable keep-alive to allow connections to close
-      keepAliveInitialDelay: 0,
+      enableKeepAlive: true, // Keep connections warm
+      keepAliveInitialDelay: 10000,
       ssl: process.env.DB_SSL === 'true' ? {} : undefined
     });
   }

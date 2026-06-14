@@ -3,19 +3,55 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, ChevronDown } from 'lucide-react';
 import styles from './Navbar.module.css';
 
-const menuLinks = [
+interface Submenu {
+  name: string;
+  path: string;
+}
+
+interface MenuLink {
+  name: string;
+  path: string;
+  submenus?: Submenu[];
+}
+
+const menuLinks: MenuLink[] = [
   { name: 'Home', path: '/' },
-  { name: 'Insights & Map', path: '/#insights' }, // Maps directly to home dashboard anchor, or /insights if desired
-  { name: 'News', path: '/news' },
-  { name: 'Reports', path: '/reports' },
-  { name: 'Podcasts', path: '/podcasts' },
+  {
+    name: 'About Us',
+    path: '/about/mission-vision',
+    submenus: [
+      { name: 'Mission & Vision', path: '/about/mission-vision' },
+      { name: 'Charter - 10 Point Agenda', path: '/about/charter-10-point-agenda' },
+      { name: 'Governing Council', path: '/about/governing-council' },
+      { name: 'Advisory Council', path: '/about/advisory-council' },
+      { name: 'Working Group', path: '/about/working-group' }
+    ]
+  },
   { name: 'Membership', path: '/membership' },
-  { name: 'Council', path: '/council' },
-  { name: 'DCRC ’26', path: '/event' },
-  { name: 'About', path: '/about' }
+  {
+    name: 'Upcoming Events',
+    path: '/event/dcrc-26',
+    submenus: [
+      { name: 'DCRC ’26 Conclave', path: '/event/dcrc-26' },
+      { name: 'Monthly Webinars', path: '/event/monthly-webinars' }
+    ]
+  },
+  {
+    name: 'Insights',
+    path: '/news',
+    submenus: [
+      { name: 'News Feed', path: '/news' },
+      { name: 'Policy Reports', path: '/reports' },
+      { name: 'Hazard Map', path: '/insights/map' },
+      { name: 'Podcasts', path: '/podcasts' },
+      { name: 'Event Videos', path: '/insights/event-videos' }
+    ]
+  },
+  { name: 'Gallery', path: '/gallery' },
+  { name: 'Contact Us', path: '/contact' }
 ];
 
 export default function Navbar() {
@@ -25,28 +61,56 @@ export default function Navbar() {
   const lastScrollYRef = useRef(0);
   const [hash, setHash] = useState('');
   const pathname = usePathname();
+  const [mobileExpanded, setMobileExpanded] = useState<Record<string, boolean>>({});
+
+  const [weatherAlert, setWeatherAlert] = useState<{
+    liveTheme: 'flood' | 'storm' | null;
+    temperature: number | null;
+    locationName: { city: string; state: string };
+  } | null>(null);
+
+  useEffect(() => {
+    const handleWeatherUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail) {
+        setWeatherAlert({
+          liveTheme: customEvent.detail.liveTheme,
+          temperature: customEvent.detail.temperature,
+          locationName: customEvent.detail.locationName
+        });
+      }
+    };
+
+    if (typeof window !== 'undefined' && window.__dcrsWeatherData) {
+      setWeatherAlert({
+        liveTheme: window.__dcrsWeatherData.liveTheme,
+        temperature: window.__dcrsWeatherData.temperature,
+        locationName: window.__dcrsWeatherData.locationName
+      });
+    }
+
+    window.addEventListener('dcrs-weather-update', handleWeatherUpdate);
+    return () => window.removeEventListener('dcrs-weather-update', handleWeatherUpdate);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
 
-      // 1. Add background blur / shadow when scrolled past 40px
       if (currentScrollY > 40) {
         setScrolled(true);
       } else {
         setScrolled(false);
       }
 
-      // 2. Hide / show navbar based on scroll direction
-      // Don't hide navbar on mobile when menu is open
       if (currentScrollY > 120) {
         if (currentScrollY > lastScrollYRef.current && !isOpen) {
-          setVisible(false); // Scrolling down, hide it
+          setVisible(false);
         } else {
-          setVisible(true);  // Scrolling up, show it
+          setVisible(true);
         }
       } else {
-        setVisible(true);    // Always show at the top
+        setVisible(true);
       }
 
       lastScrollYRef.current = currentScrollY;
@@ -56,7 +120,6 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isOpen]);
 
-  // Close menu when scrolling on mobile
   useEffect(() => {
     if (!isOpen) return;
 
@@ -68,7 +131,6 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScrollWhileMenuOpen);
   }, [isOpen]);
 
-  // Lock body scroll when mobile menu is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -95,14 +157,25 @@ export default function Navbar() {
   const toggleMenu = () => setIsOpen(!isOpen);
   const closeMenu = () => setIsOpen(false);
 
-  // Helper to determine if link is active
+  const toggleMobileExpanded = (name: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    setMobileExpanded((prev) => ({
+      ...prev,
+      [name]: !prev[name]
+    }));
+  };
+
   const isLinkActive = (path: string) => {
     if (path === '/') {
       return pathname === '/' && !hash;
     }
-    // If it's a home page anchor like /#insights
     if (path.startsWith('/#')) {
       return pathname === '/' && hash === path.substring(1);
+    }
+    // Anchor routes
+    if (path.includes('#')) {
+      const [urlPath, urlHash] = path.split('#');
+      return pathname === urlPath && hash === '#' + urlHash;
     }
     return pathname.startsWith(path);
   };
@@ -166,19 +239,53 @@ export default function Navbar() {
             DCRF
             <span className={styles.nameSpan}>Disaster & Climate Resilience</span>
           </span>
+          {weatherAlert?.liveTheme && (
+            <span className={`${styles.weatherNavTag} ${weatherAlert.liveTheme === 'storm' ? styles.weatherNavTagStorm : ''}`}>
+              <span className={styles.weatherNavDot} />
+              <span className={styles.weatherNavText}>
+                {weatherAlert.liveTheme === 'storm' ? '⛈️' : '☔'} {weatherAlert.locationName.city} {weatherAlert.temperature}°C
+              </span>
+            </span>
+          )}
         </Link>
 
         {/* Desktop Links */}
         <div className={styles.navLinks}>
-          {menuLinks.map((link) => (
-            <Link
-              key={link.path}
-              href={link.path}
-              className={isLinkActive(link.path) ? styles.activeLink : ''}
-            >
-              {link.name}
-            </Link>
-          ))}
+          {menuLinks.map((link) => {
+            if (link.submenus) {
+              return (
+                <div key={link.name} className={styles.dropdownContainer}>
+                  <Link
+                    href={link.path}
+                    className={`${styles.dropdownTrigger} ${isLinkActive(link.path) ? styles.activeLink : ''}`}
+                  >
+                    {link.name}
+                    <ChevronDown size={12} className={styles.caret} />
+                  </Link>
+                  <div className={styles.dropdownMenu}>
+                    {link.submenus.map((sub) => (
+                      <Link
+                        key={sub.path}
+                        href={sub.path}
+                        className={isLinkActive(sub.path) ? styles.activeSubLink : ''}
+                      >
+                        {sub.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              );
+            }
+            return (
+              <Link
+                key={link.path}
+                href={link.path}
+                className={isLinkActive(link.path) ? styles.activeLink : ''}
+              >
+                {link.name}
+              </Link>
+            );
+          })}
           <button onClick={() => setIsSubscribeOpen(true)} className={styles.subscribeBtn}>
             Subscribe
           </button>
@@ -194,16 +301,44 @@ export default function Navbar() {
 
         {/* Mobile Side Drawer */}
         <div className={`${styles.drawer} ${isOpen ? styles.drawerOpen : ''}`}>
-          {menuLinks.map((link) => (
-            <Link
-              key={link.path}
-              href={link.path}
-              onClick={closeMenu}
-              className={isLinkActive(link.path) ? styles.activeLink : ''}
-            >
-              {link.name}
-            </Link>
-          ))}
+          {menuLinks.map((link) => {
+            if (link.submenus) {
+              const isExpanded = !!mobileExpanded[link.name];
+              return (
+                <div key={link.name} className={styles.mobileAccordionContainer}>
+                  <button
+                    onClick={(e) => toggleMobileExpanded(link.name, e)}
+                    className={styles.mobileAccordionTrigger}
+                  >
+                    <span>{link.name}</span>
+                    <ChevronDown size={16} className={`${styles.mobileCaret} ${isExpanded ? styles.mobileCaretRotated : ''}`} />
+                  </button>
+                  <div className={`${styles.mobileAccordionMenu} ${isExpanded ? styles.mobileAccordionMenuExpanded : ''}`}>
+                    {link.submenus.map((sub) => (
+                      <Link
+                        key={sub.path}
+                        href={sub.path}
+                        onClick={closeMenu}
+                        className={`${styles.mobileSubLink} ${isLinkActive(sub.path) ? styles.activeSubLink : ''}`}
+                      >
+                        {sub.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              );
+            }
+            return (
+              <Link
+                key={link.path}
+                href={link.path}
+                onClick={closeMenu}
+                className={isLinkActive(link.path) ? styles.activeLink : ''}
+              >
+                {link.name}
+              </Link>
+            );
+          })}
           <button
             onClick={() => {
               setIsSubscribeOpen(true);
@@ -238,7 +373,7 @@ export default function Navbar() {
 
           {isSubmitted ? (
             <div className={styles.successMessage}>
-              <div style={{ fontSize: '40px', color: 'var(--red-primary)' }}>✓</div>
+              <div style={{ fontSize: '40px', color: 'var(--wine-red-primary)' }}>✓</div>
               <h4 className={styles.successTitle}>Thank You!</h4>
               <p className={styles.successDesc}>
                 {successMsg}
@@ -280,9 +415,9 @@ export default function Navbar() {
                 </label>
 
                 {subError && (
-                  <p style={{ color: 'var(--red-primary)', fontSize: '12px', fontWeight: 600, marginTop: '4px' }}>
-                    ⚠️ {subError}
-                  </p>
+                  <div className={styles.errorText}>
+                    <span>⚠️ {subError}</span>
+                  </div>
                 )}
 
                 <button type="submit" disabled={subLoading} className={styles.modalSubmit}>

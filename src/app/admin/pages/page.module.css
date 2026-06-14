@@ -1,0 +1,220 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 16px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--wine-red-primary);
+}
+
+.subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+@media (max-width: 992px) {
+  .workspace {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}
+
+.sidebar {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sidebarTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--wine-red-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pageList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pageItem {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.pageItem:hover {
+  background: var(--bg-default);
+  color: var(--text-default);
+}
+
+.pageItemActive {
+  background: var(--wine-red-pale);
+  color: var(--wine-red-primary);
+}
+
+.editorWorkspace {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 30px;
+  box-shadow: var(--shadow-sm);
+}
+
+.editorTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-default);
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-default);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.input, .textarea, .select {
+  padding: 11px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: var(--bg-default);
+  color: var(--text-default);
+  font-size: 14px;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.input:focus, .textarea:focus, .select:focus {
+  border-color: var(--wine-red-primary);
+  background: var(--bg-surface);
+}
+
+.textarea {
+  min-height: 280px;
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.submitBtn {
+  align-self: flex-start;
+  background: var(--wine-red-primary);
+  color: var(--text-inverse);
+  border: none;
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  box-shadow: 0 4px 12px var(--wine-red-glow);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.submitBtn:hover {
+  background: var(--wine-red-light);
+  box-shadow: 0 6px 16px rgba(136, 19, 55, 0.25);
+}
+
+.submitBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.statusMessage {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  font-weight: 600;
+  margin-top: 16px;
+}
+
+.statusSuccess {
+  background: var(--accessible-green-light);
+  color: var(--accessible-green-dark);
+  border: 1px solid var(--accessible-green);
+}
+
+.statusError {
+  background: var(--wine-red-pale);
+  color: var(--wine-red-primary);
+  border: 1px solid var(--wine-red-primary);
+}

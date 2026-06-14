@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
 
     if (existing.length > 0) {
       return NextResponse.json(
-        { error: 'This email address is already registered for the DCRC Conclave.' },
+        { error: 'You are already registered for the DCRC Conclave! Your application is in our staging queue, and we will email your accreditation details shortly.' },
         { status: 400 }
       );
     }
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Interest registered successfully'
+      message: 'Your delegate application has been successfully logged! The DCRF Secretariat will review your credentials and issue your official pass via email soon.'
     });
 
   } catch (error: any) {

@@ -1,0 +1,226 @@
+.container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #0b0f19;
+  background-image: 
+    radial-gradient(circle at center, rgba(225, 29, 72, 0.1) 0%, transparent 65%),
+    linear-gradient(rgba(15, 23, 42, 0.4) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.4) 1px, transparent 1px);
+  background-size: 100% 100%, 30px 30px, 30px 30px;
+  color: #f8fafc;
+  font-family: var(--font-body), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  padding: 40px 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* SCANLINE EFFECT */
+.container::after {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+  z-index: 10;
+  background-size: 100% 4px, 6px 100%;
+  pointer-events: none;
+}
+
+.animationWrapper {
+  position: relative;
+  width: 240px;
+  height: 240px;
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid rgba(225, 29, 72, 0.15);
+  box-shadow: 0 0 40px rgba(225, 29, 72, 0.05);
+}
+
+.radarGrid {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  border-radius: 50%;
+  border: 1px dashed rgba(225, 29, 72, 0.2);
+  background: 
+    radial-gradient(circle, transparent 30%, rgba(225, 29, 72, 0.03) 30%, rgba(225, 29, 72, 0.03) 31%, transparent 31%, transparent 60%, rgba(225, 29, 72, 0.03) 60%, rgba(225, 29, 72, 0.03) 61%, transparent 61%),
+    repeating-linear-gradient(0deg, transparent, transparent 19px, rgba(225, 29, 72, 0.05) 19px, rgba(225, 29, 72, 0.05) 20px),
+    repeating-linear-gradient(90deg, transparent, transparent 19px, rgba(225, 29, 72, 0.05) 19px, rgba(225, 29, 72, 0.05) 20px);
+}
+
+.radarSweep {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, rgba(225, 29, 72, 0.15) 0deg, rgba(225, 29, 72, 0) 120deg, transparent 360deg);
+  animation: sweep 4s linear infinite;
+  z-index: 2;
+}
+
+@keyframes sweep {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.pulseRing {
+  position: absolute;
+  border: 1.5px solid rgba(225, 29, 72, 0.6);
+  border-radius: 50%;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  animation: pulseRipple 2.4s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
+  z-index: 1;
+}
+
+@keyframes pulseRipple {
+  0% {
+    transform: scale(0.25);
+    opacity: 1;
+    border-color: rgba(225, 29, 72, 0.8);
+  }
+  50% {
+    border-color: rgba(225, 29, 72, 0.4);
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+    border-color: rgba(225, 29, 72, 0);
+  }
+}
+
+.iconBox {
+  width: 72px;
+  height: 72px;
+  background-color: rgba(225, 29, 72, 0.1);
+  border: 1px solid rgba(225, 29, 72, 0.4);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  box-shadow: 0 0 20px rgba(225, 29, 72, 0.2);
+  animation: iconPulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes iconPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 15px rgba(225, 29, 72, 0.2);
+  }
+  100% {
+    transform: scale(1.06);
+    box-shadow: 0 0 30px rgba(225, 29, 72, 0.4);
+    background-color: rgba(225, 29, 72, 0.15);
+  }
+}
+
+.warningIcon {
+  color: #e11d48;
+  animation: flashWarning 1s steps(2, start) infinite;
+}
+
+@keyframes flashWarning {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.content {
+  text-align: center;
+  max-width: 480px;
+  z-index: 5;
+}
+
+.telemetryTag {
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: #e11d48;
+  text-shadow: 0 0 10px rgba(225, 29, 72, 0.4);
+  display: block;
+  margin-bottom: 12px;
+}
+
+.title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
+  color: #ffffff;
+}
+
+.message {
+  font-size: 1rem;
+  color: #94a3b8;
+  line-height: 1.6;
+  margin-bottom: 32px;
+}
+
+.btnRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+}
+
+.primaryBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #e11d48;
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 0.875rem;
+  padding: 12px 24px;
+  border-radius: var(--radius-sm, 8px);
+  transition: all var(--transition-fast, 150ms) ease;
+  border: 1px solid transparent;
+}
+
+.primaryBtn:hover {
+  background-color: #f43f5e;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(225, 29, 72, 0.3);
+}
+
+.secondaryBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(255, 255, 255, 0.04);
+  color: #e2e8f0;
+  font-weight: 500;
+  font-size: 0.875rem;
+  padding: 12px 24px;
+  border-radius: var(--radius-sm, 8px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all var(--transition-fast, 150ms) ease;
+  cursor: pointer;
+}
+
+.secondaryBtn:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(225, 29, 72, 0.3);
+  color: #ffffff;
+  transform: translateY(-2px);
+}

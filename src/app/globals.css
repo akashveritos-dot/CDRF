@@ -37,21 +37,32 @@ img, svg, video, canvas, iframe {
   --navy-light: #2E5185;
   --navy-hover: #3D6BA8;
 
-  /* Disaster Warning Red Theme (replaces all gold/amber) */
-  --gold-primary: #991B1B;        /* Deep crimson — primary accent */
-  --gold-light: #D03B2C;          /* Alert red — hover / highlight */
-  --gold-pale: #FEF2F2;           /* Soft red pale — badge backgrounds */
-  --gold-glow: rgba(153, 27, 27, 0.12); /* Red glow for shadows */
+  /* 60-30-10 Enforced Color Theme */
+  /* 60% Vibrant Light Red Primary */
+  --wine-red-primary: #B91C1C;     /* Distress red accent */
+  --wine-red-light: #DC2626;       /* Lighter red hover */
+  --wine-red-dark: #991B1B;        /* Darker red contrast */
+  --wine-red-pale: #FEF2F2;        /* Soft pale red for tags */
+  --wine-red-glow: rgba(185, 28, 28, 0.12);
+
+  --gold-primary: var(--wine-red-primary);
+  --gold-light: var(--wine-red-light);
+  --gold-pale: var(--wine-red-pale);
+  --gold-glow: var(--wine-red-glow);
 
   /* Alert / Crisis shades */
-  --red-dark: #7F1D1D;
-  --red-primary: #C0392B;
-  --red-light: #F87171;
-  --red-pale: #FDECEA;
+  --red-dark: #991B1B;
+  --red-primary: #B91C1C;
+  --red-light: #DC2626;
+  --red-pale: #FEF2F2;
 
-  /* Semantic data colors */
-  --teal-primary: #0E7A6B;
-  --teal-light: #E0F5F1;
+  /* 10% Accessible Green (High contrast on White, AA/AAA Compliant) */
+  --accessible-green: #15803d;     /* Solid green */
+  --accessible-green-light: #dcfce7;
+  --accessible-green-dark: #166534;
+  
+  --teal-primary: var(--accessible-green);
+  --teal-light: var(--accessible-green-light);
   --blue-primary: #2980B9;
   --purple-primary: #6C3483;
   --orange-primary: #E67E22;
@@ -112,9 +123,11 @@ body {
 
 main {
   flex: 1;
-  overflow-x: hidden;
+  overflow: visible;
   width: 100%;
   max-width: 100vw;
+  position: relative;
+  z-index: 10;
 }
 
 a {

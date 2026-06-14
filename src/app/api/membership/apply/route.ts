@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         success: true,
         alreadyExists: true,
-        message: 'This email is already registered for membership.'
+        message: 'We have already received a DCRF membership application from this email address! Your profile is actively in our credential queue, and our coordinators will reach out via email shortly.'
       });
     }
 
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       applicationId: result.insertId,
-      message: 'Membership application submitted successfully. The secretariat will review your credentials.'
+      message: 'Your DCRF Federation membership request has been successfully staged! A notification has been sent to our credentials review committee, and we will contact you shortly.'
     });
 
   } catch (error: any) {

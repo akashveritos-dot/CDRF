@@ -15,6 +15,7 @@ import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
 import CountUp from '@/components/ui/CountUp/CountUp';
 import DisasterBackground from '@/components/ui/DisasterBackground/DisasterBackground';
 import DynamicSkyBackground from '@/components/ui/DynamicSkyBackground/DynamicSkyBackground';
+import DisasterEffects from '@/components/ui/DisasterEffects/DisasterEffects';
 import IndiaMap from '@/components/insights/IndiaMap/IndiaMap';
 import ClimateGauge from '@/components/insights/ClimateGauge/ClimateGauge';
 import LossChart from '@/components/insights/LossChart/LossChart';
@@ -223,8 +224,6 @@ export default function Home() {
 
     loadTelemetry();
     loadContent();
-    const pollInterval = setInterval(loadTelemetry, 8000);
-    return () => clearInterval(pollInterval);
   }, []);
 
   const getEventIcon = (label: string) => {
@@ -274,6 +273,7 @@ export default function Home() {
 
   return (
     <div>
+      <DisasterEffects theme="general" intensity="low" />
       {/* HERO SECTION - REDESIGNED PREMIUM LIGHT THEME */}
       <section className={styles.hero}>
         <div className={styles.heroBg} />
@@ -308,56 +308,45 @@ export default function Home() {
 
           {/* Right Climate Widget Panel - Light Glassmorphic */}
           <ScrollReveal direction="left" delay={0.3}>
-            <div className={`${styles.heroPanel} ${styles.heroPanelLight}`} style={{ padding: '0', overflow: 'hidden' }}>
-
-              <div style={{ position: 'relative', height: '120px', width: '100%', overflow: 'hidden' }}>
-                <img
-                  src="/climate_radar_dashboard.png"
-                  alt="DCRF India Climate Radar Monitor"
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 1, filter: 'brightness(1.2)' }}
-                />
+            <div className={`${styles.heroPanel} ${styles.heroPanelLight}`} style={{ padding: '24px 28px' }}>
+              <div className={styles.panelTitle}>
+                <span className="pulse-dot sonar-emitter">
+                  <span className="sonar-pulse" />
+                </span>
+                India Climate Monitor • Live telemetry
               </div>
 
-              <div style={{ padding: '24px 28px 28px' }}>
-                <div className={styles.panelTitle}>
-                  <span className="pulse-dot sonar-emitter">
-                    <span className="sonar-pulse" />
-                  </span>
-                  India Climate Monitor • Live telemetry
-                </div>
-
-                <div className={styles.dstatGrid}>
-                  {stats.map((stat) => (
-                    <div key={stat.id} className={styles.dstat}>
-                      <div className={`${styles.dstatNum} ${stat.type === 'red' ? styles.numRed :
-                        stat.type === 'amber' ? styles.numAmber :
-                          stat.type === 'teal' ? styles.numTeal : styles.numBlue
-                        }`}>
-                        <CountUp end={stat.count} suffix={stat.suffix} decimals={stat.count % 1 !== 0 ? 1 : 0} />
-                      </div>
-                      <div className={styles.dstatLabel}>{stat.label}</div>
+              <div className={styles.dstatGrid}>
+                {stats.map((stat) => (
+                  <div key={stat.id} className={styles.dstat}>
+                    <div className={`${styles.dstatNum} ${stat.type === 'red' ? styles.numRed :
+                      stat.type === 'amber' ? styles.numAmber :
+                        stat.type === 'teal' ? styles.numTeal : styles.numBlue
+                      }`}>
+                      <CountUp end={stat.count} suffix={stat.suffix} decimals={stat.count % 1 !== 0 ? 1 : 0} />
                     </div>
-                  ))}
-                </div>
+                    <div className={styles.dstatLabel}>{stat.label}</div>
+                  </div>
+                ))}
+              </div>
 
-                <div className={styles.tempsHeader}>Heat Index — Major Cities</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {temps.map((city) => (
-                    <div key={city.city} className={styles.tempRow}>
-                      <span className={styles.tempCity}>{city.city}</span>
-                      <div className={styles.tempBarWrap}>
-                        <motion.div
-                          className={styles.tempBarFill}
-                          initial={{ width: 0 }}
-                          whileInView={{ width: `${city.percentage}%` }}
-                          viewport={{ once: true }}
-                          transition={{ duration: 1.2, ease: 'easeOut' }}
-                        />
-                      </div>
-                      <span className={styles.tempVal}>{city.temp}°C</span>
+              <div className={styles.tempsHeader}>Heat Index — Major Cities</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {temps.map((city) => (
+                  <div key={city.city} className={styles.tempRow}>
+                    <span className={styles.tempCity}>{city.city}</span>
+                    <div className={styles.tempBarWrap}>
+                      <motion.div
+                        className={styles.tempBarFill}
+                        initial={{ width: 0 }}
+                        whileInView={{ width: `${city.percentage}%` }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 1.2, ease: 'easeOut' }}
+                      />
                     </div>
-                  ))}
-                </div>
+                    <span className={styles.tempVal}>{city.temp}°C</span>
+                  </div>
+                ))}
               </div>
             </div>
           </ScrollReveal>

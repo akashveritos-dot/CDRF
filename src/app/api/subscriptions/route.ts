@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         success: true,
         alreadyExists: true,
-        message: 'You have already subscribed with this email address.'
+        message: 'This email address is already subscribed to the DCRF Policy Feed! You are already in our network and will continue receiving updates.'
       });
     }
 
@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Subscribed successfully'
+      message: 'Welcome to the DCRF Circle! Your subscription has been successfully activated. You will now receive policy briefs, hazard bulletins, and event updates directly.'
     });
   } catch (error: any) {
     console.error('Subscribe error:', error);
