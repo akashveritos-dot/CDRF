@@ -41,7 +41,14 @@ export default function Footer() {
     <footer className={styles.footer}>
       <div className={styles.grid}>
         <div className={styles.brandCol}>
-          <h3>Disaster & Climate Resilience Federation</h3>
+          <div className={styles.footerLogoWrapper}>
+            <img 
+              src="/dcrf_icon-Photoroom.png" 
+              alt="DCRF Icon" 
+              className={styles.footerLogo}
+            />
+            <h3>Disaster & Climate Resilience Federation</h3>
+          </div>
           <p>
             A joint initiative of TCU Impact Foundation (TCUIF) and DiCAF. Building resilience
             through knowledge, convergence and action. Secretariat: New Delhi, India. Est. 4 June 2026.

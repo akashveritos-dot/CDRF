@@ -1,0 +1,70 @@
+.container {
+  position: relative;
+  display: inline;
+  white-space: pre-wrap;
+}
+
+.wordWrapper {
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.charWrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.spaceWrapper {
+  position: relative;
+  display: inline-block;
+  white-space: pre;
+}
+
+.initialCursorWrapper {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: inline-block;
+}
+
+.italicChar em {
+  color: var(--gold-primary);
+  font-style: normal;
+  text-shadow: 0 2px 8px rgba(153, 27, 27, 0.3), 0 0 20px rgba(153, 27, 27, 0.1);
+}
+
+.visibleChar {
+  display: inline-block;
+  pointer-events: auto;
+}
+
+.hiddenChar {
+  display: inline-block;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cursor {
+  position: absolute;
+  left: 100%;
+  top: 0;
+  display: inline-block;
+  color: var(--gold-primary);
+  font-weight: 300;
+  font-style: normal;
+  animation: blink 0.85s infinite;
+  pointer-events: none;
+  text-shadow: none;
+  z-index: 10;
+}
+
+.cursorCompleted {
+  animation: blink 1.5s infinite;
+  opacity: 0.45;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}

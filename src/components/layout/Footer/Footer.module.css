@@ -267,3 +267,24 @@
     gap: 8px 16px;
   }
 }
+
+.footerLogoWrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: -12px;
+}
+
+.footerLogo {
+  width: 95px;
+  height: 95px;
+  object-fit: contain;
+  display: block;
+  margin-left: -22px;
+}
+
+.footerTextGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}

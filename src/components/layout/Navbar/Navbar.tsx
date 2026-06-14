@@ -226,11 +226,11 @@ export default function Navbar() {
     <>
       <nav className={`${styles.navbar} ${scrolled ? styles.scrolled : ''} ${!visible ? styles.hidden : ''}`}>
         <Link href="/" className={styles.brand} onClick={closeMenu}>
-          <div className={styles.logoBox}>DCRF</div>
-          <span className={styles.name}>
-            DCRF
-            <span className={styles.nameSpan}>Disaster & Climate Resilience</span>
-          </span>
+          <img 
+            src="/dcrf_logo_primary-Photoroom.png" 
+            alt="DCRF Logo" 
+            className={styles.logoImage}
+          />
           {weatherAlert?.liveTheme && (
             <span className={`${styles.weatherNavTag} ${weatherAlert.liveTheme === 'storm' ? styles.weatherNavTagStorm : ''}`}>
               <span className={styles.weatherNavDot} />

@@ -5,9 +5,9 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  padding: 60px 5% 50px;
+  padding: 80px 5% 80px;
   overflow: hidden;
-  min-height: 70vh;
+  min-height: 85vh;
   display: flex;
   align-items: center;
 }

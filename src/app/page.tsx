@@ -16,6 +16,7 @@ import CountUp from '@/components/ui/CountUp/CountUp';
 import DisasterBackground from '@/components/ui/DisasterBackground/DisasterBackground';
 import DynamicSkyBackground from '@/components/ui/DynamicSkyBackground/DynamicSkyBackground';
 import DisasterEffects from '@/components/ui/DisasterEffects/DisasterEffects';
+import WordTypingEffect from '@/components/ui/WordTypingEffect/WordTypingEffect';
 import IndiaMap from '@/components/insights/IndiaMap/IndiaMap';
 import ClimateGauge from '@/components/insights/ClimateGauge/ClimateGauge';
 import LossChart from '@/components/insights/LossChart/LossChart';
@@ -285,11 +286,7 @@ export default function Home() {
               Founded 2026 • New Delhi, India
             </div>
             <h1>
-              Building <em>Resilience</em>
-              <br />
-              Through Knowledge,
-              <br />
-              Convergence & Action
+              <WordTypingEffect />
             </h1>
             <p className={styles.heroSub}>
               India’s premier multi-stakeholder federation unifying corporates, NGOs, academia,
