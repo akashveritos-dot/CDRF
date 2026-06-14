@@ -40,19 +40,18 @@
 
 .mapContainer {
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: none;
   border-radius: var(--radius-xl);
   padding: 30px;
   box-shadow: var(--shadow-lg);
   position: relative;
   overflow: hidden;
   animation: fadeInUp var(--transition-slow) ease-out;
-  transition: box-shadow var(--transition-base), border-color var(--transition-base);
+  transition: box-shadow var(--transition-base);
 }
 
 .mapContainer:hover {
   box-shadow: var(--shadow-premium);
-  border-color: var(--wine-red-primary);
 }
 
 @keyframes fadeInUp {
@@ -68,7 +67,7 @@
   background: var(--bg-surface-alt);
   border-radius: var(--radius-sm);
   margin-bottom: 24px;
-  border: 1px solid var(--border-color);
+  border: none;
   font-size: 12px;
   font-weight: 700;
   color: var(--text-muted);

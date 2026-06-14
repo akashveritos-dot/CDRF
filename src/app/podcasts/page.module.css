@@ -134,7 +134,7 @@
 /* ─── Featured Player Card ───────────────────────────────────────────── */
 .playerCard {
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: none;
   border-radius: var(--radius-xl);
   overflow: hidden;
   box-shadow: var(--shadow-lg);
@@ -295,7 +295,7 @@
   align-items: center;
   gap: 12px;
   background: var(--bg-surface-alt);
-  border: 1px solid var(--border-color);
+  border: none;
   border-radius: var(--radius-md);
   padding: 12px 16px;
   margin-top: 4px;
@@ -546,28 +546,27 @@
   gap: 8px;
 }
 
-/* Individual episode row */
 .epRow {
   display: flex;
   align-items: center;
   gap: 16px;
   padding: 16px 20px;
   border-radius: var(--radius-md);
-  border: 1px solid var(--border-color);
+  border: none;
   background: var(--bg-surface);
   cursor: pointer;
   text-align: left;
   width: 100%;
-  transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
 }
 .epRow:hover {
   transform: translateX(4px);
-  border-color: rgba(153,27,27,0.18);
   box-shadow: var(--shadow-md);
 }
 .epRowActive {
   background: linear-gradient(135deg, rgba(153,27,27,0.04) 0%, rgba(153,27,27,0.02) 100%);
-  border-color: rgba(153,27,27,0.25);
+  box-shadow: var(--shadow-md);
 }
 
 .epNum {
@@ -702,17 +701,16 @@
 
 .videoCard {
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: none;
   border-radius: var(--radius-xl);
   overflow: hidden;
   box-shadow: var(--shadow-md);
   height: 100%;
-  transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
 }
 .videoCard:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-premium);
-  border-color: rgba(153,27,27,0.15);
 }
 
 .videoThumb {
@@ -882,7 +880,7 @@
 /* ─── Subscribe Banner ───────────────────────────────────────────────── */
 .subscribeBanner {
   background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy-primary) 100%);
-  border: 1px solid rgba(255,255,255,0.06);
+  border: none;
   border-radius: var(--radius-xl);
   padding: 36px 40px;
   display: flex;

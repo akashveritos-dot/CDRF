@@ -113,20 +113,19 @@
 
 .card {
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: none;
   border-radius: var(--radius-md);
   padding: 28px;
   display: flex;
   flex-direction: column;
   height: 100%;
-  box-shadow: var(--shadow-sm);
-  transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+  box-shadow: var(--shadow-md);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
   min-height: 280px;
 }
 
 .card:hover {
   transform: translateY(-4px);
-  border-color: rgba(153, 27, 27, 0.15);
   box-shadow: var(--shadow-lg);
 }
 

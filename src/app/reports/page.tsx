@@ -138,7 +138,7 @@ export default function ReportsPage() {
               direction="up"
               delay={0.05 * (idx % 3)}
             >
-              <div className={styles.card} style={{ position: 'relative', overflow: 'hidden', borderTop: '4px solid var(--gold-primary)', paddingTop: '24px' }}>
+              <div className={styles.card} style={{ position: 'relative', overflow: 'hidden', paddingTop: '24px' }}>
                 {/* Visual Category badge row */}
                 <div className={styles.cardHeaderRow}>
                   <div className={`${styles.iconWrapper} ${getReportIconBgClass(report.icon)}`}>

@@ -54,10 +54,10 @@
 
 .addressSection {
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: none;
   border-radius: var(--radius-lg);
   padding: 40px;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
   display: flex;
   flex-direction: column;
   gap: 32px;
@@ -95,10 +95,10 @@
   height: 350px;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  border: 1px solid var(--border-color);
+  border: none;
   position: relative;
   transition: all var(--transition-base);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
 }
 
 .mapWrapper iframe {
@@ -115,10 +115,10 @@
 
 .formSection {
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: none;
   border-radius: var(--radius-lg);
   padding: 40px;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
   animation: fadeInLeft var(--transition-slow) ease-out;
   position: relative;
 }

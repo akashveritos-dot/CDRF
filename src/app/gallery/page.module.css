@@ -73,10 +73,10 @@
 
 .galleryCard {
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: none;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
   transition: all var(--transition-base);
   cursor: pointer;
   position: relative;
@@ -85,7 +85,6 @@
 .galleryCard:hover {
   transform: translateY(-5px);
   box-shadow: var(--shadow-lg);
-  border-color: var(--wine-red-primary);
 }
 
 .imageWrapper {

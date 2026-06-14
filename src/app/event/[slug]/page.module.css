@@ -139,7 +139,7 @@
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-md);
-  border: 1px solid var(--border-color);
+  border: none;
   background: var(--bg-surface);
 }
 
@@ -161,7 +161,7 @@
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-md);
-  border: 1px solid var(--border-color);
+  border: none;
   background: #000;
 }
 
@@ -188,7 +188,7 @@
 
 .registrationCard {
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: none;
   border-radius: var(--radius-lg);
   padding: 40px;
   box-shadow: var(--shadow-lg);
@@ -198,7 +198,7 @@
 }
 
 .registrationCard:hover {
-  box-shadow: var(--shadow-premium);
+  box-shadow: var(--shadow-premium), 0 0 0 2px rgba(136, 19, 55, 0.04);
   transform: translateY(-2px);
 }
 
