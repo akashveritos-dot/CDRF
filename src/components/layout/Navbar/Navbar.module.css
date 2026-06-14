@@ -1248,12 +1248,29 @@
     cursor: pointer;
     box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
     transition: all var(--transition-base);
+    animation: bounceSocialToggle 2.2s infinite ease-in-out;
     -webkit-tap-highlight-color: transparent !important;
     outline: none !important;
   }
 
   .mobileSocialToggle:active {
     transform: scale(0.92);
+  }
+
+  .activeToggle {
+    animation: none !important;
+    transform: translateY(3px) !important;
+  }
+
+  @keyframes bounceSocialToggle {
+    0%, 100% {
+      transform: translateY(0);
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+    }
+    50% {
+      transform: translateY(4px);
+      box-shadow: 0 6px 16px rgba(185, 28, 28, 0.18);
+    }
   }
 
   .mobileSocialCaret {

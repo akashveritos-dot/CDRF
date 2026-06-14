@@ -303,7 +303,7 @@ export default function Navbar() {
         <div className={styles.mobileSocialDropdownContainer}>
           <button
             onClick={() => setIsSocialOpen(!isSocialOpen)}
-            className={styles.mobileSocialToggle}
+            className={`${styles.mobileSocialToggle} ${isSocialOpen ? styles.activeToggle : ''}`}
             aria-label="Toggle social links"
           >
             <ChevronDown size={16} className={`${styles.mobileSocialCaret} ${isSocialOpen ? styles.mobileSocialCaretRotated : ''}`} />
