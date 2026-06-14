@@ -25,7 +25,6 @@
   animation: handleWiggle 1.5s ease-in-out infinite;
 }
 
-
 .socialContainer {
   display: flex;
   flex-direction: column;
@@ -37,11 +36,7 @@
   z-index: 1;
 }
 
-/* 
-  Background glass effect on a pseudo-element. 
-  This fixes a WebKit/Blink bug where combining backdrop-filter 
-  with border-radius on the parent container clips all absolutely-positioned children.
-*/
+/* Background glass effect on a pseudo-element. */
 .socialContainer::before {
   content: '';
   position: absolute;
@@ -49,7 +44,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-radius: 9999px;
@@ -63,7 +58,6 @@
   pointer-events: none;
 }
 
-/* Subtly glow/shadow container on hover */
 .socialContainer:hover::before {
   border-color: rgba(255, 255, 255, 0.6);
   box-shadow: 
@@ -78,6 +72,7 @@
   align-items: center;
   justify-content: center;
   overflow: visible !important;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
 }
 
 .socialLink {
@@ -103,7 +98,6 @@
   display: block;
 }
 
-/* Hover effects triggered by hovering the wrapper item */
 .socialItem:hover .socialLink {
   color: var(--social-color) !important;
   transform: scale(1.18) translateY(-2px);
@@ -112,17 +106,10 @@
   animation: iconGlow 1.5s infinite ease-in-out;
 }
 
-/* Pulsing SVG glow direct drop shadow */
 @keyframes iconGlow {
-  0% {
-    filter: drop-shadow(0 2px 3px var(--social-glow));
-  }
-  50% {
-    filter: drop-shadow(0 6px 12px var(--social-glow));
-  }
-  100% {
-    filter: drop-shadow(0 2px 3px var(--social-glow));
-  }
+  0% { filter: drop-shadow(0 2px 3px var(--social-glow)); }
+  50% { filter: drop-shadow(0 6px 12px var(--social-glow)); }
+  100% { filter: drop-shadow(0 2px 3px var(--social-glow)); }
 }
 
 .iconWrapper {
@@ -138,7 +125,6 @@
   transform: scale(1.05) rotate(3deg);
 }
 
-/* Premium Floating Tooltip */
 .socialLabel {
   position: absolute;
   left: calc(100% + 18px);
@@ -159,10 +145,9 @@
   box-shadow: var(--shadow-md);
   border: 1px solid rgba(255, 255, 255, 0.08);
   z-index: 20;
-  max-width: none !important; /* Override global max-width constraints */
+  max-width: none !important;
 }
 
-/* Tooltip arrow pointing left */
 .socialLabel::before {
   content: '';
   position: absolute;
@@ -201,11 +186,11 @@
   }
 }
 
-/* Mobile styles - vertical drawer on the left edge */
+/* Mobile styles - vertical drawer on the left edge with smart open animations */
 @media (max-width: 768px) {
   .socialSidebar {
     left: 0;
-    top: 62%;
+    top: 60%;
     transform: translate3d(-100%, -50%, 0);
     bottom: auto;
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -215,6 +200,7 @@
     transform: translate3d(0, -50%, 0) !important;
   }
 
+  /* Semi-circular handle styled like user's request */
   .mobileToggle {
     display: flex;
     align-items: center;
@@ -223,91 +209,151 @@
     left: 100%;
     top: 50%;
     transform: translateY(-50%);
-    width: 24px;
-    height: 38px;
+    width: 32px;
+    height: 56px;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     border: 1px solid rgba(15, 23, 42, 0.08);
     border-left: none;
     border-radius: 0 999px 999px 0;
-    box-shadow: 2px 0 8px rgba(15, 23, 42, 0.08);
+    box-shadow: 3px 0 10px rgba(15, 23, 42, 0.08);
     cursor: pointer;
-    color: var(--text-muted);
     padding: 0;
     margin: 0;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     z-index: 10;
   }
 
+  /* Pulse animation on closed toggle to guide click action */
+  .socialSidebar:not(.isOpen) .mobileToggle {
+    animation: togglePulse 2s infinite ease-in-out;
+  }
+
+  @keyframes togglePulse {
+    0%, 100% {
+      box-shadow: 3px 0 10px rgba(239, 68, 68, 0.1);
+      transform: translateY(-50%) scale(1);
+    }
+    50% {
+      box-shadow: 5px 0 15px rgba(239, 68, 68, 0.35);
+      transform: translateY(-50%) scale(1.08);
+    }
+  }
+
+  /* Ripple wave behind closed toggle button */
+  .socialSidebar:not(.isOpen) .mobileToggle::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: inherit;
+    border: 2px solid rgba(239, 68, 68, 0.4);
+    animation: rippleWave 2s infinite ease-out;
+    pointer-events: none;
+  }
+
+  @keyframes rippleWave {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.5); opacity: 0; }
+  }
+
   .mobileToggle:hover {
-    color: var(--red-primary);
     background: #ffffff;
+    box-shadow: 4px 0 12px rgba(239, 68, 68, 0.15);
   }
 
   .toggleArrow {
     display: flex;
     align-items: center;
     justify-content: center;
+    color: #ef4444; /* DCRF warning red caret */
+    font-weight: 800;
     transition: transform 0.3s ease;
   }
 
+  /* Increase toggle arrow size on click/hover */
+  .mobileToggle:active .toggleArrow {
+    transform: scale(1.2);
+  }
+
+  /* Circular Swipe Clip-Path Transition */
   .socialContainer {
     flex-direction: column;
-    padding: 6px 5px 6px 3px;
-    gap: 8px;
+    padding: 12px 10px 12px 6px;
+    gap: 14px;
+    clip-path: circle(28px at 0% 50%);
+    transition: clip-path 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .socialSidebar.isOpen .socialContainer {
+    clip-path: circle(130px at 0% 50%);
   }
 
   .socialContainer::before {
-    border-radius: 0 12px 12px 0;
+    border-radius: 0 16px 16px 0;
     border-left: none;
   }
 
+  /* Icon container size updates */
   .socialLink {
-    width: 28px;
-    height: 28px;
+    width: 38px;
+    height: 38px;
   }
 
   .brandSvg {
-    width: 16px;
-    height: 16px;
+    width: 24px;
+    height: 24px;
   }
 
   .socialLabel {
     display: none !important;
   }
 
-  .socialItem:hover .socialLink {
-    transform: scale(1.15) translateX(2px);
+  /* Sequential Popping Entrance Animation for social items when opened */
+  .socialItem {
+    opacity: 0;
+    transform: scale(0.4) rotate(-35deg) translate3d(-10px, 0, 0);
+  }
+
+  .socialSidebar.isOpen .socialItem {
+    opacity: 1;
+    transform: scale(1) rotate(0) translate3d(0, 0, 0);
+  }
+
+  .socialSidebar.isOpen .socialItem:nth-child(1) {
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s, opacity 0.4s ease 0.1s;
+  }
+
+  .socialSidebar.isOpen .socialItem:nth-child(2) {
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s, opacity 0.4s ease 0.2s;
+  }
+
+  .socialSidebar.isOpen .socialItem:nth-child(3) {
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s, opacity 0.4s ease 0.3s;
   }
 }
 
-/* Extra small mobile */
+/* Extra small mobile styling */
 @media (max-width: 480px) {
   .socialSidebar {
-    left: 0;
-    top: 62%;
+    top: 60%;
   }
 
   .socialContainer {
-    padding: 4px 4px 4px 2px;
-    gap: 6px;
-  }
-
-  .socialContainer::before {
-    border-radius: 0 8px 8px 0;
+    padding: 10px 8px 10px 4px;
+    gap: 12px;
   }
 
   .socialLink {
-    width: 24px;
-    height: 24px;
+    width: 34px;
+    height: 34px;
   }
 
   .brandSvg {
-    width: 14px;
-    height: 14px;
+    width: 20px;
+    height: 20px;
   }
 }
-
-
-
