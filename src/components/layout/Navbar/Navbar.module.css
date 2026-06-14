@@ -212,6 +212,7 @@
   gap: 24px;
   transform: translateX(100%);
   transition: transform var(--transition-spring);
+  overflow-y: auto;
 }
 
 .drawerOpen {
