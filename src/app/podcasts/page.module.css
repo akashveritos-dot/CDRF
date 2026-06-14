@@ -4,7 +4,7 @@
 
 /* ─── Page shell ─────────────────────────────────────────────────────── */
 .page {
-  padding: 80px 5% 100px;
+  padding: 40px 5% 100px;
   max-width: 1240px;
   margin: 0 auto;
 }
@@ -984,7 +984,7 @@
 
 @media (max-width: 768px) {
   .page {
-    padding: 60px 24px 80px;
+    padding: 24px 24px 80px;
   }
   .statDivider {
     display: none;
@@ -1043,7 +1043,7 @@
 
 @media (max-width: 480px) {
   .page {
-    padding: 40px 16px 60px;
+    padding: 24px 16px 60px;
   }
   .title {
     font-size: 28px;

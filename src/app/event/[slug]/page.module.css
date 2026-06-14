@@ -2,13 +2,13 @@
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 120px 24px 80px;
+  padding: 40px 24px 80px;
   min-height: 100vh;
 }
 
 @media (max-width: 768px) {
   .page {
-    padding: 90px 16px 60px;
+    padding: 24px 16px 60px;
   }
 }
 
@@ -194,6 +194,12 @@
   box-shadow: var(--shadow-lg);
   position: relative;
   z-index: 10;
+  transition: box-shadow var(--transition-base), transform var(--transition-base);
+}
+
+.registrationCard:hover {
+  box-shadow: var(--shadow-premium);
+  transform: translateY(-2px);
 }
 
 

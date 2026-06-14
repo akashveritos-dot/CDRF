@@ -2,13 +2,13 @@
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 120px 24px 80px;
+  padding: 40px 24px 80px;
   min-height: 100vh;
 }
 
 @media (max-width: 768px) {
   .page {
-    padding: 90px 16px 60px;
+    padding: 24px 16px 60px;
   }
 }
 
@@ -141,17 +141,22 @@
 
 .imageWrapper {
   width: 100%;
-  border-radius: 0;
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: none;
-  border: none;
-  background: transparent;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
 }
 
 .image {
   width: 100%;
   height: auto;
   display: block;
+  transition: transform var(--transition-slow) cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.imageWrapper:hover .image {
+  transform: scale(1.03);
 }
 
 .videoWrapper {
@@ -195,25 +200,24 @@
 }
 
 .memberCard {
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  padding: 24px 0;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 28px;
   text-align: left;
-  box-shadow: none;
+  box-shadow: var(--shadow-sm);
   transition: all var(--transition-base);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  border-bottom: 1px solid var(--border-color);
   position: relative;
   overflow: hidden;
 }
 
 .memberCard:hover {
-  transform: none;
-  box-shadow: none;
-  border-bottom-color: var(--wine-red-primary);
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--wine-red-primary);
 }
 
 .avatar {
@@ -453,6 +457,18 @@
   flex-direction: column;
   gap: 6px;
   text-align: left;
+  padding: 16px 20px;
+  border-radius: var(--radius-md);
+  background: var(--bg-surface-alt);
+  border-left: 3px solid transparent;
+  transition: all var(--transition-base);
+}
+
+.comparisonItem:hover {
+  background: var(--bg-surface);
+  border-left-color: var(--wine-red-primary);
+  transform: translateX(4px);
+  box-shadow: var(--shadow-sm);
 }
 
 .comparisonItemTitle {

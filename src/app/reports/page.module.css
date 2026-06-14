@@ -1,5 +1,5 @@
 .page {
-  padding: 80px 5%;
+  padding: 40px 5% 80px;
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -246,7 +246,7 @@
 
 @media (max-width: 768px) {
   .page {
-    padding: 60px 24px;
+    padding: 24px 24px 60px;
   }
   .controlsPanel {
     flex-direction: column;
