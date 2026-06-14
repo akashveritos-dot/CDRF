@@ -28,12 +28,64 @@ export default function ComingSoonPage() {
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   const interestOptions = [
-    "Excited supporter",
-    "Volunteer",
-    "Organization",
-    "Partner",
-    "Early supporter / investor",
-    "Media / press"
+    {
+      value: "Excited supporter",
+      icon: (
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opt-icon">
+          <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/>
+          <path d="m5 3 1 2.5L8.5 6 6 7 5 9.5 4 7 1.5 6 4 5.5Z" opacity="0.6"/>
+          <path d="m19 17 1 2.5 2.5.5-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1Z" opacity="0.6"/>
+        </svg>
+      )
+    },
+    {
+      value: "Volunteer",
+      icon: (
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opt-icon">
+          <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+        </svg>
+      )
+    },
+    {
+      value: "Organization",
+      icon: (
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opt-icon">
+          <rect x="2" y="10" width="20" height="12" rx="2" />
+          <path d="M6 10V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v6" />
+          <path d="M12 14h.01M12 18h.01M8 14h.01M8 18h.01M16 14h.01M16 18h.01" />
+        </svg>
+      )
+    },
+    {
+      value: "Partner",
+      icon: (
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opt-icon">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+      )
+    },
+    {
+      value: "Early supporter / investor",
+      icon: (
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opt-icon">
+          <path d="M6 3h12l4 6-10 13L2 9Z"/>
+          <path d="M11 3 8 9l4 13 4-13-3-6"/>
+          <path d="M2 9h20"/>
+        </svg>
+      )
+    },
+    {
+      value: "Media / press",
+      icon: (
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opt-icon">
+          <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/>
+          <path d="M18 14h-8M15 18h-5M10 6h8v4h-8Z"/>
+        </svg>
+      )
+    }
   ];
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -1028,7 +1080,8 @@ export default function ComingSoonPage() {
           -webkit-backdrop-filter: blur(14px); 
           box-shadow: 0 30px 70px rgba(34,27,22,.12); 
           position: relative; 
-          overflow: hidden; 
+          overflow: visible; 
+          clip-path: none !important; 
         }
 
         .coming-soon-wrapper .field-row { 
@@ -1257,6 +1310,10 @@ export default function ComingSoonPage() {
           opacity: 1; 
           transform: none; 
           filter: none; 
+          clip-path: none; 
+        }
+
+        .coming-soon-wrapper .reveal.r-clip.in { 
           clip-path: inset(0 0 0 0); 
         }
 
@@ -1546,6 +1603,22 @@ export default function ComingSoonPage() {
           color: var(--ember);
         }
 
+        .coming-soon-wrapper .custom-select-trigger .opt-icon {
+          color: var(--ember);
+          flex: none;
+        }
+
+        .coming-soon-wrapper .custom-select-option .opt-icon {
+          color: var(--muted);
+          transition: color .2s;
+          flex: none;
+        }
+
+        .coming-soon-wrapper .custom-select-option:hover .opt-icon,
+        .coming-soon-wrapper .custom-select-option.selected .opt-icon {
+          color: var(--ember);
+        }
+
         /* ===== Reduced motion ===== */
         @media (prefers-reduced-motion: reduce) {
           .coming-soon-wrapper * { 
@@ -1805,7 +1878,10 @@ export default function ComingSoonPage() {
                         aria-expanded={dropdownOpen}
                         aria-labelledby="l-interest"
                       >
-                        <span>{interest || "Select one…"}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                          {interest && interestOptions.find(o => o.value === interest)?.icon}
+                          <span>{interest || "Select one…"}</span>
+                        </div>
                         <svg className="chevron-icon" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                         </svg>
@@ -1815,17 +1891,20 @@ export default function ComingSoonPage() {
                         <ul className="custom-select-options" role="listbox" aria-labelledby="l-interest">
                           {interestOptions.map((opt) => (
                             <li
-                              key={opt}
+                              key={opt.value}
                               role="option"
-                              aria-selected={interest === opt}
-                              className={`custom-select-option ${interest === opt ? 'selected' : ''}`}
+                              aria-selected={interest === opt.value}
+                              className={`custom-select-option ${interest === opt.value ? 'selected' : ''}`}
                               onClick={() => {
-                                setInterest(opt);
+                                setInterest(opt.value);
                                 setDropdownOpen(false);
                               }}
                             >
-                              {opt}
-                              {interest === opt && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                                {opt.icon}
+                                <span>{opt.value}</span>
+                              </div>
+                              {interest === opt.value && (
                                 <svg className="check-icon" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                                 </svg>
