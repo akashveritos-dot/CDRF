@@ -430,6 +430,14 @@ export default function ChatAssistant() {
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    const handleToggleChat = () => {
+      setIsOpen((prev) => !prev);
+    };
+    window.addEventListener('dcrs-toggle-chat', handleToggleChat);
+    return () => window.removeEventListener('dcrs-toggle-chat', handleToggleChat);
+  }, []);
+
   const handleSendMessage = async (textToSend: string) => {
     if (!textToSend.trim() || isLoading) return;
 

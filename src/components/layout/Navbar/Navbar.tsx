@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, ChevronDown, Mail, User, Bell, CheckCircle2, Home, Info, Calendar, BookOpen, Facebook, Linkedin, Youtube, Newspaper } from 'lucide-react';
+import { Menu, X, ChevronDown, Mail, User, Bell, CheckCircle2, Home, Info, Calendar, BookOpen, Facebook, Linkedin, Youtube, Newspaper, MessageSquare } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from './Navbar.module.css';
 
@@ -496,6 +496,17 @@ export default function Navbar() {
           >
             <Menu size={20} />
             <span>More</span>
+          </button>
+
+          <button
+            className={styles.bottomTab}
+            onClick={() => {
+              window.dispatchEvent(new Event('dcrs-toggle-chat'));
+              setActiveSubmenu(null);
+            }}
+          >
+            <MessageSquare size={20} />
+            <span>Chat</span>
           </button>
         </div>
 

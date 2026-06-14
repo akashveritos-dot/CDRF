@@ -496,62 +496,34 @@
 
 /* Responsive Overrides */
 @media (max-width: 768px) {
+  .floatingButton {
+    display: none !important;
+  }
+  .greetingTooltip {
+    display: none !important;
+  }
   .chatWindow {
     position: fixed;
-    bottom: 160px;
-    right: 16px;
-    width: calc(100vw - 32px);
+    bottom: calc(64px + env(safe-area-inset-bottom, 16px) + 12px) !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    width: calc(100vw - 32px) !important;
     max-width: 440px;
     height: 340px;
     border-radius: 20px;
     margin-bottom: 0;
-    z-index: 10000;
+    z-index: 100000;
   }
   .chatWidget {
-    bottom: 92px;
-    right: 16px;
-  }
-  .greetingTooltip {
-    right: 0;
-    bottom: 64px;
-    top: auto;
-    transform: none;
-    width: max-content;
-    max-width: calc(100vw - 32px);
-    border-radius: 30px;
-    padding: 4px 10px 4px 6px;
-    animation: fadeInTooltipMobile 0.4s ease-out both;
-  }
-  .greetingTooltip:hover {
-    transform: scale(1.01);
-  }
-  .aiIconWrapper {
-    width: 16px;
-    height: 16px;
-  }
-  .tooltipText {
-    font-size: 9px;
-    white-space: nowrap;
-  }
-  @keyframes fadeInTooltipMobile {
-    from {
-      opacity: 0;
-      transform: translateY(12px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  .tooltipArrow {
-    right: 20px;
-    bottom: -5px;
-    top: auto;
-    transform: none;
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 5px solid rgba(255, 255, 255, 0.95);
-    filter: drop-shadow(0px 1px 0px rgba(153, 27, 27, 0.15));
+    position: fixed !important;
+    bottom: calc(64px + env(safe-area-inset-bottom, 16px) + 12px) !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    width: calc(100vw - 32px) !important;
+    max-width: 440px;
+    z-index: 100000;
   }
 }
 
