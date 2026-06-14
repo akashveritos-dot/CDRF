@@ -92,7 +92,7 @@ export default function AdminLoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@dcrf.org"
+                placeholder="superadmin@dcrf.org"
                 className={styles.input}
               />
             </div>

@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     name VARCHAR(255) NOT NULL,
-    role ENUM('ADMIN', 'MEMBER', 'GUEST') NOT NULL DEFAULT 'GUEST',
+    role ENUM('SUPERADMIN', 'ADMIN', 'MEMBER', 'GUEST') NOT NULL DEFAULT 'GUEST',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
@@ -168,7 +168,7 @@ CREATE TABLE IF NOT EXISTS monsoon_heatmap (
 -- Hashed value matches Scrypt hash of "123456":
 -- Salt: "7e7cd6112a3b62fa462c5feab2edb468"
 INSERT INTO users (id, email, password_hash, name, role) 
-VALUES (1, 'admin@dcrf.org', 'scrypt.1000.7e7cd6112a3b62fa462c5feab2edb468.f9b8e42bda7f712d6c17430ce12fc4c8cf34165e01883cddb40dde737dfcaa2f89a38c6561565b074a0ad4f7c448332f06b0c2a71a50658d3328e30e86849460', 'DCRF Administrator', 'ADMIN')
+VALUES (1, 'superadmin@dcrf.org', 'scrypt.1000.e16b6e2ff191e041ee5e253e9c34e36c.9d15e6dfe4234d9af073e28f4204d939faf111ac9f110975ad8417b1219b436c384cf948c4bb83ef50bede5143510e502bdf60b60f0cc1bdca57b832eb102934', 'DCRF Administrator', 'SUPERADMIN')
 ON DUPLICATE KEY UPDATE password_hash=VALUES(password_hash), email=VALUES(email), name=VALUES(name), role=VALUES(role);
 
 -- 2. Ticker Alerts Seed
