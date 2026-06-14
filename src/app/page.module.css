@@ -788,46 +788,81 @@
 
 /* Glassmorphic Stats Cards inside Hero Panel */
 .heroPanelLight .dstat {
-  background: rgba(255, 255, 255, 0.85) !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.7) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.12) !important;
   border-radius: 18px !important;
   padding: 16px 12px !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
-  transition: all 300ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 8px 20px rgba(0, 0, 0, 0.25) !important;
+  transition: all 350ms cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .heroPanelLight .dstat:hover {
-  transform: translateY(-4px) scale(1.02) !important;
-  background: #ffffff !important;
+  transform: translateY(-5px) scale(1.03) !important;
+  background: rgba(255, 255, 255, 0.16) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+/* Glowing color metrics inside light panel */
+.heroPanelLight .numRed {
+  color: #ff5e62 !important;
+  text-shadow: 0 0 14px rgba(255, 94, 98, 0.55), 0 0 4px rgba(255, 94, 98, 0.2) !important;
+}
+.heroPanelLight .numAmber {
+  color: #fbbf24 !important;
+  text-shadow: 0 0 14px rgba(251, 191, 36, 0.55), 0 0 4px rgba(251, 191, 36, 0.2) !important;
+}
+.heroPanelLight .numTeal {
+  color: #34d399 !important;
+  text-shadow: 0 0 14px rgba(52, 211, 153, 0.55), 0 0 4px rgba(52, 211, 153, 0.2) !important;
+}
+.heroPanelLight .numBlue {
+  color: #60a5fa !important;
+  text-shadow: 0 0 14px rgba(96, 165, 250, 0.55), 0 0 4px rgba(96, 165, 250, 0.2) !important;
 }
 
 .heroPanelLight .dstat:has(.numRed):hover {
-  border-color: var(--red-primary) !important;
-  box-shadow: 0 12px 24px -8px rgba(185, 28, 28, 0.25) !important;
+  border-color: rgba(255, 94, 98, 0.5) !important;
+  box-shadow: 0 12px 30px -8px rgba(255, 94, 98, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.2) !important;
 }
 
 .heroPanelLight .dstat:has(.numAmber):hover {
-  border-color: #D97706 !important;
-  box-shadow: 0 12px 24px -8px rgba(217, 119, 6, 0.25) !important;
+  border-color: rgba(251, 191, 36, 0.5) !important;
+  box-shadow: 0 12px 30px -8px rgba(251, 191, 36, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.2) !important;
 }
 
 .heroPanelLight .dstat:has(.numTeal):hover {
-  border-color: var(--teal-primary) !important;
-  box-shadow: 0 12px 24px -8px rgba(21, 128, 61, 0.25) !important;
+  border-color: rgba(52, 211, 153, 0.5) !important;
+  box-shadow: 0 12px 30px -8px rgba(52, 211, 153, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.2) !important;
 }
 
 .heroPanelLight .dstat:has(.numBlue):hover {
-  border-color: var(--blue-primary) !important;
-  box-shadow: 0 12px 24px -8px rgba(41, 128, 185, 0.25) !important;
+  border-color: rgba(96, 165, 250, 0.5) !important;
+  box-shadow: 0 12px 30px -8px rgba(96, 165, 250, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.2) !important;
 }
 
 .heroPanelLight .dstatLabel {
-  color: var(--text-muted) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
   font-size: 11px !important;
   font-weight: 700 !important;
   line-height: 1.35 !important;
+  letter-spacing: 0.2px !important;
+}
+
+/* Make city progress bars look like glowing neon glass bars */
+.heroPanelLight .tempRow {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.heroPanelLight .tempBarWrap {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.heroPanelLight .tempBarFill {
+  background: linear-gradient(90deg, #f59e0b, #ef4444) !important;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.5) !important;
 }
 
 /* Categories Section styles */
