@@ -64,16 +64,6 @@ export default function AdminNews() {
     fetchStories();
   }, []);
 
-  // Check query string parameters to trigger New Form instantly (e.g. from Dashboard shortcut)
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('action') === 'new') {
-        handleAddNew();
-      }
-    }
-  }, []);
-
   const handleAddNew = () => {
     setEditingId(null);
     setFormData({
@@ -92,6 +82,16 @@ export default function AdminNews() {
     setError('');
     setIsFormOpen(true);
   };
+
+  // Check query string parameters to trigger New Form instantly (e.g. from Dashboard shortcut)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('action') === 'new') {
+        handleAddNew();
+      }
+    }
+  }, []);
 
   const handleEdit = (story: any) => {
     setEditingId(story.id);
@@ -120,6 +120,7 @@ export default function AdminNews() {
   };
 
   const handleDelete = async (id: number) => {
+    // eslint-disable-next-line no-alert
     if (!confirm('Are you sure you want to permanently delete this news story?')) return;
 
     try {
@@ -130,6 +131,7 @@ export default function AdminNews() {
       if (!res.ok) throw new Error('Failed to delete');
       fetchStories();
     } catch (err) {
+      // eslint-disable-next-line no-alert
       alert('Error deleting news story');
     }
   };

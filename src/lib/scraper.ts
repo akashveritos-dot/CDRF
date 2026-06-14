@@ -102,13 +102,15 @@ function parsePubDate(dateStr: string): string {
     if (!isNaN(d.getTime())) {
       return d.toISOString().split('T')[0];
     }
-  } catch (err) {}
+  } catch {
+    // Ignore date parsing error
+  }
   return new Date().toISOString().split('T')[0];
 }
 
 // Custom XML parser helper to extract title, links, desc, date and images
 function parseRssXml(xmlText: string): Array<{ title: string; link: string; description: string; pubDate: string; imageUrl: string }> {
-  const items: any[] = [];
+  const items: Array<{ title: string; link: string; description: string; pubDate: string; imageUrl: string }> = [];
   const itemRegex = /<item>([\s\S]*?)<\/item>/g;
   let match;
   
@@ -120,10 +122,10 @@ function parseRssXml(xmlText: string): Array<{ title: string; link: string; desc
     const descMatch = itemContent.match(/<description><!\[CDATA\[([\s\S]*?)\]\]><\/description>/) || itemContent.match(/<description>([\s\S]*?)<\/description>/);
     const dateMatch = itemContent.match(/<pubDate>([\s\S]*?)<\/pubDate>/);
     
-    let title = titleMatch ? titleMatch[1].trim() : '';
-    let link = linkMatch ? linkMatch[1].trim() : '';
-    let descriptionRaw = descMatch ? descMatch[1].trim() : '';
-    let pubDate = dateMatch ? dateMatch[1].trim() : '';
+    const title = titleMatch ? titleMatch[1].trim() : '';
+    const link = linkMatch ? linkMatch[1].trim() : '';
+    const descriptionRaw = descMatch ? descMatch[1].trim() : '';
+    const pubDate = dateMatch ? dateMatch[1].trim() : '';
 
     // Layer 1: enclosure tag (podcasts / WordPress)
     let imageUrl = '';
@@ -249,6 +251,11 @@ function getSimulatedArticles(): Array<{ title: string; link: string; descriptio
   ];
 }
 
+interface DbInsertResult {
+  affectedRows: number;
+  insertId: number;
+}
+
 export async function runScraper(): Promise<{ success: boolean; itemsScraped: number; errors: string[] }> {
   const errors: string[] = [];
   let itemsScraped = 0;
@@ -277,58 +284,58 @@ export async function runScraper(): Promise<{ success: boolean; itemsScraped: nu
 
       console.log(`Parsed ${parsedItems.length} items from ${feed.source}`);
 
-      for (const item of parsedItems) {
-        const category = classifyCategory(item.title, item.description);
-        const location = extractLocation(item.title, item.description);
-        const publishedDate = parsePubDate(item.pubDate);
+      for (const { title, link, description, pubDate, imageUrl: itemImageUrl } of parsedItems) {
+        const category = classifyCategory(title, description);
+        const location = extractLocation(title, description);
+        const publishedDate = parsePubDate(pubDate);
 
         // Resolve image: RSS → OG fetch → category fallback
-        let imageUrl = item.imageUrl;
-        if (!imageUrl && item.link) {
-          imageUrl = await fetchArticleOgImage(item.link);
+        let resolvedImageUrl = itemImageUrl;
+        if (!resolvedImageUrl && link) {
+          resolvedImageUrl = await fetchArticleOgImage(link);
         }
-        if (!imageUrl) {
-          imageUrl = categoryFallbacks[category] || categoryFallbacks.breaking;
+        if (!resolvedImageUrl) {
+          resolvedImageUrl = categoryFallbacks[category] || categoryFallbacks.breaking;
         }
         
         try {
           // Use INSERT IGNORE to prevent duplicate entries based on unique URL
-          const result = await query<any>(
+          const result = await query<DbInsertResult>(
             `INSERT IGNORE INTO scraped_content (headline, excerpt, source, url, category, status, image_url, location, published_date) 
              VALUES (?, ?, ?, ?, ?, 'Pending', ?, ?, ?)`,
             [
-              item.title,
-              item.description.substring(0, 500),
+              title,
+              description.substring(0, 500),
               feed.source,
-              item.link,
+              link,
               category,
-              imageUrl,
+              resolvedImageUrl,
               location,
               publishedDate
             ]
           );
 
           if (result.affectedRows > 0) {
-            itemsScraped++;
+            itemsScraped += 1;
             const insertId = result.insertId;
 
             // Auto-publish: if feed source is ReliefWeb or category is technical, make it Report, else News
             const shouldPublishAsReport = feed.source.toLowerCase().includes('reliefweb') || category === 'technical';
             
             if (shouldPublishAsReport) {
-              const reportResult = await query<any>(
+              const reportResult = await query<{ insertId: number }>(
                 `INSERT INTO reports (title, category, description, page_count, year, download_url, accent_color, icon, image_url, source, region, disaster_type, severity_level, affected_population) 
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
-                  item.title,
+                  title,
                   'Technical',
-                  item.description.substring(0, 500),
+                  description.substring(0, 500),
                   Math.floor(Math.random() * 40) + 12, // Random page count
                   new Date(publishedDate).getFullYear() || new Date().getFullYear(),
-                  item.link,
+                  link,
                   '#EDF2F8',
                   '📡',
-                  imageUrl,
+                  resolvedImageUrl,
                   feed.source,
                   location,
                   category,
@@ -343,19 +350,19 @@ export async function runScraper(): Promise<{ success: boolean; itemsScraped: nu
               );
               console.log(`Auto-published report ID ${reportResult.insertId} from scraped feed.`);
             } else {
-              const newsResult = await query<any>(
+              const newsResult = await query<{ insertId: number }>(
                 `INSERT INTO news (tag, source, headline, excerpt, published_date, author, external_link, thumbnail_emoji, image_url, category, location) 
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
                   'Alert',
                   feed.source,
-                  item.title,
-                  item.description.substring(0, 500),
+                  title,
+                  description.substring(0, 500),
                   publishedDate,
                   'Editor, DCRF',
-                  item.link,
+                  link,
                   '📡',
-                  imageUrl,
+                  resolvedImageUrl,
                   category,
                   location
                 ]
@@ -368,13 +375,15 @@ export async function runScraper(): Promise<{ success: boolean; itemsScraped: nu
               console.log(`Auto-published news ID ${newsResult.insertId} from scraped feed.`);
             }
           }
-        } catch (dbErr: any) {
-          console.error(`Database insertion failed for ${item.link}:`, dbErr.message);
+        } catch (dbErr) {
+          const errMsg = dbErr instanceof Error ? dbErr.message : String(dbErr);
+          console.error(`Database insertion failed for ${link}:`, errMsg);
         }
       }
 
-    } catch (feedErr: any) {
-      const msg = `Failed to scrape feed ${feed.source} (${feed.url}): ${feedErr.message}`;
+    } catch (feedErr) {
+      const errMsg = feedErr instanceof Error ? feedErr.message : String(feedErr);
+      const msg = `Failed to scrape feed ${feed.source} (${feed.url}): ${errMsg}`;
       console.warn(msg);
       errors.push(msg);
     }
@@ -385,49 +394,49 @@ export async function runScraper(): Promise<{ success: boolean; itemsScraped: nu
     console.log('Live feeds offline or returned empty. Running simulated scraper backup...');
     const simulated = getSimulatedArticles();
     
-    for (const item of simulated) {
-      const category = classifyCategory(item.title, item.description);
-      const imageUrl = item.imageUrl || categoryFallbacks[category] || categoryFallbacks.breaking;
-      const publishedDate = parsePubDate(item.pubDate);
+    for (const { title, description, link, source, imageUrl: itemImageUrl, pubDate, location } of simulated) {
+      const category = classifyCategory(title, description);
+      const resolvedImageUrl = itemImageUrl || categoryFallbacks[category] || categoryFallbacks.breaking;
+      const publishedDate = parsePubDate(pubDate);
       
       try {
-        const result = await query<any>(
+        const result = await query<DbInsertResult>(
           `INSERT IGNORE INTO scraped_content (headline, excerpt, source, url, category, status, image_url, location, published_date) 
            VALUES (?, ?, ?, ?, ?, 'Pending', ?, ?, ?)`,
           [
-            item.title,
-            item.description,
-            item.source,
-            item.link,
+            title,
+            description,
+            source,
+            link,
             category,
-            imageUrl,
-            item.location,
+            resolvedImageUrl,
+            location,
             publishedDate
           ]
         );
 
         if (result.affectedRows > 0) {
-          itemsScraped++;
+          itemsScraped += 1;
           const insertId = result.insertId;
           
-          const shouldPublishAsReport = item.source.toLowerCase().includes('reliefweb') || category === 'technical';
+          const shouldPublishAsReport = source.toLowerCase().includes('reliefweb') || category === 'technical';
           
           if (shouldPublishAsReport) {
-            const reportResult = await query<any>(
+            const reportResult = await query<{ insertId: number }>(
               `INSERT INTO reports (title, category, description, page_count, year, download_url, accent_color, icon, image_url, source, region, disaster_type, severity_level, affected_population) 
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
               [
-                item.title,
+                title,
                 'Technical',
-                item.description,
+                description,
                 24,
                 new Date().getFullYear(),
-                item.link,
+                link,
                 '#EDF2F8',
                 '📡',
-                imageUrl,
-                item.source,
-                item.location,
+                resolvedImageUrl,
+                source,
+                location,
                 category,
                 'Medium',
                 null
@@ -439,21 +448,21 @@ export async function runScraper(): Promise<{ success: boolean; itemsScraped: nu
               [reportResult.insertId, insertId]
             );
           } else {
-            const newsResult = await query<any>(
+            const newsResult = await query<{ insertId: number }>(
               `INSERT INTO news (tag, source, headline, excerpt, published_date, author, external_link, thumbnail_emoji, image_url, category, location) 
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
               [
                 'Alert',
-                item.source,
-                item.title,
-                item.description,
+                source,
+                title,
+                description,
                 publishedDate,
                 'Editor, DCRF',
-                item.link,
+                link,
                 '📡',
-                imageUrl,
+                resolvedImageUrl,
                 category,
-                item.location
+                location
               ]
             );
             
@@ -463,7 +472,7 @@ export async function runScraper(): Promise<{ success: boolean; itemsScraped: nu
             );
           }
         }
-      } catch (dbErr) {
+      } catch {
         // Safe to ignore duplicate insertions
       }
     }

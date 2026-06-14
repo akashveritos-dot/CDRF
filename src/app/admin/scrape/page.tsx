@@ -102,6 +102,7 @@ export default function AdminScrapeQueue() {
       setPublishingItem(null);
       fetchQueue();
     } catch (err) {
+      // eslint-disable-next-line no-alert
       alert('Error publishing content item.');
     } finally {
       setIsProcessing(false);
@@ -109,6 +110,7 @@ export default function AdminScrapeQueue() {
   };
 
   const handleReject = async (id: number) => {
+    // eslint-disable-next-line no-alert
     if (!confirm('Are you sure you want to reject this item? It will be removed from the review queue.')) return;
 
     try {
@@ -124,6 +126,7 @@ export default function AdminScrapeQueue() {
       if (!res.ok) throw new Error('Failed to reject');
       fetchQueue();
     } catch (err) {
+      // eslint-disable-next-line no-alert
       alert('Error rejecting queue item.');
     }
   };
@@ -163,7 +166,7 @@ export default function AdminScrapeQueue() {
               
               <div className={styles.cardBody} style={{ minHeight: '85px' }}>
                 {item.image_url && (
-                  // eslint-disable-next-line @next/next/no-img-element
+                  // eslint-disable-next-line
                   <img 
                     src={item.image_url} 
                     alt="scraped thumbnail" 

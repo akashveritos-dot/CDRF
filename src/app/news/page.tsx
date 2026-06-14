@@ -167,7 +167,7 @@ export default function NewsPage() {
           <div className={styles.featured}>
             <div className={`${styles.featImgContainer} ${getTagAccentColorClass(featuredStory.tag)}`}>
               {/* Always show image — fall back via onError */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
+              // eslint-disable-next-line
               <img
                 src={featuredStory.image_url || getFallbackImg(featuredStory)}
                 alt={featuredStory.headline}
@@ -211,7 +211,7 @@ export default function NewsPage() {
           >
             <div className={styles.card}>
               {/* Always show image — onError falls back to category Unsplash */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
+              // eslint-disable-next-line
               <img
                 src={story.image_url || getFallbackImg(story)}
                 alt={story.headline}

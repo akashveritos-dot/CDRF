@@ -10,7 +10,7 @@ export async function GET(
 ) {
   try {
     const params = await props.params;
-    const id = params.id;
+    const { id } = params;
     const reportsList = await query<any[]>('SELECT * FROM reports WHERE id = ? LIMIT 1', [id]);
 
     if (reportsList.length === 0) {
@@ -19,6 +19,7 @@ export async function GET(
 
     return NextResponse.json(reportsList[0]);
   } catch (error: any) {
+    console.log(error);
     console.error('Fetch report details error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch report details' },
@@ -34,7 +35,7 @@ export async function PUT(
 ) {
   try {
     const params = await props.params;
-    const id = params.id;
+    const { id } = params;
     const cookieStore = await cookies();
     const token = cookieStore.get('auth_token')?.value;
 
@@ -113,7 +114,7 @@ export async function DELETE(
 ) {
   try {
     const params = await props.params;
-    const id = params.id;
+    const { id } = params;
     const cookieStore = await cookies();
     const token = cookieStore.get('auth_token')?.value;
 

@@ -131,9 +131,9 @@ export default function ChatAssistant() {
       let buffer = '';
       let accumulatedContent = '';
 
-      while (true) {
+      const readChunk = async (): Promise<void> => {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) return;
 
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split('\n\n');
@@ -155,12 +155,20 @@ export default function ChatAssistant() {
             }
           }
         }
-      }
+        return readChunk();
+      };
+      await readChunk();
 
       // Wait for typewriter to fully catch up to the accumulated text
-      while (typewriterLengthRef.current < accumulatedContent.length) {
-        await new Promise((resolve) => setTimeout(resolve, 30));
-      }
+      const waitForTypewriter = async (): Promise<void> => {
+        if (typewriterLengthRef.current < accumulatedContent.length) {
+          await new Promise<void>((resolve) => {
+            setTimeout(resolve, 30);
+          });
+          return waitForTypewriter();
+        }
+      };
+      await waitForTypewriter();
 
       const assistantMessage: Message = {
         id: `msg-${Date.now()}-assistant`,
@@ -207,8 +215,7 @@ export default function ChatAssistant() {
               </span>
             );
           }
-          const label = match[1];
-          const url = match[2];
+          const [, label, url] = match;
           const isInternal = url.startsWith('/') || url.startsWith('#');
 
           segments.push(

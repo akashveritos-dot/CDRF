@@ -10,8 +10,7 @@ function getISTDatetime(): string {
   const istOffsetMs = 5.5 * 60 * 60 * 1000;
   const istDate = new Date(now.getTime() + istOffsetMs);
   const isoString = istDate.toISOString(); // "YYYY-MM-DDTHH:mm:ss.sssZ"
-  // Format as MySQL DATETIME: YYYY-MM-DD HH:mm:ss
-  return isoString.slice(0, 10) + ' ' + isoString.slice(11, 19);
+  return `${isoString.slice(0, 10)} ${isoString.slice(11, 19)}`;
 }
 
 // GET /api/subscriptions - Fetch subscriptions (Admin Secured)

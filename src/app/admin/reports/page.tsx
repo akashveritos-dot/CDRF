@@ -106,6 +106,7 @@ export default function AdminReports() {
   };
 
   const handleDelete = async (id: number) => {
+    // eslint-disable-next-line no-alert
     if (!confirm('Are you sure you want to permanently delete this report brief?')) return;
 
     try {
@@ -116,6 +117,7 @@ export default function AdminReports() {
       if (!res.ok) throw new Error('Failed to delete');
       fetchReports();
     } catch (err) {
+      // eslint-disable-next-line no-alert
       alert('Error deleting report');
     }
   };

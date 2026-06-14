@@ -104,11 +104,11 @@ export default function DisasterBackground() {
       
       let altitude = 0;
       if (currentPeriod === 'night') {
-        const moonPos = SunCalc.getMoonPosition(now, 28.6139, 77.2090);
-        altitude = moonPos.altitude;
+        const { altitude: moonAlt } = SunCalc.getMoonPosition(now, 28.6139, 77.2090);
+        altitude = moonAlt;
       } else {
-        const sunPos = SunCalc.getPosition(now, 28.6139, 77.2090);
-        altitude = sunPos.altitude;
+        const { altitude: sunAlt } = SunCalc.getPosition(now, 28.6139, 77.2090);
+        altitude = sunAlt;
       }
 
       const maxAlt = 1.5;
@@ -153,7 +153,7 @@ export default function DisasterBackground() {
         );
         if (response.ok) {
           const data = await response.json();
-          const current = data.current;
+          const { current } = data;
           const temp = Math.round(current.temperature_2m).toString();
           const code = current.weather_code;
           const isDayApi = current.is_day;

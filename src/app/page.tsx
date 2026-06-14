@@ -174,17 +174,13 @@ export default function Home() {
                 ];
                 updatedTemps.sort((a, b) => b.temp - a.temp);
                 setTemps(updatedTemps);
-              } else {
-                if (data.cityTemps) {
-                  const sortedTemps = [...data.cityTemps].sort((a, b) => b.temp - a.temp);
-                  setTemps(sortedTemps);
-                }
-              }
-            } else {
-              if (data.cityTemps) {
+              } else if (data.cityTemps) {
                 const sortedTemps = [...data.cityTemps].sort((a, b) => b.temp - a.temp);
                 setTemps(sortedTemps);
               }
+            } else if (data.cityTemps) {
+              const sortedTemps = [...data.cityTemps].sort((a, b) => b.temp - a.temp);
+              setTemps(sortedTemps);
             }
           } catch (weatherErr) {
             console.warn('Failed to fetch real-time city temperatures:', weatherErr);

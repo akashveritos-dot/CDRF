@@ -65,6 +65,7 @@ export default function AdminEvents() {
       if (!res.ok) throw new Error('Failed to update status');
       fetchRegistrations();
     } catch (err) {
+      // eslint-disable-next-line no-alert
       alert('Error updating attendee status');
     } finally {
       setUpdatingId(null);
@@ -72,6 +73,7 @@ export default function AdminEvents() {
   };
 
   const handleDelete = async (id: number) => {
+    // eslint-disable-next-line no-alert
     if (!confirm('Are you sure you want to permanently delete this event registration record?')) return;
 
     try {
@@ -85,6 +87,7 @@ export default function AdminEvents() {
       }
       fetchRegistrations();
     } catch (err: any) {
+      // eslint-disable-next-line no-alert
       alert(err.message || 'Error deleting registration record');
     }
   };

@@ -80,7 +80,7 @@ const tierOptions = [
 ];
 
 export default function MembershipPage() {
-  const { success, warning } = useToast();
+  const { success, warning, error: toastError } = useToast();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -146,7 +146,7 @@ export default function MembershipPage() {
         }
       } catch (err) {
         console.error('Membership form error:', err);
-        alert('Failed to submit application. Please try again later.');
+        toastError('Submission Failed', 'Failed to submit application. Please try again later.');
       }
     }
   };

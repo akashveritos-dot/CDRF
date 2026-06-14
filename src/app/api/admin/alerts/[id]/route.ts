@@ -10,7 +10,7 @@ export async function GET(
 ) {
   try {
     const params = await props.params;
-    const id = params.id;
+    const { id } = params;
     const cookieStore = await cookies();
     const token = cookieStore.get('auth_token')?.value;
 
@@ -45,7 +45,7 @@ export async function PUT(
 ) {
   try {
     const params = await props.params;
-    const id = params.id;
+    const { id } = params;
     const cookieStore = await cookies();
     const token = cookieStore.get('auth_token')?.value;
 
@@ -100,7 +100,7 @@ export async function DELETE(
 ) {
   try {
     const params = await props.params;
-    const id = params.id;
+    const { id } = params;
     const cookieStore = await cookies();
     const token = cookieStore.get('auth_token')?.value;
 

@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const webCrypto = (typeof crypto !== 'undefined' ? crypto : null) as any;
 
 // ─── Edge-compatible Base64Url helper ─────────────────────────────────────────
@@ -8,7 +9,7 @@ const decoder = new TextDecoder();
 function arrayBufferToBase64Url(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
   let binary = '';
-  for (let i = 0; i < bytes.byteLength; i++) {
+  for (let i = 0; i < bytes.byteLength; i += 1) {
     binary += String.fromCharCode(bytes[i]);
   }
   return btoa(binary)
@@ -24,7 +25,7 @@ function base64UrlToArrayBuffer(base64url: string): ArrayBuffer {
   }
   const binary = atob(base64);
   const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) {
+  for (let i = 0; i < binary.length; i += 1) {
     bytes[i] = binary.charCodeAt(i);
   }
   return bytes.buffer;
@@ -43,6 +44,7 @@ async function getHmacKey(secret: string): Promise<CryptoKey> {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function signToken(payload: any, secret: string = process.env.JWT_SECRET || 'dcrf_jwt_secret_key'): Promise<string> {
   const header = { alg: 'HS256', typ: 'JWT' };
   const base64Header = arrayBufferToBase64Url(encoder.encode(JSON.stringify(header)).buffer);
@@ -60,6 +62,7 @@ export async function signToken(payload: any, secret: string = process.env.JWT_S
   return `${signatureInput}.${base64Signature}`;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function verifyToken(token: string, secret: string = process.env.JWT_SECRET || 'dcrf_jwt_secret_key'): Promise<any> {
   if (!token) return null;
   const parts = token.split('.');

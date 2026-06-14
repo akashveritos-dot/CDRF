@@ -16,9 +16,7 @@ export function verifyPassword(password: string, storedHash: string): boolean {
   try {
     const parts = storedHash.split('.');
     if (parts.length !== 4) return false;
-    const algo = parts[0];
-    const salt = parts[2];
-    const hash = parts[3];
+    const [algo, , salt, hash] = parts;
 
     if (algo === 'scrypt') {
       const calculated = cryptoNode.scryptSync(password, salt, KEY_LEN).toString('hex');

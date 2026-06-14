@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const user = users[0];
+    const [user] = users;
 
     // Verify role is ADMIN or SUPERADMIN (no login/signup for regular users)
     if (user.role !== 'ADMIN' && user.role !== 'SUPERADMIN') {

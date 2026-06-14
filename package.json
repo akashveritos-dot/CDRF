@@ -33,6 +33,7 @@
     "typescript": "^5"
   },
   "overrides": {
-    "react-is": "^19.0.0"
+    "react-is": "^19.0.0",
+    "postcss": "^8.5.10"
   }
 }

@@ -41,10 +41,7 @@ class RainDrop {
     this.y += this.speed;
     this.x += wind;
 
-    if (this.y > this.heightLimit) {
-      return true;
-    }
-    return false;
+    return this.y > this.heightLimit;
   }
 
   draw(ctx: CanvasRenderingContext2D, wind: number) {
@@ -72,7 +69,7 @@ class Splash {
     this.y = y;
     this.vx = (Math.random() - 0.5) * 5;
     this.vy = -Math.random() * 2.5 - 1;
-    this.size = 0.6 + Math.random() * 1.0;
+    this.size = 0.6 + Number(Math.random()) * 1.0;
     this.opacity = 0.7 + Math.random() * 0.3;
   }
 
@@ -288,23 +285,23 @@ export default function RainCanvas({
     // Initialize rain drops
     const dropDensity = Math.floor((width * height) / 8000);
     const maxDrops = Math.min(dropDensity, 150);
-    for (let i = 0; i < maxDrops; i++) {
+    for (let i = 0; i < maxDrops; i += 1) {
       drops.push(new RainDrop(width, height, true));
     }
 
     // Initialize air stream streaks
     const streakCount = Math.floor(width / 150);
-    for (let i = 0; i < streakCount; i++) {
+    for (let i = 0; i < streakCount; i += 1) {
       windStreaks.push(new WindStreak(width, height, true));
     }
 
     // Initialize sun rays
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 5; i += 1) {
       sunRays.push(new SunRay(width));
     }
 
     // Initialize solar dust shimmers
-    for (let i = 0; i < 35; i++) {
+    for (let i = 0; i < 35; i += 1) {
       sunParticles.push(new SunParticle(width, height, true));
     }
 
@@ -334,7 +331,7 @@ export default function RainCanvas({
           const collided = drop.update(width, height, wind);
           if (collided) {
             const splashCount = 2 + Math.floor(Math.random() * 3);
-            for (let s = 0; s < splashCount; s++) {
+            for (let s = 0; s < splashCount; s += 1) {
               splashes.push(new Splash(drop.x, drop.y));
             }
             drop.reset(width, height);
@@ -343,7 +340,7 @@ export default function RainCanvas({
         });
 
         // Draw and update splashes
-        for (let i = splashes.length - 1; i >= 0; i--) {
+        for (let i = splashes.length - 1; i >= 0; i -= 1) {
           const splash = splashes[i];
           const expired = splash.update();
           if (expired) {

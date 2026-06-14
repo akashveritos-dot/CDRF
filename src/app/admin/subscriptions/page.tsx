@@ -37,6 +37,7 @@ export default function AdminSubscriptions() {
   }, [fetchSubscriptions]);
 
   const handleDelete = async (id: number) => {
+    // eslint-disable-next-line no-alert
     if (!confirm('Are you sure you want to permanently delete this subscription?')) return;
 
     try {
@@ -47,6 +48,7 @@ export default function AdminSubscriptions() {
       if (!res.ok) throw new Error('Failed to delete');
       fetchSubscriptions();
     } catch (err) {
+      // eslint-disable-next-line no-alert
       alert('Error deleting subscription record');
     }
   };

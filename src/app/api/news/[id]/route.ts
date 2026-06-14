@@ -10,14 +10,14 @@ export async function GET(
 ) {
   try {
     const params = await props.params;
-    const id = params.id;
+    const { id } = params;
     const stories = await query<any[]>('SELECT * FROM news WHERE id = ? LIMIT 1', [id]);
 
     if (stories.length === 0) {
       return NextResponse.json({ error: 'News story not found' }, { status: 404 });
     }
 
-    const story = stories[0];
+    const [story] = stories;
     const formatted = {
       ...story,
       date: new Date(story.published_date).toLocaleDateString('en-US', {
@@ -44,7 +44,7 @@ export async function PUT(
 ) {
   try {
     const params = await props.params;
-    const id = params.id;
+    const { id } = params;
     const cookieStore = await cookies();
     const token = cookieStore.get('auth_token')?.value;
 
@@ -130,7 +130,7 @@ export async function DELETE(
 ) {
   try {
     const params = await props.params;
-    const id = params.id;
+    const { id } = params;
     const cookieStore = await cookies();
     const token = cookieStore.get('auth_token')?.value;
 

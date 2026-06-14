@@ -57,7 +57,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const toast = useCallback((item: Omit<ToastItem, 'id'>) => {
-    const id = `toast-${++counter.current}`;
+    counter.current += 1;
+    const id = `toast-${counter.current}`;
     const newToast: ToastItem = { duration: 4000, ...item, id };
     setToasts(prev => [...prev, newToast]);
 

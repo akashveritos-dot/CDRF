@@ -8,7 +8,7 @@ export async function PUT(
 ) {
   try {
     const params = await props.params;
-    const id = params.id;
+    const { id } = params;
     const body = await req.json();
     const { status, pay_status, payment_details } = body;
 
@@ -53,7 +53,7 @@ export async function DELETE(
 ) {
   try {
     const params = await props.params;
-    const id = params.id;
+    const { id } = params;
 
     // Verify application exists
     const existing = await query<any[]>('SELECT id FROM memberships WHERE id = ?', [id]);

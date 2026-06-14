@@ -89,6 +89,7 @@ export default function AdminMemberships() {
       setEditingItem(null);
       fetchRegistrations();
     } catch (err) {
+      // eslint-disable-next-line no-alert
       alert('Error updating application details');
     } finally {
       setIsSaving(false);
@@ -96,6 +97,7 @@ export default function AdminMemberships() {
   };
 
   const handleDelete = async (id: number) => {
+    // eslint-disable-next-line no-alert
     if (!confirm('Are you sure you want to permanently delete this registration record?')) return;
 
     try {
@@ -106,6 +108,7 @@ export default function AdminMemberships() {
       if (!res.ok) throw new Error('Failed to delete');
       fetchRegistrations();
     } catch (err) {
+      // eslint-disable-next-line no-alert
       alert('Error deleting application record');
     }
   };

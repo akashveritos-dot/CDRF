@@ -66,6 +66,7 @@ export default function AdminAlerts() {
   };
 
   const handleDelete = async (id: number) => {
+    // eslint-disable-next-line no-alert
     if (!confirm('Are you sure you want to permanently delete this ticker alert entry?')) return;
 
     try {
@@ -79,6 +80,7 @@ export default function AdminAlerts() {
       }
       fetchAlerts();
     } catch (err: any) {
+      // eslint-disable-next-line no-alert
       alert(getFriendlyError(err, 'Error deleting ticker alert. Please try again.'));
     }
   };

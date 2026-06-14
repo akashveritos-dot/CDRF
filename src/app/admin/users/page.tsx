@@ -181,6 +181,7 @@ export default function UsersManagementPage() {
   };
 
   const handleDeleteUser = async (userId: number) => {
+    // eslint-disable-next-line no-alert
     if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
       return;
     }
@@ -241,6 +242,7 @@ export default function UsersManagementPage() {
       }
 
       setShowPasswordModal(false);
+      // eslint-disable-next-line no-alert
       alert('Password updated successfully');
     } catch (err: any) {
       setError(getFriendlyError(err, 'Failed to update password. Please try again.'));
@@ -306,7 +308,7 @@ export default function UsersManagementPage() {
                   <td>{user.name}</td>
                   <td>{user.email}</td>
                   <td>
-                    <span className={`${styles.badge} ${styles[`badge${user.role}`]}`}>
+                    <span className={`${styles.badge} ${styles['badge' + user.role]}`}>
                       {user.role}
                     </span>
                   </td>

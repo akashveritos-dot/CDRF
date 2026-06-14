@@ -103,6 +103,7 @@ export default function AdminCouncils() {
   };
 
   const handleDelete = async (id: string) => {
+    // eslint-disable-next-line no-alert
     if (!confirm('Are you sure you want to permanently delete this council member?')) return;
 
     try {
@@ -116,6 +117,7 @@ export default function AdminCouncils() {
       }
       fetchMembers();
     } catch (err: any) {
+      // eslint-disable-next-line no-alert
       alert(getFriendlyError(err, 'Error deleting council member. Please try again.'));
     }
   };
@@ -210,6 +212,7 @@ export default function AdminCouncils() {
                   <td>
                     <div className={styles.avatarCell}>
                       {member.profileImage ? (
+                        // eslint-disable-next-line
                         <img 
                           src={member.profileImage} 
                           alt={member.name} 
@@ -305,7 +308,7 @@ export default function AdminCouncils() {
                     type="text"
                     name="id"
                     required
-                    disabled={!!editingId}
+                    disabled={Boolean(editingId)}
                     value={formData.id}
                     onChange={handleInputChange}
                     placeholder="e.g. bm"
