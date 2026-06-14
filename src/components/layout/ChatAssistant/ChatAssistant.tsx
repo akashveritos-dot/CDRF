@@ -219,17 +219,18 @@ function DraftCard({ type, initialData }: DraftCardProps) {
               <label className={styles.draftLabel}>
                 Category
                 <select
-                  value={formData.category || 'flood'}
+                  value={formData.category || 'breaking'}
                   onChange={e => setFormData({ ...formData, category: e.target.value })}
                   required
                   className={styles.draftSelect}
                 >
-                  <option value="flood">Flood</option>
-                  <option value="landslide">Landslide</option>
-                  <option value="cyclone">Cyclone</option>
-                  <option value="heatwave">Heatwave</option>
+                  <option value="breaking">Breaking</option>
+                  <option value="environment">Environment</option>
+                  <option value="health">Health Crisis</option>
+                  <option value="climate">Climate</option>
+                  <option value="disasters">Disasters</option>
+                  <option value="sustainability">Sustainability</option>
                   <option value="policy">Policy</option>
-                  <option value="conclave">Conclave</option>
                 </select>
               </label>
               <label className={styles.draftLabel}>
@@ -650,13 +651,24 @@ export default function ChatAssistant() {
 
   const getPageTitle = (path: string) => {
     if (path === '/') return 'Home Dashboard';
+    if (path.startsWith('/admin')) return 'Admin Center';
     if (path.startsWith('/news')) return 'Emergency News';
     if (path.startsWith('/reports')) return 'Publications Library';
     if (path.startsWith('/membership')) return 'Membership Desk';
-    if (path.startsWith('/council')) return 'Governing Council';
-    if (path.startsWith('/event')) return 'DCRC Conclave 2026';
+    if (path.startsWith('/about/governing-council')) return 'Governing Council';
+    if (path.startsWith('/about/advisory-council')) return 'Advisory Council';
+    if (path.startsWith('/about/working-group')) return 'Working Group';
+    if (path.startsWith('/about/charter-10-point-agenda')) return 'Charter 10-Point Agenda';
+    if (path.startsWith('/about/mission-vision')) return 'Mission & Vision';
     if (path.startsWith('/about')) return 'About DCRF';
-    if (path.startsWith('/admin')) return 'Admin Center';
+    if (path.startsWith('/event/monthly-webinars')) return 'Monthly Webinars';
+    if (path.startsWith('/event/dcrc-26')) return 'DCRC Conclave 2026';
+    if (path.startsWith('/event')) return 'Events';
+    if (path.startsWith('/insights/map')) return 'Hazard Map';
+    if (path.startsWith('/insights/event-videos')) return 'Event Videos';
+    if (path.startsWith('/podcasts')) return 'Podcasts';
+    if (path.startsWith('/gallery')) return 'Gallery';
+    if (path.startsWith('/contact')) return 'Contact Us';
     return path;
   };
   const getSuggestions = () => {

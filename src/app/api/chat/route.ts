@@ -253,6 +253,42 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Check if the user is querying for a specific news category/submenu
+    let categoryNewsText = '';
+    let matchedCategory = '';
+    
+    if (!isAdmin && messages && messages.length > 0) {
+      const lastUserMsg = (messages[messages.length - 1]?.content || '').toLowerCase();
+      const newsSubmenus = ['breaking', 'environment', 'health', 'climate', 'disasters', 'sustainability', 'policy'];
+      for (const cat of newsSubmenus) {
+        if (lastUserMsg.includes(cat) || (cat === 'health' && lastUserMsg.includes('crisis'))) {
+          matchedCategory = cat;
+          break;
+        }
+      }
+
+      if (matchedCategory) {
+        try {
+          const catStories = await query<any[]>(
+            'SELECT headline, excerpt, category, published_date, source FROM news WHERE LOWER(category) = ? ORDER BY published_date DESC, id DESC LIMIT 5',
+            [matchedCategory]
+          );
+          if (catStories && catStories.length > 0) {
+            categoryNewsText = catStories
+              .map(
+                (n) =>
+                  `- [${n.category.toUpperCase()}] ${n.headline}: ${n.excerpt} (Source: ${n.source}, Date: ${n.published_date})`
+              )
+              .join('\n');
+          } else {
+            categoryNewsText = `No recent news articles found in the database for the "${matchedCategory}" category.`;
+          }
+        } catch (err) {
+          console.warn(`Failed to fetch news stories for category "${matchedCategory}":`, err);
+        }
+      }
+    }
+
     // 4. Formulate System Prompt based on user credentials role
     let systemPrompt = '';
 
@@ -273,8 +309,8 @@ Special Capabilities (Use these EXACT wrappers to output editable templates. Do 
 
 2. DRAFTING NEWS STORY:
    If the admin wants to draft a news article, output this format:
-   :::news_draft{"tag": "Breaking", "source": "cdrf.vercel.app", "headline": "Assam Flood Alerts", "excerpt": "Excerpt details...", "full_content": "Full story detail here...", "category": "flood"}:::
-   (Category must be one of: "flood", "landslide", "cyclone", "heatwave", "policy", "conclave")
+   :::news_draft{"tag": "Breaking", "source": "cdrf.vercel.app", "headline": "Assam Flood Alerts", "excerpt": "Excerpt details...", "full_content": "Full story detail here...", "category": "breaking"}:::
+   (Category must be one of: "breaking", "environment", "health", "climate", "disasters", "sustainability", "policy")
 
 3. DRAFTING RESEARCH REPORT:
    If the admin wants to draft a publication report, output this format:
@@ -304,14 +340,23 @@ Role and Persona Guidelines:
 
 Useful Navigation Links (Use EXACTLY these markdown link formats if relevant to the user's query, and include at most 1 relevant link per response):
 - Apply/Join Federation: [Join DCRF](/membership#join)
-- Conclave Registration: [Register Conclave](/event#register)
-- News & Updates: [Read News](/news)
-- Publications/Reports: [Browse Reports](/reports)
-- Governing Council: [Governing Council](/council)
-- About Us: [About DCRF](/about)
+- DCRC '26 Conclave: [DCRC '26 Conclave](/event/dcrc-26)
+- Monthly Webinars: [Monthly Webinars](/event/monthly-webinars)
+- News Feed: [News Feed](/news)
+- Policy Reports: [Policy Reports](/reports)
+- Hazard Map: [Hazard Map](/insights/map)
+- Podcasts: [Podcasts](/podcasts)
+- Event Videos: [Event Videos](/insights/event-videos)
+- Mission & Vision: [Mission & Vision](/about/mission-vision)
+- Charter (10 Point Agenda): [Charter - 10 Point Agenda](/about/charter-10-point-agenda)
+- Governing Council: [Governing Council](/about/governing-council)
+- Advisory Council: [Advisory Council](/about/advisory-council)
+- Working Group: [Working Group](/about/working-group)
+- Gallery: [Gallery](/gallery)
+- Contact Us: [Contact Us](/contact)
 
 If the user asks about news, newsletters, or reports, reference this database context:
-NEWS:
+${matchedCategory ? `LATEST NEWS FOR "${matchedCategory.toUpperCase()}":\n${categoryNewsText}\n\n` : ''}NEWS:
 ${cachedNewsText}
 
 REPORTS:
