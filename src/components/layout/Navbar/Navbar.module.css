@@ -1109,4 +1109,53 @@
   .submenuSubscribeBtn:active {
     background: var(--accessible-green-dark);
   }
+
+  .popupSocialDivider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 12px 0 8px;
+  }
+
+  .popupSocialHeader {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    padding-left: 6px;
+  }
+
+  .popupSocialLinks {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .popupSocialLink {
+    flex: 1;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    padding: 8px 6px !important;
+    background: var(--bg-default) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 8px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    color: var(--text-default) !important;
+    transition: all var(--transition-fast) !important;
+    text-decoration: none !important;
+    text-align: center !important;
+  }
+
+  .popupSocialLink:hover,
+  .popupSocialLink:active {
+    background: var(--wine-red-pale) !important;
+    color: var(--wine-red-primary) !important;
+    border-color: rgba(185, 28, 28, 0.2) !important;
+    padding-left: 6px !important;
+  }
 }

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, ChevronDown, Mail, User, Bell, CheckCircle2, Home, Info, Calendar, BookOpen } from 'lucide-react';
+import { Menu, X, ChevronDown, Mail, User, Bell, CheckCircle2, Home, Info, Calendar, BookOpen, Facebook, Linkedin, Youtube } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from './Navbar.module.css';
 
@@ -546,6 +546,39 @@ export default function Navbar() {
                       <Link href="/membership" className={pathname === '/membership' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Membership Tiers</Link>
                       <Link href="/gallery" className={pathname === '/gallery' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Gallery</Link>
                       <Link href="/contact" className={pathname === '/contact' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Contact Us</Link>
+                      
+                      <div className={styles.popupSocialDivider} />
+                      <div className={styles.popupSocialHeader}>Follow DCRF</div>
+                      <div className={styles.popupSocialLinks}>
+                        <a
+                          href="https://www.linkedin.com/company/disaster-and-climate-resilience-federation/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={styles.popupSocialLink}
+                        >
+                          <Linkedin size={14} />
+                          <span>LinkedIn</span>
+                        </a>
+                        <a
+                          href="https://www.facebook.com/thecsruniverse.official/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={styles.popupSocialLink}
+                        >
+                          <Facebook size={14} />
+                          <span>Facebook</span>
+                        </a>
+                        <a
+                          href="https://www.youtube.com/@thecsruniverse"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={styles.popupSocialLink}
+                        >
+                          <Youtube size={14} />
+                          <span>YouTube</span>
+                        </a>
+                      </div>
+
                       <button
                         onClick={() => {
                           setIsSubscribeOpen(true);
