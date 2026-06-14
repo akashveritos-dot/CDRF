@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, ChevronDown, Mail, User, Bell, CheckCircle2 } from 'lucide-react';
+import { Menu, X, ChevronDown, Mail, User, Bell, CheckCircle2, Home, Info, Calendar, BookOpen } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from './Navbar.module.css';
 
@@ -63,6 +63,11 @@ export default function Navbar() {
   const [hash, setHash] = useState('');
   const pathname = usePathname();
   const [mobileExpanded, setMobileExpanded] = useState<Record<string, boolean>>({});
+  const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
+
+  useEffect(() => {
+    setActiveSubmenu(null);
+  }, [pathname]);
 
   const [weatherAlert, setWeatherAlert] = useState<{
     liveTheme: 'flood' | 'storm' | null;
@@ -448,6 +453,116 @@ export default function Navbar() {
         )}
       </AnimatePresence>
       </nav>
+
+      {/* Mobile Glassmorphic Bottom Dock / Menu */}
+      <div className={styles.bottomNav}>
+        <div className={styles.bottomNavContainer}>
+          <Link
+            href="/"
+            className={`${styles.bottomTab} ${pathname === '/' && !activeSubmenu ? styles.bottomTabActive : ''}`}
+            onClick={() => setActiveSubmenu(null)}
+          >
+            <Home size={20} />
+            <span>Home</span>
+          </Link>
+
+          <button
+            className={`${styles.bottomTab} ${activeSubmenu === 'About' ? styles.bottomTabActive : ''}`}
+            onClick={() => setActiveSubmenu(activeSubmenu === 'About' ? null : 'About')}
+          >
+            <Info size={20} />
+            <span>About</span>
+          </button>
+
+          <button
+            className={`${styles.bottomTab} ${activeSubmenu === 'Events' ? styles.bottomTabActive : ''}`}
+            onClick={() => setActiveSubmenu(activeSubmenu === 'Events' ? null : 'Events')}
+          >
+            <Calendar size={20} />
+            <span>Events</span>
+          </button>
+
+          <button
+            className={`${styles.bottomTab} ${activeSubmenu === 'Insights' ? styles.bottomTabActive : ''}`}
+            onClick={() => setActiveSubmenu(activeSubmenu === 'Insights' ? null : 'Insights')}
+          >
+            <BookOpen size={20} />
+            <span>Insights</span>
+          </button>
+
+          <button
+            className={`${styles.bottomTab} ${activeSubmenu === 'More' ? styles.bottomTabActive : ''}`}
+            onClick={() => setActiveSubmenu(activeSubmenu === 'More' ? null : 'More')}
+          >
+            <Menu size={20} />
+            <span>More</span>
+          </button>
+        </div>
+
+        {/* Floating Submenus Rendered Above */}
+        <AnimatePresence>
+          {activeSubmenu && (
+            <motion.div
+              className={styles.bottomSubmenuWrapper}
+              initial={{ opacity: 0, y: 15, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.95 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+            >
+              <div className={styles.bottomSubmenuCard}>
+                <div className={styles.submenuHeader}>
+                  <h4>{activeSubmenu} Links</h4>
+                  <button onClick={() => setActiveSubmenu(null)} aria-label="Close submenu">
+                    <X size={14} />
+                  </button>
+                </div>
+                <div className={styles.submenuLinksList}>
+                  {activeSubmenu === 'About' && (
+                    <>
+                      <Link href="/about/mission-vision" className={pathname === '/about/mission-vision' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Mission & Vision</Link>
+                      <Link href="/about/charter-10-point-agenda" className={pathname === '/about/charter-10-point-agenda' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>10 Point Agenda</Link>
+                      <Link href="/about/governing-council" className={pathname === '/about/governing-council' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Governing Council</Link>
+                      <Link href="/about/advisory-council" className={pathname === '/about/advisory-council' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Advisory Council</Link>
+                      <Link href="/about/working-group" className={pathname === '/about/working-group' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Working Group</Link>
+                    </>
+                  )}
+                  {activeSubmenu === 'Events' && (
+                    <>
+                      <Link href="/event/dcrc-26" className={pathname === '/event/dcrc-26' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>DCRC ’26 Conclave</Link>
+                      <Link href="/event/monthly-webinars" className={pathname === '/event/monthly-webinars' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Monthly Webinars</Link>
+                    </>
+                  )}
+                  {activeSubmenu === 'Insights' && (
+                    <>
+                      <Link href="/news" className={pathname === '/news' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>News Feed</Link>
+                      <Link href="/reports" className={pathname === '/reports' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Policy Reports</Link>
+                      <Link href="/insights/map" className={pathname === '/insights/map' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Hazard Map</Link>
+                      <Link href="/podcasts" className={pathname === '/podcasts' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Podcasts</Link>
+                      <Link href="/insights/event-videos" className={pathname === '/insights/event-videos' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Event Videos</Link>
+                    </>
+                  )}
+                  {activeSubmenu === 'More' && (
+                    <>
+                      <Link href="/membership" className={pathname === '/membership' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Membership Tiers</Link>
+                      <Link href="/gallery" className={pathname === '/gallery' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Gallery</Link>
+                      <Link href="/contact" className={pathname === '/contact' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Contact Us</Link>
+                      <button
+                        onClick={() => {
+                          setIsSubscribeOpen(true);
+                          setActiveSubmenu(null);
+                        }}
+                        className={styles.submenuSubscribeBtn}
+                      >
+                        Subscribe to Updates
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </>
   );
 }

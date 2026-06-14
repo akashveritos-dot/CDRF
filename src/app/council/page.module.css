@@ -197,10 +197,19 @@
 
 @media (max-width: 768px) {
   .page {
-    padding: 60px 24px;
+    padding: 48px 20px !important;
   }
   .grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
+  }
+  .title {
+    font-size: clamp(20px, 6.5vw, 28px) !important;
+    letter-spacing: -0.5px !important;
+    line-height: 1.25 !important;
+  }
+  .subtitle {
+    font-size: 13.5px !important;
+    line-height: 1.55 !important;
   }
 }
 

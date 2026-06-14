@@ -211,3 +211,15 @@
   line-height: 1.5;
   flex-grow: 1;
 }
+
+@media (max-width: 768px) {
+  .title {
+    font-size: clamp(20px, 6.5vw, 28px) !important;
+    letter-spacing: -0.5px !important;
+    line-height: 1.25 !important;
+  }
+  .subtitle {
+    font-size: 13.5px !important;
+    line-height: 1.55 !important;
+  }
+}

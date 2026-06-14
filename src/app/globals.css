@@ -279,6 +279,7 @@ h1, h2, h3, h4, .font-display {
   
   body {
     overscroll-behavior-x: none;
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 16px) + 20px) !important;
   }
   
   * {
@@ -337,5 +338,18 @@ h1, h2, h3, h4, .font-display {
   z-index: -1;
   pointer-events: none;
   filter: blur(50px);
+}
+
+/* Global Reset to eliminate blue tap highlight overlays and browser focus outlines when clicking links/logos/buttons */
+a, button, select, input, textarea, 
+.brand, .brand *, .logoBox, .logoBox *, 
+.footerLogoLink, .footerLogoLink *, 
+[role="button"], [role="button"] * {
+  -webkit-tap-highlight-color: transparent !important;
+  outline: none !important;
+}
+
+a:focus, button:focus, [role="button"]:focus {
+  outline: none !important;
 }
 
