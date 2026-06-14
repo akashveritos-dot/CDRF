@@ -18,6 +18,328 @@ const SUGGESTIONS = [
   { label: 'Subscribe', query: 'How do I subscribe to the newsletter?' }
 ];
 
+// Parser to extract drafts from AI messages
+function parseAssistantDrafts(content: string) {
+  let cleanContent = content;
+  let draftData: {
+    type: 'email' | 'news' | 'report' | 'alert';
+    data: any;
+  } | null = null;
+
+  const emailRegex = /:::email_draft(\{[\s\S]*?\}):::/;
+  const newsRegex = /:::news_draft(\{[\s\S]*?\}):::/;
+  const reportRegex = /:::report_draft(\{[\s\S]*?\}):::/;
+  const alertRegex = /:::alert_draft(\{[\s\S]*?\}):::/;
+
+  let match;
+  if ((match = content.match(emailRegex))) {
+    try {
+      draftData = { type: 'email', data: JSON.parse(match[1]) };
+      cleanContent = content.replace(emailRegex, '').trim();
+    } catch (e) {
+      console.error('Failed to parse email draft JSON:', e);
+    }
+  } else if ((match = content.match(newsRegex))) {
+    try {
+      draftData = { type: 'news', data: JSON.parse(match[1]) };
+      cleanContent = content.replace(newsRegex, '').trim();
+    } catch (e) {
+      console.error('Failed to parse news draft JSON:', e);
+    }
+  } else if ((match = content.match(reportRegex))) {
+    try {
+      draftData = { type: 'report', data: JSON.parse(match[1]) };
+      cleanContent = content.replace(reportRegex, '').trim();
+    } catch (e) {
+      console.error('Failed to parse report draft JSON:', e);
+    }
+  } else if ((match = content.match(alertRegex))) {
+    try {
+      draftData = { type: 'alert', data: JSON.parse(match[1]) };
+      cleanContent = content.replace(alertRegex, '').trim();
+    } catch (e) {
+      console.error('Failed to parse alert draft JSON:', e);
+    }
+  }
+
+  return { cleanContent, draftData };
+}
+
+// Editable card for Reviewing and Approving Admin actions
+interface DraftCardProps {
+  type: 'email' | 'news' | 'report' | 'alert';
+  initialData: any;
+}
+
+function DraftCard({ type, initialData }: DraftCardProps) {
+  const [formData, setFormData] = useState(initialData);
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [msg, setMsg] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setStatus('idle');
+    setMsg('');
+
+    try {
+      let endpoint = '';
+      let payload = {};
+
+      if (type === 'email') {
+        endpoint = '/api/admin/send-email';
+        payload = { to: formData.to, subject: formData.subject, body: formData.body };
+      } else if (type === 'news') {
+        endpoint = '/api/news';
+        payload = {
+          tag: formData.tag || 'Breaking',
+          source: formData.source || 'dcrf.org',
+          headline: formData.headline,
+          excerpt: formData.excerpt,
+          full_content: formData.full_content || '',
+          published_date: formData.published_date || new Date().toISOString().split('T')[0],
+          author: formData.author || 'AI Assistant',
+          external_link: formData.external_link || '',
+          thumbnail_emoji: formData.thumbnail_emoji || '📰',
+          image_url: formData.image_url || '',
+          category: formData.category
+        };
+      } else if (type === 'report') {
+        endpoint = '/api/reports';
+        payload = {
+          title: formData.title,
+          category: formData.category,
+          description: formData.description,
+          page_count: formData.page_count || 10,
+          year: formData.year || new Date().getFullYear(),
+          download_url: formData.download_url || '#',
+          accent_color: formData.accent_color || '#FDECEA',
+          icon: formData.icon || '📙',
+          image_url: formData.image_url || ''
+        };
+      } else if (type === 'alert') {
+        endpoint = '/api/admin/alerts';
+        payload = { text: formData.text };
+      }
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setStatus('success');
+        setMsg(data.message || 'Published successfully!');
+      } else {
+        setStatus('error');
+        setMsg(data.error || 'Operation failed');
+      }
+    } catch (err) {
+      console.error(err);
+      setStatus('error');
+      setMsg('An unexpected network error occurred.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (status === 'success') {
+    return (
+      <div className={styles.draftCardSuccess}>
+        <div className={styles.successIcon}>✓</div>
+        <div>
+          <h4 className={styles.successTitle}>Action Completed</h4>
+          <p className={styles.successMessage}>{msg}</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.draftCard}>
+      <div className={styles.draftCardHeader}>
+        <span className={styles.draftCardBadge}>
+          {type === 'email' ? '✉ Email Draft' : type === 'news' ? '📰 News Draft' : type === 'report' ? '📙 Report Draft' : '⚠️ Alert Draft'}
+        </span>
+        <span className={styles.draftCardActionLabel}>Super Admin Review Required</span>
+      </div>
+
+      <form onSubmit={handleSubmit} className={styles.draftForm}>
+        {type === 'email' && (
+          <>
+            <label className={styles.draftLabel}>
+              Recipient Email (To)
+              <input
+                type="email"
+                value={formData.to || ''}
+                onChange={e => setFormData({ ...formData, to: e.target.value })}
+                required
+                className={styles.draftInput}
+              />
+            </label>
+            <label className={styles.draftLabel}>
+              Subject
+              <input
+                type="text"
+                value={formData.subject || ''}
+                onChange={e => setFormData({ ...formData, subject: e.target.value })}
+                required
+                className={styles.draftInput}
+              />
+            </label>
+            <label className={styles.draftLabel}>
+              Email Body
+              <textarea
+                value={formData.body || ''}
+                onChange={e => setFormData({ ...formData, body: e.target.value })}
+                required
+                rows={5}
+                className={styles.draftTextarea}
+              />
+            </label>
+          </>
+        )}
+
+        {type === 'news' && (
+          <>
+            <label className={styles.draftLabel}>
+              Headline
+              <input
+                type="text"
+                value={formData.headline || ''}
+                onChange={e => setFormData({ ...formData, headline: e.target.value })}
+                required
+                className={styles.draftInput}
+              />
+            </label>
+            <div className={styles.draftRow}>
+              <label className={styles.draftLabel}>
+                Category
+                <select
+                  value={formData.category || 'flood'}
+                  onChange={e => setFormData({ ...formData, category: e.target.value })}
+                  required
+                  className={styles.draftSelect}
+                >
+                  <option value="flood">Flood</option>
+                  <option value="landslide">Landslide</option>
+                  <option value="cyclone">Cyclone</option>
+                  <option value="heatwave">Heatwave</option>
+                  <option value="policy">Policy</option>
+                  <option value="conclave">Conclave</option>
+                </select>
+              </label>
+              <label className={styles.draftLabel}>
+                Tag
+                <input
+                  type="text"
+                  value={formData.tag || 'Breaking'}
+                  onChange={e => setFormData({ ...formData, tag: e.target.value })}
+                  className={styles.draftInput}
+                />
+              </label>
+            </div>
+            <label className={styles.draftLabel}>
+              Excerpt
+              <input
+                type="text"
+                value={formData.excerpt || ''}
+                onChange={e => setFormData({ ...formData, excerpt: e.target.value })}
+                required
+                className={styles.draftInput}
+              />
+            </label>
+            <label className={styles.draftLabel}>
+              Full Content
+              <textarea
+                value={formData.full_content || ''}
+                onChange={e => setFormData({ ...formData, full_content: e.target.value })}
+                rows={4}
+                className={styles.draftTextarea}
+              />
+            </label>
+          </>
+        )}
+
+        {type === 'report' && (
+          <>
+            <label className={styles.draftLabel}>
+              Report Title
+              <input
+                type="text"
+                value={formData.title || ''}
+                onChange={e => setFormData({ ...formData, title: e.target.value })}
+                required
+                className={styles.draftInput}
+              />
+            </label>
+            <div className={styles.draftRow}>
+              <label className={styles.draftLabel}>
+                Category
+                <input
+                  type="text"
+                  value={formData.category || 'National Assessment'}
+                  onChange={e => setFormData({ ...formData, category: e.target.value })}
+                  required
+                  className={styles.draftInput}
+                />
+              </label>
+              <label className={styles.draftLabel}>
+                Publication Year
+                <input
+                  type="number"
+                  value={formData.year || 2026}
+                  onChange={e => setFormData({ ...formData, year: parseInt(e.target.value, 10) || 2026 })}
+                  required
+                  className={styles.draftInput}
+                />
+              </label>
+            </div>
+            <label className={styles.draftLabel}>
+              Description
+              <textarea
+                value={formData.description || ''}
+                onChange={e => setFormData({ ...formData, description: e.target.value })}
+                required
+                rows={3}
+                className={styles.draftTextarea}
+              />
+            </label>
+          </>
+        )}
+
+        {type === 'alert' && (
+          <>
+            <label className={styles.draftLabel}>
+              Ticker Alert Text
+              <textarea
+                value={formData.text || ''}
+                onChange={e => setFormData({ ...formData, text: e.target.value })}
+                required
+                rows={3}
+                className={styles.draftTextarea}
+              />
+            </label>
+          </>
+        )}
+
+        {status === 'error' && (
+          <div className={styles.draftError}>
+            <span>⚠️ {msg}</span>
+          </div>
+        )}
+
+        <button type="submit" disabled={loading} className={styles.draftSubmitBtn}>
+          {loading ? 'Processing...' : type === 'email' ? 'Send Email' : 'Publish to Portal'}
+        </button>
+      </form>
+    </div>
+  );
+}
+
 export default function ChatAssistant() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -337,6 +659,17 @@ export default function ChatAssistant() {
     if (path.startsWith('/admin')) return 'Admin Center';
     return path;
   };
+  const getSuggestions = () => {
+    if (pathname?.startsWith('/admin')) {
+      return [
+        { label: 'Admin Metrics', query: 'Show platform global metrics overview' },
+        { label: 'Form Queries', query: 'Show recent contact forms and user queries' },
+        { label: 'Memberships', query: 'Show recent membership applications' },
+        { label: 'Draft News', query: 'Draft a breaking news story about Assam monsoon flood updates' }
+      ];
+    }
+    return SUGGESTIONS;
+  };
 
   return (
     <div className={styles.chatWidget}>
@@ -353,47 +686,62 @@ export default function ChatAssistant() {
 
           {/* Messages Area */}
           <div className={styles.messageArea}>
-            {messages.map((msg) => (
-              <React.Fragment key={msg.id}>
-                <div
-                  className={`${styles.messageRow} ${
-                    msg.role === 'user' ? styles.messageRowUser : styles.messageRowAssistant
-                  }`}
-                >
+            {messages.map((msg) => {
+              const { cleanContent, draftData } = msg.role === 'assistant'
+                ? parseAssistantDrafts(msg.content)
+                : { cleanContent: msg.content, draftData: null };
+
+              return (
+                <React.Fragment key={msg.id}>
                   <div
-                    className={`${styles.bubble} ${
-                      msg.role === 'user' ? styles.bubbleUser : styles.bubbleAssistant
+                    className={`${styles.messageRow} ${
+                      msg.role === 'user' ? styles.messageRowUser : styles.messageRowAssistant
                     }`}
                   >
-                    {renderMessageText(msg.content)}
+                    <div
+                      className={`${styles.bubble} ${
+                        msg.role === 'user' ? styles.bubbleUser : styles.bubbleAssistant
+                      }`}
+                    >
+                      {renderMessageText(cleanContent)}
+                    </div>
                   </div>
-                </div>
 
-                {/* Render suggested actions directly below the welcome bubble inside the chat */}
-                {msg.id === 'welcome' && (
-                  <div className={styles.inlineSuggestions}>
-                    {SUGGESTIONS.map((s) => (
-                      <button
-                        key={s.label}
-                        className={styles.inlineSuggestionBtn}
-                        onClick={() => handleSendMessage(s.query)}
-                      >
-                        {s.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </React.Fragment>
-            ))}
+                  {draftData && (
+                    <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-start', marginBottom: '8px' }}>
+                      <DraftCard type={draftData.type} initialData={draftData.data} />
+                    </div>
+                  )}
+
+                  {/* Render suggested actions directly below the welcome bubble inside the chat */}
+                  {msg.id === 'welcome' && (
+                    <div className={styles.inlineSuggestions}>
+                      {getSuggestions().map((s) => (
+                        <button
+                          key={s.label}
+                          className={styles.inlineSuggestionBtn}
+                          onClick={() => handleSendMessage(s.query)}
+                        >
+                          {s.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </React.Fragment>
+              );
+            })}
 
             {/* Streaming Message */}
-            {isLoading && typewriterText && (
-              <div className={`${styles.messageRow} ${styles.messageRowAssistant}`}>
-                <div className={`${styles.bubble} ${styles.bubbleAssistant}`}>
-                  {renderMessageText(typewriterText)}
+            {isLoading && typewriterText && (() => {
+              const { cleanContent } = parseAssistantDrafts(typewriterText);
+              return (
+                <div className={`${styles.messageRow} ${styles.messageRowAssistant}`}>
+                  <div className={`${styles.bubble} ${styles.bubbleAssistant}`}>
+                    {renderMessageText(cleanContent)}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* Loading Indicator */}
             {isLoading && !typewriterText && (

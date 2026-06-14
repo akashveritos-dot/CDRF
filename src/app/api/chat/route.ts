@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import OpenAI from 'openai';
 import { query } from '@/lib/db';
+import { verifyToken } from '@/lib/auth';
 import fs from 'fs';
 import path from 'path';
 
@@ -100,63 +102,194 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Messages array is required' }, { status: 400 });
     }
 
-    const now = Date.now();
-    // Refresh the cache if empty or expired
-    if (!cachedNewsText || !cachedReportsText || now - lastFetchTime > CACHE_TTL) {
-      console.log('[DEBUG CHAT] Context cache expired or empty. Fetching news & reports from remote DB...');
+    // 1. Verify Admin Session Status
+    const cookieStore = await cookies();
+    const token = cookieStore.get('auth_token')?.value;
+    let isAdmin = false;
+    let adminName = '';
+    let adminRole = '';
+    let adminEmail = '';
+    let adminContext = '';
+
+    if (token) {
       try {
-        // Query database in parallel to optimize performance
-        const [newsStories, reportsList] = await Promise.all([
-          query<any[]>(
-            'SELECT headline, excerpt, category, published_date, source FROM news ORDER BY published_date DESC, id DESC LIMIT 5'
-          ).catch((err) => {
-            console.warn('DB news fetch failed, using fallback:', err);
-            return [];
-          }),
-          query<any[]>(
-            'SELECT title, description, category, severity_level, year FROM reports ORDER BY id DESC LIMIT 5'
-          ).catch((err) => {
-            console.warn('DB reports fetch failed, using fallback:', err);
-            return [];
-          }),
-        ]);
-
-        if (newsStories && newsStories.length > 0) {
-          cachedNewsText = newsStories
-            .map(
-              (n) =>
-                `- [${n.category.toUpperCase()}] ${n.headline}: ${n.excerpt} (Source: ${n.source}, Date: ${n.published_date
-                })`
-            )
-            .join('\n');
-        } else {
-          cachedNewsText = 'No recent news articles found in the database.';
+        const session = await verifyToken(token);
+        if (session && (session.role === 'ADMIN' || session.role === 'SUPERADMIN')) {
+          isAdmin = true;
+          adminName = session.name;
+          adminRole = session.role;
+          adminEmail = session.email;
         }
-
-        if (reportsList && reportsList.length > 0) {
-          cachedReportsText = reportsList
-            .map(
-              (r) =>
-                `- [${r.category.toUpperCase()} - Severity: ${r.severity_level}] ${r.title} (${r.year}): ${r.description
-                }`
-            )
-            .join('\n');
-        } else {
-          cachedReportsText = 'No recent reports/publications found in the database.';
-        }
-
-        lastFetchTime = now;
-      } catch (err) {
-        console.error('Failed to update database context cache:', err);
-        if (!cachedNewsText) cachedNewsText = 'No recent news articles available.';
-        if (!cachedReportsText) cachedReportsText = 'No recent reports available.';
+      } catch (authErr) {
+        console.warn('[DEBUG CHAT] Admin verification failed:', authErr);
       }
-    } else {
-      console.log('[DEBUG CHAT] Using cached database context (0ms latency).');
     }
 
-    // 3. Formulate the system instructions
-    const systemPrompt = `Your name is Dcrf. You are the AI assistant for the Disaster & Climate Resilience Federation (DCRF).
+    if (isAdmin) {
+      // 2. Admin contextual query router: Check what section/topic was asked and load from DB
+      const lastUserMessage = messages[messages.length - 1]?.content || '';
+      const queryLower = lastUserMessage.toLowerCase();
+
+      try {
+        if (queryLower.includes('quer') || queryLower.includes('contact') || queryLower.includes('message') || queryLower.includes('form') || queryLower.includes('feedback')) {
+          const messagesList = await query<any[]>('SELECT id, name, email, subject, message, status, created_at FROM contact_messages ORDER BY id DESC LIMIT 5');
+          adminContext += `\n[DATABASE CONTEXT] RECENT CONTACT FORMS & USER QUERIES:\n` + 
+            messagesList.map(m => `- [ID: ${m.id}, Status: ${m.status}] From: ${m.name} (${m.email}) | Subj: "${m.subject}" | Msg: "${m.message}" (Logged: ${m.created_at})`).join('\n') + '\n';
+        }
+
+        if (queryLower.includes('member') || queryLower.includes('tier') || queryLower.includes('join') || queryLower.includes('fee')) {
+          const membershipsList = await query<any[]>('SELECT id, name, email, organization, tier, status, pay_status FROM memberships ORDER BY id DESC LIMIT 5');
+          adminContext += `\n[DATABASE CONTEXT] RECENT MEMBERSHIP APPLICATIONS:\n` + 
+            membershipsList.map(m => `- [ID: ${m.id}, Status: ${m.status}, PayStatus: ${m.pay_status}] ${m.name} (${m.email}) | Org: "${m.organization}" | Tier: ${m.tier}`).join('\n') + '\n';
+        }
+
+        if (queryLower.includes('conclave') || queryLower.includes('event') || queryLower.includes('register') || queryLower.includes('pass')) {
+          const registrationsList = await query<any[]>('SELECT id, name, email, company, designation, role, status FROM event_registrations ORDER BY id DESC LIMIT 5');
+          adminContext += `\n[DATABASE CONTEXT] RECENT CONCLAVE PASS REGISTRATIONS:\n` + 
+            registrationsList.map(r => `- [ID: ${r.id}, Status: ${r.status}] ${r.name} (${r.email}) | Co: "${r.company}" | Role: ${r.role} | Desig: "${r.designation}"`).join('\n') + '\n';
+        }
+
+        if (queryLower.includes('subscri') || queryLower.includes('newsletter') || queryLower.includes('brief')) {
+          const subsList = await query<any[]>('SELECT id, name, email, created_at FROM subscriptions ORDER BY id DESC LIMIT 5');
+          adminContext += `\n[DATABASE CONTEXT] RECENT NEWSLETTER SUBSCRIBERS:\n` + 
+            subsList.map(s => `- [ID: ${s.id}] Name: ${s.name || 'Anonymous'} (${s.email}) | Subscribed At: ${s.created_at}`).join('\n') + '\n';
+        }
+
+        if (queryLower.includes('scrape') || queryLower.includes('pending') || queryLower.includes('publish') || queryLower.includes('queue')) {
+          const scrapedList = await query<any[]>('SELECT id, title, source, url, status FROM scraped_content ORDER BY id DESC LIMIT 5');
+          adminContext += `\n[DATABASE CONTEXT] RECENT SCRAPER QUEUE ITEMS:\n` + 
+            scrapedList.map(s => `- [ID: ${s.id}, Status: ${s.status}] "${s.title}" | Source: ${s.source} | URL: ${s.url}`).join('\n') + '\n';
+        }
+
+        if (queryLower.includes('log') || queryLower.includes('audit') || queryLower.includes('activity') || queryLower.includes('action')) {
+          const logsList = await query<any[]>('SELECT id, user_email, action_type, section, details, ip_address, location, created_at FROM audit_logs ORDER BY id DESC LIMIT 5');
+          adminContext += `\n[DATABASE CONTEXT] RECENT SYSTEM SECURITY AUDIT LOGS:\n` + 
+            logsList.map(l => `- [ID: ${l.id}, Time: ${l.created_at}] Admin: ${l.user_email} | Action: ${l.action_type} | Section: ${l.section} | details: "${l.details}" | IP: ${l.ip_address} (${l.location})`).join('\n') + '\n';
+        }
+
+        if (queryLower.includes('user') || queryLower.includes('admin') || queryLower.includes('account') || queryLower.includes('role')) {
+          const usersList = await query<any[]>('SELECT id, name, email, role FROM users ORDER BY id DESC LIMIT 5');
+          adminContext += `\n[DATABASE CONTEXT] REGISTERED SYSTEM USERS/ADMINS:\n` + 
+            usersList.map(u => `- [ID: ${u.id}] Name: ${u.name} (${u.email}) | Role: ${u.role}`).join('\n') + '\n';
+        }
+
+        // Always fetch overview totals if they ask for counts, metrics, overview, stats, summary, or if context is empty
+        if (!adminContext || queryLower.includes('overview') || queryLower.includes('stat') || queryLower.includes('count') || queryLower.includes('summar') || queryLower.includes('analytic') || queryLower.includes('all')) {
+          const [qC, mC, rC, sC, scC, nC, repC, uC, logC] = await Promise.all([
+            query<any[]>('SELECT COUNT(*) as count FROM contact_messages'),
+            query<any[]>('SELECT COUNT(*) as count FROM memberships'),
+            query<any[]>('SELECT COUNT(*) as count FROM event_registrations'),
+            query<any[]>('SELECT COUNT(*) as count FROM subscriptions'),
+            query<any[]>('SELECT COUNT(*) as count FROM scraped_content'),
+            query<any[]>('SELECT COUNT(*) as count FROM news'),
+            query<any[]>('SELECT COUNT(*) as count FROM reports'),
+            query<any[]>('SELECT COUNT(*) as count FROM users'),
+            query<any[]>('SELECT COUNT(*) as count FROM audit_logs')
+          ]);
+
+          adminContext += `\n[DATABASE CONTEXT] PLATFORM GLOBAL METRICS OVERVIEW:\n` +
+            `- Total Contact Queries: ${qC[0]?.count || 0}\n` +
+            `- Total Membership Applications: ${mC[0]?.count || 0}\n` +
+            `- Total Conclave Passes Issued: ${rC[0]?.count || 0}\n` +
+            `- Total Newsletter Subscriptions: ${sC[0]?.count || 0}\n` +
+            `- Total Scraper Items (Pending/Review): ${scC[0]?.count || 0}\n` +
+            `- Total Published News Articles: ${nC[0]?.count || 0}\n` +
+            `- Total Published Reports: ${repC[0]?.count || 0}\n` +
+            `- Total Admin/SuperAdmin Accounts: ${uC[0]?.count || 0}\n` +
+            `- Total System Audit Log Rows: ${logC[0]?.count || 0}\n`;
+        }
+      } catch (dbErr) {
+        console.error('[DEBUG CHAT] Admin dynamic context queries failed:', dbErr);
+        adminContext = 'Failed to fetch database context. Proceed with normal system assistance.';
+      }
+    } else {
+      // 3. Regular Public user path: Maintain cached news/reports TTL context
+      const now = Date.now();
+      if (!cachedNewsText || !cachedReportsText || now - lastFetchTime > CACHE_TTL) {
+        try {
+          const [newsStories, reportsList] = await Promise.all([
+            query<any[]>(
+              'SELECT headline, excerpt, category, published_date, source FROM news ORDER BY published_date DESC, id DESC LIMIT 5'
+            ).catch((err) => {
+              console.warn('DB news fetch failed, using fallback:', err);
+              return [];
+            }),
+            query<any[]>(
+              'SELECT title, description, category, severity_level, year FROM reports ORDER BY id DESC LIMIT 5'
+            ).catch((err) => {
+              console.warn('DB reports fetch failed, using fallback:', err);
+              return [];
+            }),
+          ]);
+
+          if (newsStories && newsStories.length > 0) {
+            cachedNewsText = newsStories
+              .map(
+                (n) =>
+                  `- [${n.category.toUpperCase()}] ${n.headline}: ${n.excerpt} (Source: ${n.source}, Date: ${n.published_date})`
+              )
+              .join('\n');
+          } else {
+            cachedNewsText = 'No recent news articles found in the database.';
+          }
+
+          if (reportsList && reportsList.length > 0) {
+            cachedReportsText = reportsList
+              .map(
+                (r) =>
+                  `- [${r.category.toUpperCase()} - Severity: ${r.severity_level}] ${r.title} (${r.year}): ${r.description}`
+              )
+              .join('\n');
+          } else {
+            cachedReportsText = 'No recent reports/publications found in the database.';
+          }
+
+          lastFetchTime = now;
+        } catch (err) {
+          console.error('Failed to update database context cache:', err);
+          if (!cachedNewsText) cachedNewsText = 'No recent news articles available.';
+          if (!cachedReportsText) cachedReportsText = 'No recent reports available.';
+        }
+      }
+    }
+
+    // 4. Formulate System Prompt based on user credentials role
+    let systemPrompt = '';
+
+    if (isAdmin) {
+      systemPrompt = `Your name is Dcrf. You are the AI Assistant for the Super Admin and Admin Dashboard of DCRF.
+
+Role and Guidelines:
+- You are speaking to a verified administrator (${adminName}, role: ${adminRole}, email: ${adminEmail}).
+- You have access to real-time database modules (Queries, Memberships, Conclave Passes, Scraped queue, News, Reports, Audit Logs).
+- Help the administrator review dashboard metrics, draft email responses, and prepare news/reports/alerts drafts.
+- Suggest useful follow-up actions and questions.
+- Under NO circumstances can you modify the database directly. Instead, you MUST compile drafts and output them using the exact wrappers specified below so that the administrator can review, modify, and click "Publish" or "Send" to authorize.
+
+Special Capabilities (Use these EXACT wrappers to output editable templates. Do not put markdown headers inside the wrapper. Include exactly one wrapper in your response if you are drafting something):
+1. DRAFTING EMAIL:
+   If the admin wants to draft an email reply, output this format:
+   :::email_draft{"to": "recipient@email.com", "subject": "Subject Line", "body": "Dear Rahul, Thank you..."}:::
+
+2. DRAFTING NEWS STORY:
+   If the admin wants to draft a news article, output this format:
+   :::news_draft{"tag": "Breaking", "source": "dcrf.org", "headline": "Assam Flood Alerts", "excerpt": "Excerpt details...", "full_content": "Full story detail here...", "category": "flood"}:::
+   (Category must be one of: "flood", "landslide", "cyclone", "heatwave", "policy", "conclave")
+
+3. DRAFTING RESEARCH REPORT:
+   If the admin wants to draft a publication report, output this format:
+   :::report_draft{"title": "Report Title", "category": "National Assessment", "description": "Report description...", "page_count": 16, "year": 2026}:::
+
+4. DRAFTING WARNING ALERT:
+   If the admin wants to draft a ticker warning alert, output this format:
+   :::alert_draft{"text": "Heatwave warning text..."}:::
+
+Here is the real-time database context queried based on your last message:
+${adminContext || 'No specific dashboard section requested. Ask me about contact forms, memberships, registrations, audit logs, or drafting content.'}
+
+Current page: ${pathname || '/admin'}`;
+    } else {
+      systemPrompt = `Your name is Dcrf. You are the AI assistant for the Disaster & Climate Resilience Federation (DCRF).
 
 Role and Persona Guidelines:
 - Talk like a real, genuine human, not a cold machine. Be friendly, empathetic, warm, and natural in your conversation.
@@ -180,6 +313,7 @@ REPORTS:
 ${cachedReportsText}
 
 Current user page: ${pathname || '/'}`;
+    }
 
     const chatMessages = [
       { role: 'system', content: systemPrompt },
