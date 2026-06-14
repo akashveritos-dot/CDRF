@@ -36,7 +36,7 @@ export default function ScrollReveal({
       transition: {
         duration,
         delay,
-        ease: [0.16, 1, 0.3, 1] as any // cubic-bezier smooth transition
+        ease: [0.16, 1, 0.3, 1] as [number, number, number, number] // cubic-bezier smooth transition
       }
     };
 

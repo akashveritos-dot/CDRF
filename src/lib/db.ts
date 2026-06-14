@@ -31,13 +31,15 @@ export function getDbPool(): mysql.Pool {
   return pool;
 }
 
-export async function query<T = any>(sql: string, params: any[] = []): Promise<T> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function query<T = unknown>(sql: string, params: any[] = []): Promise<T> {
   const dbPool = getDbPool();
   try {
     const [results] = await dbPool.execute(sql, params);
     return results as T;
-  } catch (error: any) {
-    console.error(`Database query failed: ${error.message} (SQL: ${sql})`);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`Database query failed: ${message} (SQL: ${sql})`);
     throw new Error('Database operation failed. Please try again later.');
   }
 }
