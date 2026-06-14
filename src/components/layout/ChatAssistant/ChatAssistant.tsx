@@ -94,7 +94,7 @@ function DraftCard({ type, initialData }: DraftCardProps) {
         endpoint = '/api/news';
         payload = {
           tag: formData.tag || 'Breaking',
-          source: formData.source || 'dcrf.org',
+          source: formData.source || 'cdrf.vercel.app',
           headline: formData.headline,
           excerpt: formData.excerpt,
           full_content: formData.full_content || '',
@@ -123,7 +123,7 @@ function DraftCard({ type, initialData }: DraftCardProps) {
         payload = { text: formData.text };
       }
 
-      const res = await fetch(endpoint, {
+      const res = await fetch(`https://cdrf.vercel.app${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -449,7 +449,7 @@ export default function ChatAssistant() {
     typewriterLengthRef.current = 0;
 
     try {
-      const response = await fetch('/api/chat', {
+      const response = await fetch('https://cdrf.vercel.app/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

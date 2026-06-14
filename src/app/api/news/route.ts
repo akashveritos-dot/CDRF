@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         tag || 'Breaking',
-        source || 'dcrf.org',
+        source || 'cdrf.vercel.app',
         headline,
         excerpt,
         full_content || '',
