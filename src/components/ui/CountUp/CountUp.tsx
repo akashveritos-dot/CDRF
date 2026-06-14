@@ -18,13 +18,19 @@ export default function CountUp({
   decimals = 0,
   className = ''
 }: CountUpProps) {
-  const [count, setCount] = useState(0);
+  const [count, setCount] = useState(end);
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true, amount: 0.3 });
   const hasAnimated = useRef(false);
 
+  // Reset to 0 on client mount so count up animation starts from 0
   useEffect(() => {
-    if (!isInView || hasAnimated.current) return;
+    setCount(0);
+  }, []);
+
+  useEffect(() => {
+    // Only animate if the client reset the count to 0 and the element is in view
+    if (!isInView || hasAnimated.current || count !== 0) return;
     
     hasAnimated.current = true;
     let startTimestamp: number | null = null;
@@ -41,7 +47,7 @@ export default function CountUp({
     };
     
     window.requestAnimationFrame(step);
-  }, [isInView, end, duration]);
+  }, [isInView, end, duration, count]);
 
   const formattedValue = decimals > 0 
     ? count.toFixed(decimals) 

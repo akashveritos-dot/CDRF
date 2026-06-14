@@ -303,9 +303,8 @@ export default function Home() {
             </div>
           </ScrollReveal>
 
-          {/* Right Climate Widget Panel - Light Glassmorphic */}
           <ScrollReveal direction="left" delay={0.3}>
-            <div className={`${styles.heroPanel} ${styles.heroPanelLight}`} style={{ padding: '24px 28px' }}>
+            <div className={`${styles.heroPanel} ${styles.heroPanelLight}`}>
               <div className={styles.panelTitle}>
                 <span className="pulse-dot sonar-emitter">
                   <span className="sonar-pulse" />

@@ -44,10 +44,45 @@ export default function WordTypingEffect({
 }: WordTypingEffectProps) {
   const [visibleCount, setVisibleCount] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
-  const [wordGroups, setWordGroups] = useState<WordGroup[]>([]);
-  const [totalCharsCount, setTotalCharsCount] = useState(0);
 
-  // Parse words structure into grouped words and chars
+  // Parse words structure into grouped words and chars synchronously for initial state
+  const [wordGroups, setWordGroups] = useState<WordGroup[]>(() => {
+    let globalIndex = 0;
+    return words.map((word, wordIdx) => {
+      const chars: CharInfo[] = word.text.split("").map((c) => ({
+        char: c,
+        globalIndex: globalIndex++
+      }));
+
+      const hasTrailingSpace = wordIdx < words.length - 1 && !words[wordIdx + 1].newLine;
+      const spaceInfo = hasTrailingSpace ? {
+        char: " ",
+        globalIndex: globalIndex++
+      } : null;
+
+      return {
+        wordText: word.text,
+        isItalic: !!word.isItalic,
+        newLine: !!word.newLine,
+        chars,
+        spaceInfo
+      };
+    });
+  });
+
+  const [totalCharsCount, setTotalCharsCount] = useState<number>(() => {
+    let globalIndex = 0;
+    words.forEach((word, wordIdx) => {
+      globalIndex += word.text.length;
+      const hasTrailingSpace = wordIdx < words.length - 1 && !words[wordIdx + 1].newLine;
+      if (hasTrailingSpace) {
+        globalIndex++;
+      }
+    });
+    return globalIndex;
+  });
+
+  // Handle words prop dynamic updates
   useEffect(() => {
     let globalIndex = 0;
     const groups: WordGroup[] = words.map((word, wordIdx) => {
