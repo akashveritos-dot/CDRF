@@ -106,21 +106,46 @@
   background: var(--navy-dark);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-sm);
-  padding: 4px 8px;
-  font-size: 10px;
+  padding: 5px 9px;
+  font-size: 10.5px;
   color: var(--white);
   pointer-events: none;
   white-space: nowrap;
-  bottom: 120%;
+  bottom: 125%;
   left: 50%;
   transform: translateX(-50%);
   opacity: 0;
-  transition: opacity var(--transition-fast);
+  visibility: hidden;
+  transition: opacity var(--transition-fast), visibility var(--transition-fast), transform var(--transition-fast);
   z-index: 10;
+  max-width: none !important; /* Override global max-width: 100% to prevent clipping */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.cell:hover .tooltip {
+.cell:hover .tooltip,
+.tooltipVisible {
   opacity: 1;
+  visibility: visible;
+}
+
+.cellActive {
+  transform: scale(1.15) !important;
+  filter: brightness(0.95);
+  z-index: 5;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.08);
+}
+
+/* Shift tooltip for left-most columns (Jan, Feb, Mar) to prevent overflowing the left edge of the screen */
+.yearRow .cell:nth-child(-n+3) .tooltip {
+  left: 0;
+  transform: translateX(0);
+}
+
+/* Shift tooltip for right-most columns (Oct, Nov, Dec) to prevent overflowing the right edge of the screen */
+.yearRow .cell:nth-child(n+10) .tooltip {
+  left: auto;
+  right: 0;
+  transform: translateX(0);
 }
 
 @media (max-width: 768px) {

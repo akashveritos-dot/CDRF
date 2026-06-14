@@ -20,6 +20,18 @@ interface HeatmapProps {
 }
 
 export default function Heatmap({ data }: HeatmapProps) {
+  const [activeTooltip, setActiveTooltip] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    const handleGlobalClick = () => {
+      setActiveTooltip(null);
+    };
+    window.addEventListener('click', handleGlobalClick);
+    return () => {
+      window.removeEventListener('click', handleGlobalClick);
+    };
+  }, []);
+
   const getCellColor = (val: number) => {
     // Map value (1-10) to colors length (0-6)
     const colorIndex = Math.min(Math.floor((val / 10) * intensityColors.length), intensityColors.length - 1);
@@ -66,14 +78,22 @@ export default function Heatmap({ data }: HeatmapProps) {
               <div key={year} className={styles.yearRow}>
                 {row.map((val, cellIndex) => {
                   const month = heatmapMonths[cellIndex];
+                  const cellKey = `${year}-${month}`;
+                  const isTooltipVisible = activeTooltip === cellKey;
                   return (
                     <div
-                      key={`${year}-${month}`}
-                      className={styles.cell}
+                      key={cellKey}
+                      className={`${styles.cell} ${isTooltipVisible ? styles.cellActive : ''}`}
                       style={{ backgroundColor: getCellColor(val) }}
+                      onMouseEnter={() => setActiveTooltip(cellKey)}
+                      onMouseLeave={() => setActiveTooltip(null)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveTooltip(isTooltipVisible ? null : cellKey);
+                      }}
                     >
                       {/* Interactive hover tooltip inside each cell */}
-                      <span className={styles.tooltip}>
+                      <span className={`${styles.tooltip} ${isTooltipVisible ? styles.tooltipVisible : ''}`}>
                         {month} {year}: Severity {val}/10
                       </span>
                     </div>
