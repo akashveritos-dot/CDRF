@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, ChevronDown, Mail, User, Bell, CheckCircle2, Home, Info, Calendar, BookOpen, Facebook, Linkedin, Youtube } from 'lucide-react';
+import { Menu, X, ChevronDown, Mail, User, Bell, CheckCircle2, Home, Info, Calendar, BookOpen, Facebook, Linkedin, Youtube, Newspaper } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from './Navbar.module.css';
 
@@ -292,9 +292,9 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* Hamburger Trigger */}
-        <button className={styles.hamburger} onClick={toggleMenu} aria-label="Toggle navigation menu">
-          {isOpen ? <X size={26} /> : <Menu size={26} />}
+        {/* Mobile Subscribe Button */}
+        <button onClick={() => setIsSubscribeOpen(true)} className={styles.mobileSubscribeBtn}>
+          Subscribe
         </button>
 
         {/* Mobile Side Drawer */}
@@ -453,8 +453,7 @@ export default function Navbar() {
         )}
       </AnimatePresence>
       </nav>
-
-      {/* Mobile Glassmorphic Bottom Dock / Menu */}
+       {/* Mobile Glassmorphic Bottom Dock / Menu */}
       <div className={styles.bottomNav}>
         <div className={styles.bottomNavContainer}>
           <Link
@@ -466,13 +465,14 @@ export default function Navbar() {
             <span>Home</span>
           </Link>
 
-          <button
-            className={`${styles.bottomTab} ${activeSubmenu === 'About' ? styles.bottomTabActive : ''}`}
-            onClick={() => setActiveSubmenu(activeSubmenu === 'About' ? null : 'About')}
+          <Link
+            href="/news"
+            className={`${styles.bottomTab} ${pathname === '/news' && !activeSubmenu ? styles.bottomTabActive : ''}`}
+            onClick={() => setActiveSubmenu(null)}
           >
-            <Info size={20} />
-            <span>About</span>
-          </button>
+            <Newspaper size={20} />
+            <span>News</span>
+          </Link>
 
           <button
             className={`${styles.bottomTab} ${activeSubmenu === 'Events' ? styles.bottomTabActive : ''}`}
@@ -511,21 +511,12 @@ export default function Navbar() {
             >
               <div className={styles.bottomSubmenuCard}>
                 <div className={styles.submenuHeader}>
-                  <h4>{activeSubmenu} Links</h4>
+                  <h4>{activeSubmenu === 'More' ? 'Menu' : activeSubmenu} Links</h4>
                   <button onClick={() => setActiveSubmenu(null)} aria-label="Close submenu">
                     <X size={14} />
                   </button>
                 </div>
                 <div className={styles.submenuLinksList}>
-                  {activeSubmenu === 'About' && (
-                    <>
-                      <Link href="/about/mission-vision" className={pathname === '/about/mission-vision' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Mission & Vision</Link>
-                      <Link href="/about/charter-10-point-agenda" className={pathname === '/about/charter-10-point-agenda' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>10 Point Agenda</Link>
-                      <Link href="/about/governing-council" className={pathname === '/about/governing-council' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Governing Council</Link>
-                      <Link href="/about/advisory-council" className={pathname === '/about/advisory-council' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Advisory Council</Link>
-                      <Link href="/about/working-group" className={pathname === '/about/working-group' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Working Group</Link>
-                    </>
-                  )}
                   {activeSubmenu === 'Events' && (
                     <>
                       <Link href="/event/dcrc-26" className={pathname === '/event/dcrc-26' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>DCRC ’26 Conclave</Link>
@@ -534,7 +525,6 @@ export default function Navbar() {
                   )}
                   {activeSubmenu === 'Insights' && (
                     <>
-                      <Link href="/news" className={pathname === '/news' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>News Feed</Link>
                       <Link href="/reports" className={pathname === '/reports' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Policy Reports</Link>
                       <Link href="/insights/map" className={pathname === '/insights/map' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Hazard Map</Link>
                       <Link href="/podcasts" className={pathname === '/podcasts' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Podcasts</Link>
@@ -543,6 +533,14 @@ export default function Navbar() {
                   )}
                   {activeSubmenu === 'More' && (
                     <>
+                      <div className={styles.submenuSectionHeader}>About DCRF</div>
+                      <Link href="/about/mission-vision" className={pathname === '/about/mission-vision' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Mission & Vision</Link>
+                      <Link href="/about/charter-10-point-agenda" className={pathname === '/about/charter-10-point-agenda' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>10 Point Agenda</Link>
+                      <Link href="/about/governing-council" className={pathname === '/about/governing-council' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Governing Council</Link>
+                      <Link href="/about/advisory-council" className={pathname === '/about/advisory-council' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Advisory Council</Link>
+                      <Link href="/about/working-group" className={pathname === '/about/working-group' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Working Group</Link>
+                      
+                      <div className={styles.submenuSectionHeader} style={{ marginTop: '14px' }}>Federation</div>
                       <Link href="/membership" className={pathname === '/membership' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Membership Tiers</Link>
                       <Link href="/gallery" className={pathname === '/gallery' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Gallery</Link>
                       <Link href="/contact" className={pathname === '/contact' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Contact Us</Link>
