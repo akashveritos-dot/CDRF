@@ -89,6 +89,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setIsSidebarOpen(false);
   }, [pathname]);
 
+  // Manage body class for sidebar open state (to hide chatbot icon)
+  useEffect(() => {
+    if (isSidebarOpen) {
+      document.body.classList.add('admin-sidebar-open');
+    } else {
+      document.body.classList.remove('admin-sidebar-open');
+    }
+    return () => {
+      document.body.classList.remove('admin-sidebar-open');
+    };
+  }, [isSidebarOpen]);
+
   const handleLogout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
@@ -146,6 +158,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className={styles.brandTitle}>DCRF CONTROL</div>
             <div className={styles.brandSub}>Emergency Response HQ</div>
           </div>
+          <button 
+            className={styles.sidebarCloseBtn} 
+            onClick={() => setIsSidebarOpen(false)}
+            aria-label="Close sidebar"
+          >
+            <X size={20} />
+          </button>
         </div>
 
         <div className={styles.profile}>

@@ -42,6 +42,11 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+.sidebarCloseBtn {
+  display: none;
+}
+
+
 .alertIcon {
   color: #ef4444; /* Crisis Warning Red */
   filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.4));
@@ -310,13 +315,31 @@
     position: fixed;
     top: 0;
     bottom: 0;
-    left: 0;
+    left: 280px;
     right: 0;
     background-color: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(4px);
     z-index: 999;
   }
+
+  .sidebarCloseBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    margin-left: auto;
+    padding: 4px;
+    transition: color 0.2s ease;
+  }
+
+  .sidebarCloseBtn:hover {
+    color: #ef4444;
+  }
 }
+
 
 @media (max-width: 480px) {
   .content {
