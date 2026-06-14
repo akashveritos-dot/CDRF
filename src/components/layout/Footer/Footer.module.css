@@ -160,6 +160,25 @@
   color: rgba(255, 255, 255, 0.45);
 }
 
+.metaRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+
+.copyright {
+  margin: 0;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.jointVenture {
+  margin: 0;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
 .bottom p {
   line-height: 1.5;
 }
@@ -205,6 +224,16 @@
     flex-direction: column;
     align-items: center;
   }
+  .bottom > .metaRow {
+    flex-direction: row;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+  }
+  .copyright, .jointVenture {
+    font-size: clamp(8px, 1.8vw, 11px);
+    white-space: nowrap;
+  }
   .bottom p {
     text-align: center;
   }
@@ -227,10 +256,13 @@
     padding: 11px 18px;
     width: 100%;
   }
+  .bottom > .metaRow {
+    gap: 6px;
+  }
+  .copyright, .jointVenture {
+    font-size: clamp(7px, 1.8vw, 9px);
+  }
   .legalLinks {
     gap: 8px 16px;
-  }
-  .bottom p {
-    font-size: 11px;
   }
 }

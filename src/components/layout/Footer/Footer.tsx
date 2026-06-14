@@ -108,9 +108,9 @@ export default function Footer() {
       </div>
 
       <div className={styles.bottom}>
-        <div>
-          <p>© {new Date().getFullYear()} Disaster & Climate Resilience Federation (DCRF). All rights reserved.</p>
-          <p style={{ marginTop: '4px', fontSize: '11px' }}>
+        <div className={styles.metaRow}>
+          <p className={styles.copyright}>© {new Date().getFullYear()} Disaster & Climate Resilience Federation (DCRF). All rights reserved.</p>
+          <p className={styles.jointVenture}>
             TCUIF & DiCAF joint venture • Under Indian Law • Secretariat: New Delhi, India
           </p>
         </div>

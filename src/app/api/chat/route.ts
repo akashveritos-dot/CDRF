@@ -12,7 +12,7 @@ const client = new OpenAI({
   apiKey: process.env.NVIDIA_API_KEY || 'ollama',
   baseURL: useNvidia
     ? 'https://integrate.api.nvidia.com/v1'
-    : 'http://127.0.0.1:11434/v1',
+    : 'http://localhost:11434/v1',
 });
 
 // Cache variables for news and reports to eliminate remote database query latency (5+ seconds per request)
