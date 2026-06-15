@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { ToastProvider } from '@/components/ui/Toast/ToastContext';
+import { TelemetryProvider } from '@/context/TelemetryContext';
 import ClientLayoutWrapper from '@/components/layout/ClientLayoutWrapper';
 
 export const viewport = {
@@ -31,9 +32,12 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body suppressHydrationWarning>
         <ToastProvider>
-          <ClientLayoutWrapper>{children}</ClientLayoutWrapper>
+          <TelemetryProvider>
+            <ClientLayoutWrapper>{children}</ClientLayoutWrapper>
+          </TelemetryProvider>
         </ToastProvider>
       </body>
     </html>
   );
 }
+

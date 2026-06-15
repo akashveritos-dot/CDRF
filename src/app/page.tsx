@@ -5,12 +5,10 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import styles from './page.module.css';
 import {
-  heroStats as fallbackHeroStats,
-  cityTemps as fallbackCityTemps,
-  disasterEvents as fallbackDisasterEvents,
   partners,
   councilMembers as fallbackCouncilMembers
 } from '@/data/dataStore';
+import { useTelemetry } from '@/context/TelemetryContext';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
 import CountUp from '@/components/ui/CountUp/CountUp';
 import DisasterBackground from '@/components/ui/DisasterBackground/DisasterBackground';
@@ -112,91 +110,21 @@ const getCategoryIcon = (tag: string) => {
 };
 
 export default function Home() {
-  const [stats, setStats] = useState<any[]>(fallbackHeroStats);
-  const [temps, setTemps] = useState<any[]>(fallbackCityTemps);
-  const [events, setEvents] = useState<any[]>(fallbackDisasterEvents);
-  const [lossesData, setLossesData] = useState<any[] | undefined>(undefined);
-  const [shareData, setShareData] = useState<any[] | undefined>(undefined);
-  const [heatmapData, setHeatmapData] = useState<number[][] | undefined>(undefined);
-  const [councilMembers, setCouncilMembers] = useState<any[]>(fallbackCouncilMembers);
+  const { data: telemetryData } = useTelemetry();
 
-  // Dynamic statistics, news, and reports
-  const [homeStats, setHomeStats] = useState<any>({
-    activeIncidents: 705,
-    countriesAffected: 6,
-    reportsPublished: 6,
-    disasterCategories: 10,
-    alertsIssued: 7
-  });
+  const stats = telemetryData.heroStats;
+  const temps = telemetryData.cityTemps;
+  const events = telemetryData.disasterEvents;
+  const lossesData = telemetryData.economicLosses;
+  const shareData = telemetryData.lossShare;
+  const heatmapData = telemetryData.heatmapData;
+  const homeStats = telemetryData.homepageStats;
+
+  const [councilMembers, setCouncilMembers] = useState<any[]>(fallbackCouncilMembers);
   const [latestNews, setLatestNews] = useState<any[]>([]);
   const [latestReports, setLatestReports] = useState<any[]>([]);
 
   useEffect(() => {
-    async function loadTelemetry() {
-      try {
-        const res = await fetch('/api/telemetry');
-        if (res.ok) {
-          const data = await res.json();
-          if (data.heroStats) setStats(data.heroStats);
-          if (data.disasterEvents) setEvents(data.disasterEvents);
-          if (data.economicLosses) setLossesData(data.economicLosses);
-          if (data.lossShare) setShareData(data.lossShare);
-          if (data.heatmapData) setHeatmapData(data.heatmapData);
-          if (data.homepageStats) setHomeStats(data.homepageStats);
-
-          // Fetch real-time temperatures for Chennai, Delhi, Kolkata, and Mumbai from Open-Meteo
-          try {
-            const weatherRes = await fetch(
-              'https://api.open-meteo.com/v1/forecast?latitude=13.0827,28.6139,22.5726,19.0760&longitude=80.2707,77.2090,88.3639,72.8777&current=temperature_2m'
-            );
-            if (weatherRes.ok) {
-              const weatherData = await weatherRes.json();
-              if (Array.isArray(weatherData)) {
-                const updatedTemps = [
-                  {
-                    city: 'Chennai',
-                    temp: Math.round(weatherData[0].current.temperature_2m),
-                    percentage: Math.round((weatherData[0].current.temperature_2m / 50) * 100)
-                  },
-                  {
-                    city: 'Delhi',
-                    temp: Math.round(weatherData[1].current.temperature_2m),
-                    percentage: Math.round((weatherData[1].current.temperature_2m / 50) * 100)
-                  },
-                  {
-                    city: 'Kolkata',
-                    temp: Math.round(weatherData[2].current.temperature_2m),
-                    percentage: Math.round((weatherData[2].current.temperature_2m / 50) * 100)
-                  },
-                  {
-                    city: 'Mumbai',
-                    temp: Math.round(weatherData[3].current.temperature_2m),
-                    percentage: Math.round((weatherData[3].current.temperature_2m / 50) * 100)
-                  }
-                ];
-                updatedTemps.sort((a, b) => b.temp - a.temp);
-                setTemps(updatedTemps);
-              } else if (data.cityTemps) {
-                const sortedTemps = [...data.cityTemps].sort((a, b) => b.temp - a.temp);
-                setTemps(sortedTemps);
-              }
-            } else if (data.cityTemps) {
-              const sortedTemps = [...data.cityTemps].sort((a, b) => b.temp - a.temp);
-              setTemps(sortedTemps);
-            }
-          } catch (weatherErr) {
-            console.warn('Failed to fetch real-time city temperatures:', weatherErr);
-            if (data.cityTemps) {
-              const sortedTemps = [...data.cityTemps].sort((a, b) => b.temp - a.temp);
-              setTemps(sortedTemps);
-            }
-          }
-        }
-      } catch (err) {
-        console.warn('Failed to fetch home telemetry API:', err);
-      }
-    }
-
     async function loadContent() {
       try {
         const [newsRes, reportsRes, councilRes] = await Promise.all([
@@ -223,7 +151,6 @@ export default function Home() {
       }
     }
 
-    loadTelemetry();
     loadContent();
   }, []);
 

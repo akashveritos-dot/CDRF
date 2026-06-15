@@ -1,34 +1,19 @@
-'use client';
-
 import React, { useState, useEffect } from 'react';
 import styles from './ClimateGauge.module.css';
 import { motion } from 'framer-motion';
+import { useTelemetry } from '@/context/TelemetryContext';
 
 export default function ClimateGauge() {
-  const [baseAnomaly, setBaseAnomaly] = useState(2.10);
-  const [anomaly, setAnomaly] = useState(2.10);
+  const { data } = useTelemetry();
+  const warmingStat = data.heroStats?.find((s: any) => s.id === 'warming');
+  const baseAnomaly = warmingStat ? parseFloat(warmingStat.count) : 2.10;
+
+  const [anomaly, setAnomaly] = useState(baseAnomaly);
   const maxValue = 3.0;
 
   useEffect(() => {
-    async function fetchAnomaly() {
-      try {
-        const res = await fetch('/api/telemetry');
-        if (res.ok) {
-          const data = await res.json();
-          const warmingStat = data.heroStats?.find((s: any) => s.id === 'warming');
-          if (warmingStat) {
-            const val = parseFloat(warmingStat.count);
-            setBaseAnomaly(val);
-            setAnomaly(val);
-          }
-        }
-      } catch (err) {
-        console.warn('Failed to load temperature anomaly from telemetry:', err);
-      }
-    }
-    
-    fetchAnomaly();
-  }, []);
+    setAnomaly(baseAnomaly);
+  }, [baseAnomaly]);
 
   useEffect(() => {
     const fluctuationInterval = setInterval(() => {
@@ -40,6 +25,7 @@ export default function ClimateGauge() {
 
     return () => clearInterval(fluctuationInterval);
   }, [baseAnomaly]);
+
   
   // Calculate angle for needle: -90deg (0°C) to +90deg (+3°C)
   const rotationAngle = (anomaly / maxValue) * 180 - 90;

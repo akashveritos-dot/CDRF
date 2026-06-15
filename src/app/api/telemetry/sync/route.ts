@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+import { revalidateTag } from 'next/cache';
 
 export async function GET(req: NextRequest) {
   const syncResults: any = {
@@ -111,6 +112,9 @@ export async function GET(req: NextRequest) {
       })
     );
     syncResults.disasterEvents = eventSync;
+
+    // Invalidate server-side telemetry cache to reflect synced data instantly
+    revalidateTag('telemetry', 'max');
 
     return NextResponse.json({
       success: true,

@@ -343,47 +343,28 @@ const indiaRegions: MapState[] = [
   },
 ];
 
-export default function IndiaMap() {
-  const [regions, setRegions] = useState<MapState[]>(indiaRegions);
-  const [selectedState, setSelectedState] = useState<MapState>(indiaRegions[3] || indiaRegions[0]); // Default to Assam
+import { useTelemetry } from '@/context/TelemetryContext';
 
-  useEffect(() => {
-    async function loadMapTelemetry() {
-      try {
-        const res = await fetch('/api/telemetry');
-        if (res.ok) {
-          const data = await res.json();
-          if (data.stateHazards && data.stateHazards.length > 0) {
-            const updated = indiaRegions.map(region => {
-              const dbRow = data.stateHazards.find((s: any) => s.id === region.id);
-              if (dbRow) {
-                return {
-                  ...region,
-                  hazardLevel: dbRow.hazard_level,
-                  primaryDisaster: dbRow.primary_disaster,
-                  affectedCount: dbRow.affected_count,
-                  description: dbRow.description
-                };
-              }
-              return region;
-            });
-            setRegions(updated);
-            
-            // Re-sync selected state reference with updated database metrics safely
-            setSelectedState(prev => {
-              const currentSelected = updated.find(r => r.id === prev.id);
-              if (currentSelected) return currentSelected;
-              const defaultAssam = updated.find(r => r.id === 'as');
-              return defaultAssam || updated[0];
-            });
-          }
-        }
-      } catch (err) {
-        console.warn('Failed to load map state telemetry from database:', err);
-      }
+export default function IndiaMap() {
+  const { data } = useTelemetry();
+  const [selectedStateId, setSelectedStateId] = useState<string>('as'); // Track selected state by ID
+
+  const regions = indiaRegions.map(region => {
+    const dbRow = data.stateHazards?.find((s: any) => s.id === region.id);
+    if (dbRow) {
+      return {
+        ...region,
+        hazardLevel: dbRow.hazard_level,
+        primaryDisaster: dbRow.primary_disaster,
+        affectedCount: dbRow.affected_count,
+        description: dbRow.description
+      };
     }
-    loadMapTelemetry();
-  }, []);
+    return region;
+  });
+
+  const selectedState = regions.find(r => r.id === selectedStateId) || regions.find(r => r.id === 'as') || regions[0];
+
 
   const getHazardClass = (level: 'High' | 'Medium' | 'Low') => {
     switch (level) {
@@ -426,8 +407,8 @@ export default function IndiaMap() {
               key={region.id}
               d={region.path}
               className={`${styles.statePath} ${getHazardClass(region.hazardLevel)} ${selectedState.id === region.id ? styles.stateActive : ''}`}
-              onClick={() => setSelectedState(region)}
-              onMouseEnter={() => setSelectedState(region)}
+              onClick={() => setSelectedStateId(region.id)}
+              onMouseEnter={() => setSelectedStateId(region.id)}
             >
               <title>{region.name}</title>
             </path>

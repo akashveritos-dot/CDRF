@@ -18,36 +18,51 @@ export default function CountUp({
   decimals = 0,
   className = ''
 }: CountUpProps) {
+  // Initialize to `end` to support SSR/SEO static HTML generation
   const [count, setCount] = useState(end);
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true, amount: 0.3 });
-  const hasAnimated = useRef(false);
+  const animationRef = useRef<number | null>(null);
 
-  // Reset to 0 on client mount so count up animation starts from 0
+  // Reset to 0 on mount so client-side animation starts from 0
   useEffect(() => {
     setCount(0);
   }, []);
 
   useEffect(() => {
-    // Only animate if the client reset the count to 0 and the element is in view
-    if (!isInView || hasAnimated.current || count !== 0) return;
-    
-    hasAnimated.current = true;
+    if (!isInView) return;
+
     let startTimestamp: number | null = null;
+    const startVal = count;
+    const endVal = end;
+    const change = endVal - startVal;
+
     const step = (timestamp: number) => {
       if (!startTimestamp) startTimestamp = timestamp;
-      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-      const currentVal = progress * end;
+      const elapsed = timestamp - startTimestamp;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // Smooth ease-out deceleration
+      const easeProgress = progress * (2 - progress);
+      const currentVal = startVal + change * easeProgress;
+      
       setCount(currentVal);
+
       if (progress < 1) {
-        window.requestAnimationFrame(step);
+        animationRef.current = window.requestAnimationFrame(step);
       } else {
-        setCount(end);
+        setCount(endVal);
       }
     };
-    
-    window.requestAnimationFrame(step);
-  }, [isInView, end, duration, count]);
+
+    animationRef.current = window.requestAnimationFrame(step);
+
+    return () => {
+      if (animationRef.current) {
+        window.cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [isInView, end, duration]);
 
   const formattedValue = decimals > 0 
     ? count.toFixed(decimals) 

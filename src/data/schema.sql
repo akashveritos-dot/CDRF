@@ -346,6 +346,43 @@ CREATE TABLE IF NOT EXISTS contact_messages (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
+-- 18. Event Registrations Table
+CREATE TABLE IF NOT EXISTS event_registrations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    company VARCHAR(255) NOT NULL,
+    designation VARCHAR(255) DEFAULT NULL,
+    role VARCHAR(100) NOT NULL,
+    status ENUM('Pending', 'Approved', 'Rejected') NOT NULL DEFAULT 'Pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+
+-- ==========================================
+-- PERFORMANCE TUNING INDEXES
+-- ==========================================
+
+-- Index on news for optimized category lookup and published date sorting
+CREATE INDEX idx_news_category_date ON news (category, published_date DESC);
+CREATE INDEX idx_news_published_date ON news (published_date DESC);
+
+-- Index on reports for optimized category lookup and year sorting
+CREATE INDEX idx_reports_category_year ON reports (category, year DESC);
+CREATE INDEX idx_reports_year ON reports (year DESC);
+
+-- Index on scraped_content for pending queue checks
+CREATE INDEX idx_scraped_status ON scraped_content (status);
+
+-- Indexes on memberships for unique user checks and status filtering
+CREATE INDEX idx_memberships_email ON memberships (email);
+CREATE INDEX idx_memberships_status ON memberships (status);
+
+-- Indexes on event_registrations for registration and status checking
+CREATE INDEX idx_event_reg_email ON event_registrations (email);
+CREATE INDEX idx_event_reg_status ON event_registrations (status);
+
 
 
 

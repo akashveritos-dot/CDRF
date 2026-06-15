@@ -15,7 +15,7 @@ export function getDbPool(): mysql.Pool {
     const port = parseInt(process.env.DB_PORT || process.env.MYSQL_ADDON_PORT || '3306', 10);
     // Enforce strict connection limit of 1 per pool instance to prevent exceeding the database's 5 max_user_connections limit.
     // Setting maxIdle to 0 ensures released connections are immediately closed and not kept alive as idle.
-    const connectionLimit = 1;
+    const connectionLimit = 3;
     console.log('[DEBUG DB] Initializing connection pool with config:', { host, port, user, database, connectionLimit });
 
     globalForDb.pool = mysql.createPool({
@@ -38,38 +38,16 @@ export function getDbPool(): mysql.Pool {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function query<T = unknown>(sql: string, params: any[] = []): Promise<T> {
-  const host = process.env.DB_HOST || process.env.MYSQL_ADDON_HOST || 'localhost';
-  const user = process.env.DB_USER || process.env.MYSQL_ADDON_USER || 'root';
-  const password = process.env.DB_PASSWORD || process.env.MYSQL_ADDON_PASSWORD || '';
-  const database = process.env.DB_NAME || process.env.MYSQL_ADDON_DB || 'dcrs_db';
-  const port = parseInt(process.env.DB_PORT || process.env.MYSQL_ADDON_PORT || '3306', 10);
-
+  const pool = getDbPool();
   const maxRetries = 5;
   let attempt = 0;
 
   while (attempt < maxRetries) {
-    let connection: mysql.Connection | null = null;
     try {
-      connection = await mysql.createConnection({
-        host,
-        user,
-        password,
-        database,
-        port,
-        connectTimeout: 5000, // 5 seconds timeout
-        ssl: process.env.DB_SSL === 'true' ? {} : undefined
-      });
-
-      const [results] = await connection.execute(sql, params);
-      await connection.end();
+      // Execute the query using the connection pool
+      const [results] = await pool.execute(sql, params);
       return results as T;
     } catch (error: any) {
-      if (connection) {
-        try {
-          await connection.end();
-        } catch (_) {}
-      }
-
       const message = error?.message || String(error);
       const errCode = error?.code || '';
 
