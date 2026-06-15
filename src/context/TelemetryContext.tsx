@@ -33,6 +33,8 @@ interface TelemetryContextValue {
   data: TelemetryData;
   loading: boolean;
   error: string | null;
+  selectedStateId: string;
+  setSelectedStateId: (id: string) => void;
   refetch: () => Promise<void>;
 }
 
@@ -100,8 +102,10 @@ export function TelemetryProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(interval);
   }, []);
 
+  const [selectedStateId, setSelectedStateId] = useState<string>('');
+
   return (
-    <TelemetryContext.Provider value={{ data, loading, error, refetch: fetchTelemetry }}>
+    <TelemetryContext.Provider value={{ data, loading, error, selectedStateId, setSelectedStateId, refetch: fetchTelemetry }}>
       {children}
     </TelemetryContext.Provider>
   );

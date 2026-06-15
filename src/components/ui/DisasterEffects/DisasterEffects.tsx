@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
+import { useTelemetry } from '@/context/TelemetryContext';
 import styles from './DisasterEffects.module.css';
 
 interface DisasterEffectsProps {
@@ -23,10 +24,51 @@ declare global {
   }
 }
 
+const STATE_COORDINATES: Record<string, { lat: number; lng: number; name: string; city: string }> = {
+  an: { lat: 11.6234, lng: 92.7265, name: 'Andaman and Nicobar Islands', city: 'Port Blair' },
+  ap: { lat: 16.5062, lng: 80.6480, name: 'Andhra Pradesh', city: 'Amaravati' },
+  ar: { lat: 27.0844, lng: 93.6053, name: 'Arunachal Pradesh', city: 'Itanagar' },
+  as: { lat: 26.1445, lng: 91.7362, name: 'Assam', city: 'Dispur' },
+  br: { lat: 25.5941, lng: 85.1376, name: 'Bihar', city: 'Patna' },
+  ch: { lat: 30.7333, lng: 76.7794, name: 'Chandigarh', city: 'Chandigarh' },
+  ct: { lat: 21.2514, lng: 81.6296, name: 'Chhattisgarh', city: 'Raipur' },
+  dn: { lat: 20.3974, lng: 72.8328, name: 'Dadra and Nagar Haveli', city: 'Silvassa' },
+  dd: { lat: 20.3974, lng: 72.8328, name: 'Daman and Diu', city: 'Daman' },
+  dl: { lat: 28.6139, lng: 77.2090, name: 'Delhi', city: 'New Delhi' },
+  ga: { lat: 15.4909, lng: 73.8278, name: 'Goa', city: 'Panaji' },
+  gj: { lat: 23.2156, lng: 72.6369, name: 'Gujarat', city: 'Gandhinagar' },
+  hr: { lat: 30.7333, lng: 76.7794, name: 'Haryana', city: 'Chandigarh' },
+  hp: { lat: 31.1048, lng: 77.1734, name: 'Himachal Pradesh', city: 'Shimla' },
+  jk: { lat: 34.0837, lng: 74.7973, name: 'Jammu and Kashmir', city: 'Srinagar' },
+  jh: { lat: 23.3441, lng: 85.3096, name: 'Jharkhand', city: 'Ranchi' },
+  ka: { lat: 12.9716, lng: 77.5946, name: 'Karnataka', city: 'Bengaluru' },
+  kl: { lat: 8.5241, lng: 76.9366, name: 'Kerala', city: 'Thiruvananthapuram' },
+  la: { lat: 34.1526, lng: 77.5771, name: 'Ladakh', city: 'Leh' },
+  ld: { lat: 10.5667, lng: 72.6333, name: 'Lakshadweep', city: 'Kavaratti' },
+  mp: { lat: 23.2599, lng: 77.4126, name: 'Madhya Pradesh', city: 'Bhopal' },
+  mh: { lat: 18.9760, lng: 72.8777, name: 'Maharashtra', city: 'Mumbai' },
+  mn: { lat: 24.8170, lng: 93.9368, name: 'Manipur', city: 'Imphal' },
+  ml: { lat: 25.5788, lng: 91.8831, name: 'Meghalaya', city: 'Shillong' },
+  mz: { lat: 23.7307, lng: 92.7173, name: 'Mizoram', city: 'Aizawl' },
+  nl: { lat: 25.6751, lng: 94.1086, name: 'Nagaland', city: 'Kohima' },
+  or: { lat: 20.2961, lng: 85.8245, name: 'Odisha', city: 'Bhubaneswar' },
+  py: { lat: 11.9416, lng: 79.8083, name: 'Puducherry', city: 'Puducherry' },
+  pb: { lat: 30.7333, lng: 76.7794, name: 'Punjab', city: 'Chandigarh' },
+  rj: { lat: 26.9124, lng: 75.7873, name: 'Rajasthan', city: 'Jaipur' },
+  sk: { lat: 27.3314, lng: 88.6138, name: 'Sikkim', city: 'Gangtok' },
+  tn: { lat: 13.0827, lng: 80.2707, name: 'Tamil Nadu', city: 'Chennai' },
+  tg: { lat: 17.3850, lng: 78.4867, name: 'Telangana', city: 'Hyderabad' },
+  tr: { lat: 23.8315, lng: 91.2868, name: 'Tripura', city: 'Agartala' },
+  ut: { lat: 30.3165, lng: 78.0322, name: 'Uttarakhand', city: 'Dehradun' },
+  up: { lat: 26.8467, lng: 80.9462, name: 'Uttar Pradesh', city: 'Lucknow' },
+  wb: { lat: 22.5726, lng: 88.3639, name: 'West Bengal', city: 'Kolkata' }
+};
+
 const DisasterEffects: React.FC<DisasterEffectsProps> = ({ 
   theme = 'general', 
   intensity = 'medium' 
 }) => {
+  const { data: telemetryData, selectedStateId } = useTelemetry();
   const [mounted, setMounted] = useState(false);
   const [liveTheme, setLiveTheme] = useState<'flood' | 'storm' | null>(null);
   const [temperature, setTemperature] = useState<number | null>(null);
@@ -57,7 +99,14 @@ const DisasterEffects: React.FC<DisasterEffectsProps> = ({
       let state = 'Delhi';
 
       // Resolve coordinates and location details
-      if (queryCity) {
+      if (selectedStateId && STATE_COORDINATES[selectedStateId]) {
+        const stateConf = STATE_COORDINATES[selectedStateId];
+        lat = stateConf.lat;
+        lng = stateConf.lng;
+        city = stateConf.city;
+        state = stateConf.name;
+        console.log(`DisasterEffects: Resolved live state weather location for ${selectedStateId}: [${city}, ${state}]`);
+      } else if (queryCity) {
         city = queryCity;
         state = queryState || '';
         console.log(`DisasterEffects: Location overridden to [${city}, ${state}] via URL parameters.`);
@@ -128,9 +177,10 @@ const DisasterEffects: React.FC<DisasterEffectsProps> = ({
     const resolveLocationAndWeather = async () => {
       const params = new URLSearchParams(window.location.search);
       const hasOverrides = params.has('weather') || params.has('city') || params.has('state') || params.has('region');
+      const bypassCache = hasOverrides || !!selectedStateId;
 
       // 1. Check window memory cache first (5 minutes validity)
-      if (!hasOverrides && window.__dcrsWeatherData && (Date.now() - window.__dcrsWeatherData.timestamp < 5 * 60 * 1000)) {
+      if (!bypassCache && window.__dcrsWeatherData && (Date.now() - window.__dcrsWeatherData.timestamp < 5 * 60 * 1000)) {
         const cached = window.__dcrsWeatherData;
         setLocationName(cached.locationName);
         setLiveTheme(cached.liveTheme);
@@ -140,7 +190,7 @@ const DisasterEffects: React.FC<DisasterEffectsProps> = ({
       }
 
       // 2. Check sessionStorage cache second (5 minutes validity)
-      if (!hasOverrides) {
+      if (!bypassCache) {
         try {
           const sessionCached = sessionStorage.getItem(cacheKey);
           if (sessionCached) {
@@ -175,7 +225,7 @@ const DisasterEffects: React.FC<DisasterEffectsProps> = ({
       try {
         const result = await fetchPromise;
         
-        if (!hasOverrides) {
+        if (!bypassCache) {
           window.__dcrsWeatherData = result;
           try {
             sessionStorage.setItem(cacheKey, JSON.stringify(result));
@@ -200,11 +250,19 @@ const DisasterEffects: React.FC<DisasterEffectsProps> = ({
     // Relaxed 5-minute interval check
     const interval = setInterval(resolveLocationAndWeather, 5 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [mounted]);
+  }, [mounted, selectedStateId]);
 
   if (!mounted) return null;
 
-  const effectiveTheme = liveTheme || theme;
+  const selectedDbState = telemetryData.stateHazards?.find((s: any) => s.id === selectedStateId);
+  const dbHazardTheme = selectedDbState && selectedDbState.hazard_level === 'High'
+    ? (selectedDbState.primary_disaster?.toLowerCase().includes('flood') || selectedDbState.primary_disaster?.toLowerCase().includes('rain') || selectedDbState.primary_disaster?.toLowerCase().includes('monsoon') ? 'flood'
+      : (selectedDbState.primary_disaster?.toLowerCase().includes('storm') || selectedDbState.primary_disaster?.toLowerCase().includes('cyclone') ? 'storm'
+        : (selectedDbState.primary_disaster?.toLowerCase().includes('heat') || selectedDbState.primary_disaster?.toLowerCase().includes('fire') ? 'fire'
+          : (selectedDbState.primary_disaster?.toLowerCase().includes('earthquake') ? 'earthquake' : null))))
+    : null;
+
+  const effectiveTheme = liveTheme || dbHazardTheme || theme;
   const particleCount = intensity === 'low' ? 15 : intensity === 'medium' ? 30 : 50;
   
   // Rain triggers ONLY when effectiveTheme is flood or storm

@@ -346,8 +346,7 @@ const indiaRegions: MapState[] = [
 import { useTelemetry } from '@/context/TelemetryContext';
 
 export default function IndiaMap() {
-  const { data } = useTelemetry();
-  const [selectedStateId, setSelectedStateId] = useState<string>('as'); // Track selected state by ID
+  const { data, selectedStateId, setSelectedStateId } = useTelemetry();
 
   const regions = indiaRegions.map(region => {
     const dbRow = data.stateHazards?.find((s: any) => s.id === region.id);
