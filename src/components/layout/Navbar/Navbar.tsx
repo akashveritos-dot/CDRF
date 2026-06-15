@@ -294,6 +294,11 @@ export default function Navbar() {
           </Link>
         </div>
 
+        {/* Mobile Join Button */}
+        <Link href="/membership#join" className={styles.mobileCtaBtn}>
+          Join
+        </Link>
+
         {/* Mobile Subscribe Button */}
         <button onClick={() => setIsSubscribeOpen(true)} className={styles.mobileSubscribeBtn}>
           Subscribe

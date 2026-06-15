@@ -294,7 +294,7 @@ export default function Home() {
             </p>
             <div className={styles.heroActions}>
               <Link href="/membership#join" className={styles.btnPrimary}>
-                Become a Member
+                Join the Resilience Movement
                 <ArrowRight size={16} />
               </Link>
               <a href="#insights" className={styles.btnOutline}>

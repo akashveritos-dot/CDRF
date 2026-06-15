@@ -96,6 +96,7 @@ export default function MembershipPage() {
   const [isPaying, setIsPaying] = useState(false);
   const [showMockModal, setShowMockModal] = useState(false);
   const [mockOrderId, setMockOrderId] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [highlightForm, setHighlightForm] = useState(false);
@@ -186,9 +187,10 @@ export default function MembershipPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.name && formData.email && formData.organization) {
+      setIsSubmitting(true);
       try {
         const isPaidTier = formData.tier !== 'Basic';
-        
+
         const res = await fetch('/api/membership/apply', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -224,6 +226,8 @@ export default function MembershipPage() {
       } catch (err) {
         console.error('Membership form error:', err);
         toastError('Submission Failed', 'Failed to submit application. Please try again later.');
+      } finally {
+        setIsSubmitting(false);
       }
     }
   };
@@ -266,10 +270,12 @@ export default function MembershipPage() {
         });
       }
 
-      let amountPaisa = 0;
-      if (formData.tier === 'Prime') amountPaisa = 2000000;
-      else if (formData.tier === 'Premium') amountPaisa = 5000000;
-      else if (formData.tier === 'Gold') amountPaisa = 10000000;
+      let amountPaisa = orderData.amount;
+      if (!amountPaisa) {
+        if (formData.tier === 'Prime') amountPaisa = 2000000;
+        else if (formData.tier === 'Premium') amountPaisa = 5000000;
+        else if (formData.tier === 'Gold') amountPaisa = 10000000;
+      }
 
       const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_L88P4F2zUqI2lX';
 
@@ -347,7 +353,7 @@ export default function MembershipPage() {
 
     try {
       const mockPaymentId = `pay_mock_${Math.random().toString(36).substring(2, 10)}${Date.now().toString().slice(-4)}`;
-      
+
       const verifyRes = await fetch('/api/membership/payment-success', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -593,8 +599,22 @@ export default function MembershipPage() {
 
       {/* ── Registration Form ──────────────────────────────────────────── */}
       <ScrollReveal direction="up">
-        <div id="join" ref={formRef} className={`${styles.formSec} ${highlightForm ? styles.highlightedForm : ''}`}>
-          {flowStep === 'success' ? (
+        <div id="join" ref={formRef} className={`${styles.formSec} ${highlightForm ? styles.highlightedForm : ''} ${isSubmitting ? styles.formSecLoading : ''}`}>
+          {isSubmitting ? (
+            <div className={styles.loadingContainer}>
+              <div className={styles.rupeeCoinWrap}>
+                <div className={styles.rupeeCoin}>₹</div>
+                <div className={styles.coinShadow}></div>
+              </div>
+              <h3 className={styles.loadingTitle}>Preparing Secure Billing Invoice</h3>
+              <p className={styles.loadingSubtitle}>
+                Verifying organization credentials and establishing encrypted session...
+              </p>
+              <div className={styles.loadingBarContainer}>
+                <div className={styles.loadingBar}></div>
+              </div>
+            </div>
+          ) : flowStep === 'success' ? (
             <div className={styles.successBox}>
               <div className={styles.successIcon}>
                 <Check size={32} />
@@ -676,28 +696,45 @@ export default function MembershipPage() {
             </div>
           ) : flowStep === 'payment' ? (
             <div className={styles.paymentBox}>
-              <h3 className={styles.paymentTitle}>Complete Membership Payment</h3>
+              <h3 className={styles.paymentTitle}>Review Application Details</h3>
               <p className={styles.paymentSubtitle}>
-                Please click below to securely initiate the transaction using the Razorpay gateway.
+                Please verify your membership order information below to proceed with the transaction.
               </p>
 
               {/* Summary Card */}
               <div className={styles.paymentSummary}>
+                <div className={styles.previewTitle}>Membership Order Preview</div>
                 <div className={styles.summaryRow}>
-                  <span className={styles.summaryLabel}>Applicant:</span>
+                  <span className={styles.summaryLabel}>
+                    <User size={14} style={{ marginRight: '8px', verticalAlign: 'middle', opacity: 0.7 }} />
+                    Applicant
+                  </span>
                   <span className={styles.summaryValue}>{formData.name}</span>
                 </div>
                 <div className={styles.summaryRow}>
-                  <span className={styles.summaryLabel}>Email:</span>
+                  <span className={styles.summaryLabel}>
+                    <Mail size={14} style={{ marginRight: '8px', verticalAlign: 'middle', opacity: 0.7 }} />
+                    Email Address
+                  </span>
                   <span className={styles.summaryValue}>{formData.email}</span>
                 </div>
                 <div className={styles.summaryRow}>
-                  <span className={styles.summaryLabel}>Membership Tier:</span>
-                  <span className={styles.summaryValue}>{formData.tier}</span>
+                  <span className={styles.summaryLabel}>
+                    <Building size={14} style={{ marginRight: '8px', verticalAlign: 'middle', opacity: 0.7 }} />
+                    Organization
+                  </span>
+                  <span className={styles.summaryValue}>{formData.organization}</span>
+                </div>
+                <div className={styles.summaryRow}>
+                  <span className={styles.summaryLabel}>
+                    <Award size={14} style={{ marginRight: '8px', verticalAlign: 'middle', opacity: 0.7 }} />
+                    Selected Tier
+                  </span>
+                  <span className={styles.summaryValue} style={{ fontWeight: 'bold' }}>{formData.tier}</span>
                 </div>
                 <div className={styles.summaryDivider}></div>
                 <div className={styles.summaryRow}>
-                  <span className={styles.summaryLabel} style={{ fontWeight: 'bold' }}>Total Amount:</span>
+                  <span className={styles.summaryLabel} style={{ fontWeight: 'bold' }}>Total Due</span>
                   <span className={styles.summaryTotal}>
                     {formData.tier === 'Prime' ? '₹20,000' : formData.tier === 'Premium' ? '₹50,000' : '₹1,00,000'}
                   </span>
@@ -705,7 +742,7 @@ export default function MembershipPage() {
               </div>
 
               <div className={styles.secureBadge}>
-                <Shield size={16} /> Secure checkout processed via Razorpay API
+                <Shield size={16} /> Secure transaction processed via encrypted payment gateway
               </div>
 
               {/* Action Buttons */}
@@ -725,15 +762,15 @@ export default function MembershipPage() {
                   disabled={isPaying}
                   style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                 >
-                  {isPaying ? 'Processing...' : 'Pay with Razorpay'}
+                  {isPaying ? 'Processing...' : 'Proceed to Payment'}
                 </button>
               </div>
             </div>
           ) : (
             <form onSubmit={handleSubmit}>
-              <h2 className={styles.formTitle}>Apply to the Federation</h2>
+              <h2 className={styles.formTitle}>Join the Resilience Movement</h2>
               <p className={styles.formSubtitle}>
-                Submit your details below to initiate corporate verification and join the working groups.
+                Submit your details below to initiate verification and join the working groups.
               </p>
 
               <div className={styles.formGrid}>
@@ -876,15 +913,15 @@ export default function MembershipPage() {
               </p>
             </div>
             <div className={styles.mockModalFooter}>
-              <button 
-                className={styles.backBtn} 
+              <button
+                className={styles.backBtn}
                 style={{ padding: '8px 16px', fontSize: '13px' }}
                 onClick={() => setShowMockModal(false)}
               >
                 Cancel
               </button>
-              <button 
-                className={styles.submitBtn} 
+              <button
+                className={styles.submitBtn}
                 style={{ padding: '8px 16px', fontSize: '13px', marginTop: 0 }}
                 onClick={handleMockPaymentSuccess}
                 disabled={isPaying}

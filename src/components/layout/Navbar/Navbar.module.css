@@ -907,6 +907,10 @@
   }
 }
 
+.mobileCtaBtn {
+  display: none;
+}
+
 .mobileSubscribeBtn {
   display: none;
 }
@@ -1190,6 +1194,36 @@
     padding-left: 6px !important;
   }
 
+  .mobileCtaBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accessible-green);
+    color: #ffffff !important;
+    border: none;
+    padding: 8px 16px;
+    border-radius: var(--radius-full);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    z-index: 101;
+    margin-left: auto;
+    margin-right: 8px;
+    box-shadow: 0 4px 12px rgba(21, 128, 61, 0.2);
+    -webkit-tap-highlight-color: transparent !important;
+    outline: none !important;
+    transition: all var(--transition-base);
+  }
+
+  .mobileCtaBtn:hover,
+  .mobileCtaBtn:active {
+    background: var(--accessible-green-dark);
+    transform: scale(1.05);
+  }
+
   .mobileSubscribeBtn {
     display: inline-block;
     background: linear-gradient(135deg, var(--wine-red-primary), var(--wine-red-dark)) !important;
@@ -1205,7 +1239,7 @@
     transition: all var(--transition-base);
     animation: pulseWiggleSubscribe 2.5s ease-in-out infinite;
     z-index: 101;
-    margin-left: auto;
+    margin-left: 0;
     margin-right: 12px;
     box-shadow: 0 4px 12px rgba(185, 28, 28, 0.25) !important;
     -webkit-tap-highlight-color: transparent !important;

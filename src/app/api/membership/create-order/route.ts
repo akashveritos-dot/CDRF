@@ -9,58 +9,48 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Tier is required' }, { status: 400 });
     }
 
-    // Calculate amount in paisa (1 INR = 100 Paisa)
-    let amountPaisa = 0;
-    if (tier === 'Prime') amountPaisa = 2000000;
-    else if (tier === 'Premium') amountPaisa = 5000000;
-    else if (tier === 'Gold') amountPaisa = 10000000;
-    else {
-      return NextResponse.json({ error: 'Invalid paid membership tier' }, { status: 400 });
-    }
+    // For testing, override the tier amount to 1 rupee (100 paisa)
+    const amountPaisa = 100; // 1 INR
 
     const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
-    // If Razorpay keys are configured, attempt to create order via Razorpay API
-    if (keyId && keySecret && !keyId.startsWith('dummy') && !keySecret.startsWith('dummy')) {
-      try {
-        const authHeader = 'Basic ' + Buffer.from(`${keyId}:${keySecret}`).toString('base64');
-        const res = await fetch('https://api.razorpay.com/v1/orders', {
-          method: 'POST',
-          headers: {
-            'Authorization': authHeader,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            amount: amountPaisa,
-            currency: 'INR',
-            receipt: `receipt_m_${Date.now()}`
-          })
-        });
-
-        if (res.ok) {
-          const order = await res.json();
-          return NextResponse.json({
-            success: true,
-            orderId: order.id,
-            isMock: false
-          });
-        } else {
-          const errData = await res.text();
-          console.warn('Razorpay API order creation failed, falling back to mock. Details:', errData);
-        }
-      } catch (err) {
-        console.error('Error calling Razorpay API, falling back to mock:', err);
-      }
+    if (!keyId || !keySecret || keyId.startsWith('dummy') || keySecret.startsWith('dummy')) {
+      return NextResponse.json({ error: 'Razorpay keys are not configured or are dummy keys' }, { status: 500 });
     }
 
-    // Fallback: Generate a mock Order ID for local testing/development
-    const mockOrderId = `order_mock_${Math.random().toString(36).substring(2, 10)}${Date.now().toString().slice(-4)}`;
-    return NextResponse.json({
-      success: true,
-      orderId: mockOrderId,
-      isMock: true
-    });
+    try {
+      const authHeader = 'Basic ' + Buffer.from(`${keyId}:${keySecret}`).toString('base64');
+      const res = await fetch('https://api.razorpay.com/v1/orders', {
+        method: 'POST',
+        headers: {
+          'Authorization': authHeader,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          amount: amountPaisa,
+          currency: 'INR',
+          receipt: `receipt_m_${Date.now()}`
+        })
+      });
+
+      if (res.ok) {
+        const order = await res.json();
+        return NextResponse.json({
+          success: true,
+          orderId: order.id,
+          amount: order.amount,
+          isMock: false
+        });
+      } else {
+        const errData = await res.text();
+        console.error('Razorpay API order creation failed:', errData);
+        return NextResponse.json({ error: `Razorpay API order creation failed: ${errData}` }, { status: 500 });
+      }
+    } catch (err: any) {
+      console.error('Error calling Razorpay API:', err);
+      return NextResponse.json({ error: `Error calling Razorpay API: ${err.message || err}` }, { status: 500 });
+    }
 
   } catch (error: any) {
     console.error('Create order API error:', error);
