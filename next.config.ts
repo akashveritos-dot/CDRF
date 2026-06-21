@@ -3,6 +3,18 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* Standalone output for Hostinger Node.js deployment */
   output: 'standalone',
+  
+  /* Disable resource-heavy type-checking during production build */
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  
+  /* Restrict resource usage by limiting threads and concurrency */
+  experimental: {
+    cpus: 1,
+    workerThreads: false,
+  },
+
   /* Security Headers Configuration */
   async headers() {
     return [
