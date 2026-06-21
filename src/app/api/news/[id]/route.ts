@@ -70,7 +70,8 @@ export async function PUT(
       external_link,
       thumbnail_emoji,
       image_url,
-      category
+      category,
+      gallery_images
     } = body;
 
     if (!headline || !excerpt || !category) {
@@ -87,12 +88,13 @@ export async function PUT(
     }
 
     const dateVal = published_date ? published_date.split('T')[0] : new Date().toISOString().split('T')[0];
+    const galleryImagesJson = gallery_images ? JSON.stringify(gallery_images) : '[]';
 
     await query(
       `UPDATE news 
        SET tag = ?, source = ?, headline = ?, excerpt = ?, full_content = ?, 
            published_date = ?, author = ?, external_link = ?, thumbnail_emoji = ?, 
-           image_url = ?, category = ? 
+           image_url = ?, category = ?, gallery_images = ? 
        WHERE id = ?`,
       [
         tag,
@@ -106,6 +108,7 @@ export async function PUT(
         thumbnail_emoji,
         image_url || '',
         category.toLowerCase(),
+        galleryImagesJson,
         id
       ]
     );

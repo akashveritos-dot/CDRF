@@ -94,6 +94,20 @@ export default async function NewsDetailsPage(props: { params: Promise<{ id: str
 
   const formattedHtmlContent = formatContent(story.full_content || story.excerpt);
 
+  let galleryImages: string[] = [];
+  if (story.gallery_images) {
+    try {
+      const parsed = JSON.parse(story.gallery_images);
+      if (Array.isArray(parsed)) {
+        galleryImages = parsed;
+      }
+    } catch (e) {
+      if (typeof story.gallery_images === 'string' && story.gallery_images.trim().length > 0) {
+        galleryImages = story.gallery_images.split(',').map((s: string) => s.trim());
+      }
+    }
+  }
+
   return (
     <div className={styles.page}>
       <Link href="/news" className={styles.backBtn}>
@@ -136,10 +150,45 @@ export default async function NewsDetailsPage(props: { params: Promise<{ id: str
         />
       </div>
 
-      <div
+      <div 
         className={styles.content}
         dangerouslySetInnerHTML={{ __html: formattedHtmlContent }}
       />
+
+      {galleryImages && galleryImages.length > 0 && (
+        <div style={{ marginTop: '48px', paddingTop: '32px', borderTop: '1px solid var(--border-color)' }}>
+          <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', fontWeight: 700, color: 'var(--text-default)', marginBottom: '20px' }}>
+            Article Gallery
+          </h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px' }}>
+            {galleryImages.map((imgUrl, index) => (
+              <div 
+                key={index} 
+                style={{ 
+                  borderRadius: 'var(--radius-md)', 
+                  overflow: 'hidden', 
+                  boxShadow: 'var(--shadow-sm)',
+                  border: '1px solid var(--border-color)',
+                  aspectRatio: '4/3',
+                  backgroundColor: 'var(--bg-surface-alt)',
+                  position: 'relative'
+                }}
+              >
+                <a href={imgUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'block', width: '100%', height: '100%' }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img 
+                    src={imgUrl} 
+                    alt={`Gallery showcase image ${index + 1}`} 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform var(--transition-base)' }} 
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+                  />
+                </a>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {story.external_link && story.external_link !== '#' && story.external_link.trim() !== '' && (
         <div style={{ marginTop: '48px', paddingTop: '24px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-start' }}>

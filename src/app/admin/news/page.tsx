@@ -43,12 +43,58 @@ export default function AdminNews() {
     external_link: '',
     thumbnail_emoji: '📰',
     image_url: '',
-    category: 'disasters'
+    category: 'disasters',
+    gallery_images: [] as string[]
   });
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [imageUploadSuccess, setImageUploadSuccess] = useState('');
+  
+  // Gallery upload state
+  const [isUploadingGallery, setIsUploadingGallery] = useState(false);
+
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsUploadingGallery(true);
+    setError('');
+
+    try {
+      const urls: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const uploadData = new FormData();
+        uploadData.append('file', file);
+
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: uploadData,
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to upload gallery image');
+        urls.push(data.url);
+      }
+
+      setFormData(prev => ({
+        ...prev,
+        gallery_images: [...(prev.gallery_images || []), ...urls]
+      }));
+    } catch (err: any) {
+      setError(err.message || 'Gallery image upload failed.');
+    } finally {
+      setIsUploadingGallery(false);
+    }
+  };
+
+  const handleRemoveGalleryImage = (indexToRemove: number) => {
+    setFormData(prev => ({
+      ...prev,
+      gallery_images: (prev.gallery_images || []).filter((_, idx) => idx !== indexToRemove)
+    }));
+  };
 
   // Drag-and-drop / display limit states
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -151,7 +197,8 @@ export default function AdminNews() {
       external_link: '',
       thumbnail_emoji: '🚨',
       image_url: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80',
-      category: 'disasters'
+      category: 'disasters',
+      gallery_images: []
     });
     setError('');
     setImageUploadSuccess('');
@@ -177,18 +224,33 @@ export default function AdminNews() {
       dateStr = new Date(story.published_date).toISOString().split('T')[0];
     }
 
+    let galleryList: string[] = [];
+    if (story.gallery_images) {
+      try {
+        const parsed = JSON.parse(story.gallery_images);
+        if (Array.isArray(parsed)) {
+          galleryList = parsed;
+        }
+      } catch (err) {
+        if (typeof story.gallery_images === 'string' && story.gallery_images.trim().length > 0) {
+          galleryList = story.gallery_images.split(',').map((s: string) => s.trim());
+        }
+      }
+    }
+
     setFormData({
       tag: story.tag || 'Breaking',
-      source: story.source || 'disastersnews.com',
+      source: story.source || 'dcrf.world',
       headline: story.headline || '',
       excerpt: story.excerpt || '',
       full_content: story.full_content || '',
       published_date: dateStr,
-      author: story.author || 'disastersnews.com',
+      author: story.author || 'Editor Desk, DCRF',
       external_link: story.external_link || '',
       thumbnail_emoji: story.thumbnail_emoji || '📰',
       image_url: story.image_url || '',
-      category: story.category || 'disasters'
+      category: story.category || 'disasters',
+      gallery_images: galleryList
     });
     setError('');
     setImageUploadSuccess('');
@@ -581,6 +643,89 @@ export default function AdminNews() {
                       ✓ Uploaded: <strong>{imageUploadSuccess}</strong>
                     </span>
                   )}
+                </div>
+
+                {/* Gallery Images Upload */}
+                <div className={`${styles.inputGroup} ${styles.colSpan2}`}>
+                  <label>Article Gallery Showcase Images (Optional)</label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      id="news-gallery-upload"
+                      style={{ display: 'none' }}
+                      onChange={handleGalleryUpload}
+                      disabled={isUploadingGallery}
+                    />
+                    <label
+                      htmlFor="news-gallery-upload"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        height: '38px',
+                        padding: '0 14px',
+                        borderRadius: '8px',
+                        backgroundColor: '#121824',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        color: '#ffffff',
+                        cursor: 'pointer',
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        transition: 'all 0.2s',
+                        whiteSpace: 'nowrap',
+                        boxSizing: 'border-box',
+                        width: 'fit-content'
+                      }}
+                      onMouseEnter={(e) => { 
+                        e.currentTarget.style.backgroundColor = '#1e293b';
+                        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.25)';
+                      }}
+                      onMouseLeave={(e) => { 
+                        e.currentTarget.style.backgroundColor = '#121824';
+                        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+                      }}
+                    >
+                      {isUploadingGallery ? 'Uploading to Gallery...' : 'Upload Photos to Gallery'}
+                    </label>
+
+                    {formData.gallery_images && formData.gallery_images.length > 0 && (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}>
+                        {formData.gallery_images.map((imgUrl, index) => (
+                          <div key={index} style={{ position: 'relative', width: '80px', height: '60px', borderRadius: '6px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.15)' }}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={imgUrl} alt={`gallery-${index}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveGalleryImage(index)}
+                              style={{
+                                position: 'absolute',
+                                top: '2px',
+                                right: '2px',
+                                backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                                border: 'none',
+                                borderRadius: '50%',
+                                width: '18px',
+                                height: '18px',
+                                color: '#fff',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'pointer',
+                                fontSize: '10px',
+                                lineHeight: '10px',
+                                padding: 0
+                              }}
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* External Link */}

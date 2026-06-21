@@ -88,7 +88,8 @@ export async function POST(req: NextRequest) {
       external_link,
       thumbnail_emoji,
       image_url,
-      category
+      category,
+      gallery_images
     } = body;
 
     if (!headline || !excerpt || !category) {
@@ -99,10 +100,11 @@ export async function POST(req: NextRequest) {
     }
 
     const dateVal = published_date || new Date().toISOString().split('T')[0];
+    const galleryImagesJson = gallery_images ? JSON.stringify(gallery_images) : '[]';
 
     const result = await query<any>(
-      `INSERT INTO news (tag, source, headline, excerpt, full_content, published_date, author, external_link, thumbnail_emoji, image_url, category) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO news (tag, source, headline, excerpt, full_content, published_date, author, external_link, thumbnail_emoji, image_url, category, gallery_images) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         tag || 'Breaking',
         source || 'cdrf.vercel.app',
@@ -114,7 +116,8 @@ export async function POST(req: NextRequest) {
         external_link || '',
         thumbnail_emoji || '📰',
         image_url || '',
-        category.toLowerCase()
+        category.toLowerCase(),
+        galleryImagesJson
       ]
     );
 

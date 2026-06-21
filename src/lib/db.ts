@@ -39,7 +39,8 @@ async function runMigration(pool: mysql.Pool) {
     const alterQueries = [
       'ALTER TABLE news ADD COLUMN display_order INT DEFAULT 0',
       'ALTER TABLE reports ADD COLUMN display_order INT DEFAULT 0',
-      'ALTER TABLE cms_pages ADD COLUMN display_order INT DEFAULT 0'
+      'ALTER TABLE cms_pages ADD COLUMN display_order INT DEFAULT 0',
+      'ALTER TABLE news ADD COLUMN gallery_images TEXT NULL'
     ];
     for (const sql of alterQueries) {
       try {
