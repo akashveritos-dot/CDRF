@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "postbuild": "node -e \"const fs=require('fs'),p=require('path');function c(s,d){if(!fs.existsSync(s))return;fs.mkdirSync(d,{recursive:true});for(const f of fs.readdirSync(s)){const a=p.join(s,f),b=p.join(d,f);fs.statSync(a).isDirectory()?c(a,b):fs.copyFileSync(a,b)}}c('public','.next/standalone/public');c('.next/static','.next/standalone/.next/static');console.log('Static assets copied')\"",
-    "start": "node .next/standalone/server.js",
+    "postbuild": "node -e \"const fs=require('fs'),p=require('path');function c(s,d){if(!fs.existsSync(s))return;fs.mkdirSync(d,{recursive:true});for(const f of fs.readdirSync(s)){const a=p.join(s,f),b=p.join(d,f);fs.statSync(a).isDirectory()?c(a,b):fs.copyFileSync(a,b)}}c('public','.next/standalone/public');c('.next/static','.next/standalone/.next/static');fs.copyFileSync('server.js','.next/standalone/server-wrapper.js');console.log('Static assets + server wrapper copied')\"",
+    "start": "node --max-old-space-size=512 .next/standalone/server-wrapper.js",
     "lint": "eslint"
   },
   "dependencies": {
