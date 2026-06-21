@@ -5,10 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "postbuild": "copy-static",
+    "postbuild": "node -e \"const fs=require('fs'),p=require('path');function c(s,d){if(!fs.existsSync(s))return;fs.mkdirSync(d,{recursive:true});for(const f of fs.readdirSync(s)){const a=p.join(s,f),b=p.join(d,f);fs.statSync(a).isDirectory()?c(a,b):fs.copyFileSync(a,b)}}c('public','.next/standalone/public');c('.next/static','.next/standalone/.next/static');console.log('Static assets copied')\"",
     "postinstall": "next build",
     "start": "node .next/standalone/server.js",
-    "copy-static": "node -e \"const fs=require('fs');const path=require('path');function cpSync(s,d){if(!fs.existsSync(s))return;fs.mkdirSync(d,{recursive:true});for(const f of fs.readdirSync(s)){const sp=path.join(s,f),dp=path.join(d,f);fs.statSync(sp).isDirectory()?cpSync(sp,dp):fs.copyFileSync(sp,dp)}}cpSync('public','.next/standalone/public');cpSync('.next/static','.next/standalone/.next/static');console.log('Copied static assets to standalone')\"",
     "lint": "eslint"
   },
   "dependencies": {
