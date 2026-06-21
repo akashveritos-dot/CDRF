@@ -7,14 +7,11 @@ export async function GET() {
     const discounts = await query<any[]>('SELECT tier_name, title, percentage, start_date, end_date FROM membership_discounts');
 
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
 
     const activeDiscountsMap = new Map<string, any>();
     for (const d of discounts) {
       const start = new Date(d.start_date);
-      start.setHours(0, 0, 0, 0);
       const end = new Date(d.end_date);
-      end.setHours(23, 59, 59, 999);
 
       if (today >= start && today <= end) {
         activeDiscountsMap.set(d.tier_name, {

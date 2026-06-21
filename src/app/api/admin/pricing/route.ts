@@ -81,12 +81,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'All discount fields are required' }, { status: 400 });
     }
 
+    const formattedStart = startDate.replace('T', ' ');
+    const formattedEnd = endDate.replace('T', ' ');
+
     // Insert or update on duplicate key
     await query(
       `INSERT INTO membership_discounts (tier_name, title, percentage, start_date, end_date) 
        VALUES (?, ?, ?, ?, ?) 
        ON DUPLICATE KEY UPDATE title = VALUES(title), percentage = VALUES(percentage), start_date = VALUES(start_date), end_date = VALUES(end_date)`,
-      [tierName, title, percentage, startDate, endDate]
+      [tierName, title, percentage, formattedStart, formattedEnd]
     );
 
     return NextResponse.json({ success: true, message: `Discount for ${tierName} saved successfully` });

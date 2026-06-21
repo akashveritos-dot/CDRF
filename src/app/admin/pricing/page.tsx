@@ -96,14 +96,30 @@ export default function AdminPricingPage() {
     fetchData();
   }, []);
 
-  // Format Date for Input
-  const formatDateForInput = (dateStr: string) => {
+  // Format Date for datetime-local Input
+  const formatDateForDatetimeLocal = (dateStr: string) => {
     if (!dateStr) return '';
     const date = new Date(dateStr);
     const yyyy = date.getFullYear();
     const mm = String(date.getMonth() + 1).padStart(2, '0');
     const dd = String(date.getDate()).padStart(2, '0');
-    return `${yyyy}-${mm}-${dd}`;
+    const hh = String(date.getHours()).padStart(2, '0');
+    const min = String(date.getMinutes()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+  };
+
+  // Format Date for Display
+  const formatDateForDisplay = (dateStr: string) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
   };
 
   // Open Edit Plan Modal
@@ -168,8 +184,8 @@ export default function AdminPricingPage() {
       tierName: 'Prime',
       title: 'Early Bird Sale',
       percentage: 10,
-      startDate: formatDateForInput(new Date().toISOString()),
-      endDate: formatDateForInput(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString())
+      startDate: formatDateForDatetimeLocal(new Date().toISOString()),
+      endDate: formatDateForDatetimeLocal(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString())
     });
     setError('');
     setSuccessMsg('');
@@ -183,8 +199,8 @@ export default function AdminPricingPage() {
       tierName: discount.tierName,
       title: discount.title,
       percentage: discount.percentage,
-      startDate: formatDateForInput(discount.startDate),
-      endDate: formatDateForInput(discount.endDate)
+      startDate: formatDateForDatetimeLocal(discount.startDate),
+      endDate: formatDateForDatetimeLocal(discount.endDate)
     });
     setError('');
     setSuccessMsg('');
@@ -240,11 +256,8 @@ export default function AdminPricingPage() {
   // Check Discount Status (Active, Upcoming, Expired)
   const getDiscountStatus = (discount: Discount) => {
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
     const start = new Date(discount.startDate);
-    start.setHours(0, 0, 0, 0);
     const end = new Date(discount.endDate);
-    end.setHours(23, 59, 59, 999);
 
     if (today < start) return { text: 'Scheduled', style: styles.statusScheduled };
     if (today > end) return { text: 'Expired', style: styles.statusExpired };
@@ -395,7 +408,7 @@ export default function AdminPricingPage() {
                         </div>
                         <div className={styles.detailItem}>
                           <Calendar size={14} />
-                          <span>Duration: <strong>{formatDateForInput(d.startDate)} to {formatDateForInput(d.endDate)}</strong></span>
+                          <span>Duration: <strong>{formatDateForDisplay(d.startDate)} to {formatDateForDisplay(d.endDate)}</strong></span>
                         </div>
                         <div className={styles.detailItem}>
                           <Award size={14} />
@@ -615,9 +628,9 @@ export default function AdminPricingPage() {
                 {/* Date Fields */}
                 <div className={styles.datesRow}>
                   <div className={styles.inputGroup}>
-                    <label htmlFor="startDate">Start Date</label>
+                    <label htmlFor="startDate">Start Date & Time</label>
                     <input
-                      type="date"
+                      type="datetime-local"
                       id="startDate"
                       name="startDate"
                       required
@@ -627,9 +640,9 @@ export default function AdminPricingPage() {
                     />
                   </div>
                   <div className={styles.inputGroup}>
-                    <label htmlFor="endDate">End Date (Inclusive)</label>
+                    <label htmlFor="endDate">End Date & Time</label>
                     <input
-                      type="date"
+                      type="datetime-local"
                       id="endDate"
                       name="endDate"
                       required

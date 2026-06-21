@@ -103,6 +103,12 @@ export default function MembershipPage() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLDivElement>(null);
 
+  // Time tracker for real-time discounts and countdowns
+  const [currentTime, setCurrentTime] = useState<Date>(new Date());
+  // Price and discount locking to prevent race condition billing errors
+  const [lockedPrice, setLockedPrice] = useState<number | null>(null);
+  const [lockedDiscount, setLockedDiscount] = useState<any | null>(null);
+
   // Dynamic Pricing and Campaigns State
   const [tiers, setTiers] = useState<any[]>([
     { name: 'Basic', price: 0, priceSubText: 'Individual & Student Access', features: membershipTiers[0].features, discount: null },
@@ -130,7 +136,25 @@ export default function MembershipPage() {
       }
     }
     loadPlans();
+
+    // 1-second interval timer for real-time checkout & campaign countdowns
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
   }, []);
+
+  const getCountdownString = (endDateStr: string) => {
+    const end = new Date(endDateStr).getTime();
+    const now = currentTime.getTime();
+    const diff = end - now;
+    if (diff <= 0) return null;
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+    return { days, hours, minutes, seconds };
+  };
 
   const getTierSubLabel = (tierName: string) => {
     const t = tiers.find(x => x.name === tierName);
@@ -144,7 +168,8 @@ export default function MembershipPage() {
     if (t.price === 0) return 'Free individual / student';
 
     const subTextClean = t.priceSubText ? t.priceSubText.replace('Per Annum — ', '') : '';
-    if (t.discount) {
+    const discountActive = t.discount && (new Date(t.discount.startDate) <= currentTime) && (new Date(t.discount.endDate) >= currentTime);
+    if (discountActive) {
       const discPrice = t.price - (t.price * t.discount.percentage / 100);
       return `₹${discPrice.toLocaleString('en-IN')}/yr (${t.discount.title} — ${t.discount.percentage}% OFF) — ${subTextClean}`;
     }
@@ -263,8 +288,43 @@ export default function MembershipPage() {
               `Your request for ${formData.tier} tier is staged for review.`
             );
           } else {
-            // Paid tier: transition to payment screen silently (no success toast)
-            setFlowStep('payment');
+            // Paid tier: transition to payment screen and create order to lock price
+            try {
+              const orderRes = await fetch('/api/membership/create-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tier: formData.tier })
+              });
+
+              if (!orderRes.ok) {
+                const errText = await orderRes.text();
+                throw new Error(errText || 'Failed to generate payment order from server.');
+              }
+
+              const orderData = await orderRes.json();
+              if (!orderData.success || !orderData.orderId) {
+                throw new Error(orderData.error || 'Failed to generate order ID');
+              }
+
+              setRazorpayOrderId(orderData.orderId);
+              setMockOrderId(orderData.orderId);
+
+              // Capture price and discount at this submission moment
+              const t = tiers.find(x => x.name === formData.tier);
+              if (t) {
+                const activeDiscount = t.discount && (new Date(t.discount.startDate) <= currentTime) && (new Date(t.discount.endDate) >= currentTime) ? t.discount : null;
+                setLockedDiscount(activeDiscount);
+                setLockedPrice(activeDiscount ? t.price - (t.price * activeDiscount.percentage / 100) : t.price);
+              } else {
+                setLockedPrice(orderData.amount / 100);
+                setLockedDiscount(null);
+              }
+
+              setFlowStep('payment');
+            } catch (payErr: any) {
+              console.error('Order creation error during submit:', payErr);
+              toastError('Invoice Error', payErr.message || 'Failed to initialize secure payment session. Please try again.');
+            }
           }
         }
       } catch (err) {
@@ -280,23 +340,14 @@ export default function MembershipPage() {
     setIsPaying(true);
 
     try {
-      // 1. Fetch Order ID from server
-      const orderRes = await fetch('/api/membership/create-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tier: formData.tier })
-      });
-
-      if (!orderRes.ok) {
-        throw new Error('Failed to generate payment order from server.');
+      if (!razorpayOrderId) {
+        throw new Error('Payment session has expired or is invalid. Please re-submit the form.');
       }
 
-      const orderData = await orderRes.json();
-      const { orderId, isMock } = orderData;
-      setRazorpayOrderId(orderId);
-
+      // Check if it is a mock order
+      const isMock = razorpayOrderId.startsWith('order_mock_');
       if (isMock) {
-        setMockOrderId(orderId);
+        setMockOrderId(razorpayOrderId);
         setShowMockModal(true);
         setIsPaying(false);
         return;
@@ -314,19 +365,7 @@ export default function MembershipPage() {
         });
       }
 
-      let amountPaisa = orderData.amount;
-      if (!amountPaisa) {
-        const t = tiers.find(x => x.name === formData.tier);
-        if (t) {
-          const finalPrice = t.discount ? t.price - (t.price * t.discount.percentage / 100) : t.price;
-          amountPaisa = Math.round(finalPrice * 100);
-        } else {
-          if (formData.tier === 'Prime') amountPaisa = 2000000;
-          else if (formData.tier === 'Premium') amountPaisa = 5000000;
-          else if (formData.tier === 'Gold') amountPaisa = 10000000;
-        }
-      }
-
+      const amountPaisa = Math.round((lockedPrice || 0) * 100);
       const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_L88P4F2zUqI2lX';
 
       const options = {
@@ -335,7 +374,7 @@ export default function MembershipPage() {
         currency: 'INR',
         name: 'DCRF Federation',
         description: `${formData.tier} Tier Membership`,
-        order_id: orderId,
+        order_id: razorpayOrderId,
         prefill: {
           name: formData.name,
           email: formData.email,
@@ -491,32 +530,65 @@ export default function MembershipPage() {
                     {tier.name}
                   </span>
                   <div className={styles.price} style={{ color: cfg.accentColor }}>
-                    {tier.discount ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                        <span style={{ fontSize: '13px', textDecoration: 'line-through', color: 'var(--text-muted)', fontWeight: 500 }}>
-                          ₹{tier.price.toLocaleString('en-IN')}
-                        </span>
+                    {(() => {
+                      const discount = tier.discount;
+                      const isDiscountActive = discount && (new Date(discount.startDate) <= currentTime) && (new Date(discount.endDate) >= currentTime);
+                      if (isDiscountActive && discount) {
+                        const countdown = getCountdownString(discount.endDate);
+                        return (
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                            <span style={{ fontSize: '13px', textDecoration: 'line-through', color: 'var(--text-muted)', fontWeight: 500 }}>
+                              ₹{tier.price.toLocaleString('en-IN')}
+                            </span>
+                            <span style={{ fontSize: '32px', fontWeight: 800 }}>
+                              ₹{(tier.price - (tier.price * discount.percentage / 100)).toLocaleString('en-IN')}
+                            </span>
+                            <span style={{
+                              fontSize: '10px',
+                              fontWeight: 700,
+                              padding: '3px 8px',
+                              borderRadius: '4px',
+                              backgroundColor: 'rgba(239, 68, 68, 0.08)',
+                              border: '1px solid rgba(239, 68, 68, 0.15)',
+                              color: 'var(--wine-red-primary)',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.5px',
+                              marginTop: '4px'
+                            }}>
+                              {discount.title} (-{discount.percentage}%)
+                            </span>
+                            {countdown && (
+                              <div className={styles.countdownContainer}>
+                                <span className={styles.countdownLabel}>Ends in:</span>
+                                <div className={styles.countdownTimer}>
+                                  <div className={styles.countdownUnit}>
+                                    <span className={styles.countdownVal}>{String(countdown.days).padStart(2, '0')}</span>
+                                    <span className={styles.countdownUnitLabel}>d</span>
+                                  </div>
+                                  <div className={styles.countdownUnit}>
+                                    <span className={styles.countdownVal}>{String(countdown.hours).padStart(2, '0')}</span>
+                                    <span className={styles.countdownUnitLabel}>h</span>
+                                  </div>
+                                  <div className={styles.countdownUnit}>
+                                    <span className={styles.countdownVal}>{String(countdown.minutes).padStart(2, '0')}</span>
+                                    <span className={styles.countdownUnitLabel}>m</span>
+                                  </div>
+                                  <div className={styles.countdownUnit}>
+                                    <span className={styles.countdownVal}>{String(countdown.seconds).padStart(2, '0')}</span>
+                                    <span className={styles.countdownUnitLabel}>s</span>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      }
+                      return (
                         <span style={{ fontSize: '32px', fontWeight: 800 }}>
-                          ₹{(tier.price - (tier.price * tier.discount.percentage / 100)).toLocaleString('en-IN')}
+                          {typeof tier.price === 'number' ? (tier.price === 0 ? 'Free' : `₹${tier.price.toLocaleString('en-IN')}`) : tier.price}
                         </span>
-                        <span style={{
-                          fontSize: '10px',
-                          fontWeight: 700,
-                          padding: '3px 8px',
-                          borderRadius: '4px',
-                          backgroundColor: 'rgba(239, 68, 68, 0.08)',
-                          border: '1px solid rgba(239, 68, 68, 0.15)',
-                          color: 'var(--wine-red-primary)',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.5px',
-                          marginTop: '4px'
-                        }}>
-                          {tier.discount.title} (-{tier.discount.percentage}%)
-                        </span>
-                      </div>
-                    ) : (
-                      typeof tier.price === 'number' ? (tier.price === 0 ? 'Free' : `₹${tier.price.toLocaleString('en-IN')}`) : tier.price
-                    )}
+                      );
+                    })()}
                   </div>
                   <span className={styles.priceSub}>{tier.priceSubText}</span>
                 </div>
@@ -812,21 +884,29 @@ export default function MembershipPage() {
                   <span className={styles.summaryLabel} style={{ fontWeight: 'bold' }}>Total Due</span>
                   <span className={styles.summaryTotal}>
                     {(() => {
-                      const t = tiers.find(x => x.name === formData.tier);
-                      if (!t) return formData.tier === 'Prime' ? '₹20,000' : formData.tier === 'Premium' ? '₹50,000' : '₹1,00,000';
-                      if (t.price === 0) return 'Free';
-                      if (t.discount) {
-                        const discPrice = t.price - (t.price * t.discount.percentage / 100);
+                      if (lockedPrice === null) {
+                        const t = tiers.find(x => x.name === formData.tier);
+                        if (!t) return formData.tier === 'Prime' ? '₹20,000' : formData.tier === 'Premium' ? '₹50,000' : '₹1,00,000';
+                        if (t.price === 0) return 'Free';
+                        return `₹${t.price.toLocaleString('en-IN')}`;
+                      }
+                      if (lockedPrice === 0) return 'Free';
+                      if (lockedDiscount) {
+                        const t = tiers.find(x => x.name === formData.tier);
+                        const basePrice = t ? t.price : (lockedPrice / (1 - lockedDiscount.percentage / 100));
                         return (
                           <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
                             <span style={{ textDecoration: 'line-through', fontSize: '12px', color: 'var(--text-muted)', fontWeight: 500 }}>
-                              ₹{t.price.toLocaleString('en-IN')}
+                              ₹{basePrice.toLocaleString('en-IN')}
                             </span>
-                            <span>₹{discPrice.toLocaleString('en-IN')}</span>
+                            <span style={{ color: '#10b981', fontWeight: 'bold' }}>₹{lockedPrice.toLocaleString('en-IN')}</span>
+                            <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+                              ({lockedDiscount.title} — {lockedDiscount.percentage}% OFF)
+                            </span>
                           </span>
                         );
                       }
-                      return `₹${t.price.toLocaleString('en-IN')}`;
+                      return `₹${lockedPrice.toLocaleString('en-IN')}`;
                     })()}
                   </span>
                 </div>
@@ -992,6 +1072,9 @@ export default function MembershipPage() {
                   <span>Amount:</span>
                   <span style={{ fontWeight: 'bold', color: 'var(--gold-primary)' }}>
                     {(() => {
+                      if (lockedPrice !== null) {
+                        return lockedPrice === 0 ? 'Free' : `₹${lockedPrice.toLocaleString('en-IN')}`;
+                      }
                       const t = tiers.find(x => x.name === formData.tier);
                       if (!t) return formData.tier === 'Prime' ? '₹20,000' : formData.tier === 'Premium' ? '₹50,000' : '₹1,00,000';
                       if (t.price === 0) return 'Free';

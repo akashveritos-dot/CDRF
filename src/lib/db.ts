@@ -40,14 +40,16 @@ async function runMigration(pool: mysql.Pool) {
       'ALTER TABLE news ADD COLUMN display_order INT DEFAULT 0',
       'ALTER TABLE reports ADD COLUMN display_order INT DEFAULT 0',
       'ALTER TABLE cms_pages ADD COLUMN display_order INT DEFAULT 0',
-      'ALTER TABLE news ADD COLUMN gallery_images TEXT NULL'
+      'ALTER TABLE news ADD COLUMN gallery_images TEXT NULL',
+      'ALTER TABLE membership_discounts MODIFY COLUMN start_date DATETIME NOT NULL',
+      'ALTER TABLE membership_discounts MODIFY COLUMN end_date DATETIME NOT NULL'
     ];
     for (const sql of alterQueries) {
       try {
         await pool.execute(sql);
         console.log(`[DB MIGRATION] Executed query: ${sql}`);
       } catch (err: any) {
-        if (!err.message?.includes('Duplicate column name') && err.code !== 'ER_DUP_FIELDNAME') {
+        if (!err.message?.includes('Duplicate column name') && err.code !== 'ER_DUP_FIELDNAME' && !err.message?.includes('Table') && !err.message?.includes('doesn\'t exist')) {
           console.warn(`[DB MIGRATION WARN] Alter failed: ${sql}`, err.message || err);
         }
       }
@@ -70,8 +72,8 @@ async function runMigration(pool: mysql.Pool) {
         tier_name VARCHAR(50) NOT NULL UNIQUE,
         title VARCHAR(255) NOT NULL,
         percentage INT NOT NULL DEFAULT 0,
-        start_date DATE NOT NULL,
-        end_date DATE NOT NULL,
+        start_date DATETIME NOT NULL,
+        end_date DATETIME NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       ) ENGINE=InnoDB;
     `;

@@ -1514,3 +1514,63 @@
   color: #0e7a6b;
   opacity: 0.8;
 }
+
+/* Live Sale Countdown styles */
+.countdownContainer {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  animation: pulseOpacity 2s infinite ease-in-out;
+}
+
+@keyframes pulseOpacity {
+  0%, 100% { opacity: 0.95; }
+  50% { opacity: 0.75; }
+}
+
+.countdownLabel {
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.8px;
+}
+
+.countdownTimer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--border-color);
+  padding: 4px 10px;
+  border-radius: 8px;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.03);
+}
+
+.countdownUnit {
+  display: flex;
+  align-items: baseline;
+  gap: 1px;
+}
+
+.countdownVal {
+  font-family: var(--font-display), monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--wine-red-primary);
+}
+
+.countdownUnitLabel {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: lowercase;
+  margin-right: 4px;
+}
+
+.countdownUnit:last-child .countdownUnitLabel {
+  margin-right: 0;
+}
