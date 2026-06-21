@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Loader2, Save, FilePlus, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Loader2, Save, FilePlus, CheckCircle, AlertTriangle, GripVertical } from 'lucide-react';
 import styles from './page.module.css';
 
 interface PageItem {
@@ -35,6 +35,48 @@ export default function AdminPagesManager() {
   const [content, setContent] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState('');
+
+  // Drag-and-drop / display limit states
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [displayLimit, setDisplayLimit] = useState(25);
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = async (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === targetIndex) return;
+
+    const reordered = [...pages];
+    const [draggedItem] = reordered.splice(draggedIndex, 1);
+    reordered.splice(targetIndex, 0, draggedItem);
+
+    setPages(reordered);
+    setDraggedIndex(null);
+
+    const orderedIds = reordered.map(item => item.id);
+    try {
+      const res = await fetch('/api/admin/reorder', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ table: 'cms_pages', orderedIds })
+      });
+      if (!res.ok) throw new Error('Failed to update display order.');
+    } catch (err: any) {
+      console.error(err);
+      loadPages(selectedPage?.slug); // Revert on failure
+    }
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+  };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -182,19 +224,60 @@ export default function AdminPagesManager() {
       <div className={styles.workspace}>
         {/* Left: Pages list */}
         <div className={styles.sidebar}>
-          <h3 className={styles.sidebarTitle}>Seeded Pages</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+            <h3 className={styles.sidebarTitle} style={{ margin: 0 }}>Seeded Pages</h3>
+            <select 
+              value={displayLimit} 
+              onChange={(e) => setDisplayLimit(e.target.value === 'all' ? 9999 : Number(e.target.value))}
+              style={{
+                backgroundColor: '#121824',
+                border: '1px solid rgba(255,255,255,0.15)',
+                color: '#ffffff',
+                borderRadius: '6px',
+                padding: '2px 8px',
+                fontSize: '11px',
+                cursor: 'pointer',
+                outline: 'none'
+              }}
+            >
+              <option value={10}>10 pages</option>
+              <option value={25}>25 pages</option>
+              <option value={50}>50 pages</option>
+              <option value="all">All pages</option>
+            </select>
+          </div>
           <div className={styles.pageList}>
-            {pages.map((p) => (
-              <button
+            {pages.slice(0, displayLimit).map((p, index) => (
+              <div
                 key={p.slug}
-                onClick={() => handleSelectPage(p)}
-                className={`${styles.pageItem} ${selectedPage?.slug === p.slug ? styles.pageItemActive : ''}`}
+                draggable={true}
+                onDragStart={(e) => handleDragStart(e, index)}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, index)}
+                onDragEnd={handleDragEnd}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  opacity: draggedIndex === index ? 0.4 : 1,
+                  transition: 'opacity 0.2s',
+                  cursor: 'grab',
+                  marginBottom: '8px'
+                }}
               >
-                {p.title}
-                <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '2px' }}>
-                  {p.category} • /{p.slug}
-                </div>
-              </button>
+                <GripVertical size={14} style={{ color: 'rgba(255, 255, 255, 0.3)', cursor: 'grab', flexShrink: 0 }} />
+                <button
+                  onClick={() => handleSelectPage(p)}
+                  className={`${styles.pageItem} ${selectedPage?.slug === p.slug ? styles.pageItemActive : ''}`}
+                  style={{ flex: 1, textAlign: 'left', margin: 0 }}
+                  type="button"
+                >
+                  {p.title}
+                  <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '2px' }}>
+                    {p.category} • /{p.slug}
+                  </div>
+                </button>
+              </div>
             ))}
           </div>
         </div>

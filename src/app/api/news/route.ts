@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
     if (conditions.length > 0) {
       sql += ' WHERE ' + conditions.join(' AND ');
     }
-    sql += ' ORDER BY published_date DESC, id DESC';
+    sql += ' ORDER BY display_order ASC, published_date DESC, id DESC';
     if (limit > 0) {
       sql += ' LIMIT ?';
       params.push(limit);

@@ -211,11 +211,12 @@ async function fetchArticleOgImage(articleUrl: string): Promise<string> {
 
 // Generate realistic simulated emergency entries for testing/resilience
 function getSimulatedArticles(): Array<{ title: string; link: string; description: string; source: string; imageUrl: string; pubDate: string; location: string }> {
+  const ts = Date.now();
   return [
     {
       title: 'IMD Issues Red Alert: Severe Landslide Warning for 6 Hill Districts of Uttarakhand',
       description: 'The India Meteorological Department has issued an extreme precipitation alert, warning of intense rainfall and potential mudslides blocking the national highway networks in central Uttarakhand.',
-      link: 'https://imd.gov.in/alerts/uttarakhand-landslide-alert-2026',
+      link: `https://imd.gov.in/alerts/uttarakhand-landslide-alert-2026?t=${ts}`,
       source: 'IMD Alert System',
       imageUrl: '',
       pubDate: new Date().toISOString(),
@@ -224,7 +225,7 @@ function getSimulatedArticles(): Array<{ title: string; link: string; descriptio
     {
       title: 'NDMA Dispatches 4 Rescue Battalions to Flood-Affected Districts in South Assam',
       description: 'The National Disaster Management Authority has mobilized rescue speedboats and drone-mapping units to Cachar and neighboring districts in Assam, as floodwaters submerge 80 villages.',
-      link: 'https://ndma.gov.in/news/cachar-assam-floods-2026',
+      link: `https://ndma.gov.in/news/cachar-assam-floods-2026?t=${ts}`,
       source: 'NDMA Press Room',
       imageUrl: '',
       pubDate: new Date().toISOString(),
@@ -233,7 +234,7 @@ function getSimulatedArticles(): Array<{ title: string; link: string; descriptio
     {
       title: 'Corporate ESG Fund Pledges ₹12 Crore to Urban Coastal Flood Gates Project in Gujarat',
       description: 'A major corporate alliance under its CSR mandate has partnered with local municipal corporations in Gujarat to fund modular flood barriers along vulnerable Saurashtra highways.',
-      link: 'https://thecsruniverse.com/gujarat-coastal-resilience-csr-2026',
+      link: `https://thecsruniverse.com/gujarat-coastal-resilience-csr-2026?t=${ts}`,
       source: 'thecsruniverse.com',
       imageUrl: '',
       pubDate: new Date().toISOString(),
@@ -242,7 +243,7 @@ function getSimulatedArticles(): Array<{ title: string; link: string; descriptio
     {
       title: 'New Study: Microplastics Found in 85% of Marine Samples Along Mumbai Coastline',
       description: 'A team of oceanographers has confirmed high densities of microplastic fibers in coastal marine life, suggesting long-term health consequences for the region\'s seafood networks.',
-      link: 'https://disastersnews.com/mumbai-marine-microplastics-study-2026',
+      link: `https://disastersnews.com/mumbai-marine-microplastics-study-2026?t=${ts}`,
       source: 'disastersnews.com',
       imageUrl: '',
       pubDate: new Date().toISOString(),
@@ -270,7 +271,8 @@ export async function runScraper(): Promise<{ success: boolean; itemsScraped: nu
 
       const response = await fetch(feed.url, {
         signal: controller.signal,
-        headers: { 'User-Agent': 'Mozilla/5.0 DCRF-Resilience-Scraper/1.0' }
+        headers: { 'User-Agent': 'Mozilla/5.0 DCRF-Resilience-Scraper/1.0' },
+        cache: 'no-store'
       });
       
       clearTimeout(timeoutId);
@@ -317,63 +319,6 @@ export async function runScraper(): Promise<{ success: boolean; itemsScraped: nu
 
           if (result.affectedRows > 0) {
             itemsScraped += 1;
-            const insertId = result.insertId;
-
-            // Auto-publish: if feed source is ReliefWeb or category is technical, make it Report, else News
-            const shouldPublishAsReport = feed.source.toLowerCase().includes('reliefweb') || category === 'technical';
-            
-            if (shouldPublishAsReport) {
-              const reportResult = await query<{ insertId: number }>(
-                `INSERT INTO reports (title, category, description, page_count, year, download_url, accent_color, icon, image_url, source, region, disaster_type, severity_level, affected_population) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                [
-                  title,
-                  'Technical',
-                  description.substring(0, 500),
-                  Math.floor(Math.random() * 40) + 12, // Random page count
-                  new Date(publishedDate).getFullYear() || new Date().getFullYear(),
-                  link,
-                  '#EDF2F8',
-                  '📡',
-                  resolvedImageUrl,
-                  feed.source,
-                  location,
-                  category,
-                  'Medium',
-                  null
-                ]
-              );
-              
-              await query(
-                "UPDATE scraped_content SET status = 'Published', published_id = ?, published_type = 'Report' WHERE id = ?",
-                [reportResult.insertId, insertId]
-              );
-              console.log(`Auto-published report ID ${reportResult.insertId} from scraped feed.`);
-            } else {
-              const newsResult = await query<{ insertId: number }>(
-                `INSERT INTO news (tag, source, headline, excerpt, published_date, author, external_link, thumbnail_emoji, image_url, category, location) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                [
-                  'Alert',
-                  feed.source,
-                  title,
-                  description.substring(0, 500),
-                  publishedDate,
-                  'Editor, DCRF',
-                  link,
-                  '📡',
-                  resolvedImageUrl,
-                  category,
-                  location
-                ]
-              );
-              
-              await query(
-                "UPDATE scraped_content SET status = 'Published', published_id = ?, published_type = 'News' WHERE id = ?",
-                [newsResult.insertId, insertId]
-              );
-              console.log(`Auto-published news ID ${newsResult.insertId} from scraped feed.`);
-            }
           }
         } catch (dbErr) {
           const errMsg = dbErr instanceof Error ? dbErr.message : String(dbErr);
@@ -417,60 +362,6 @@ export async function runScraper(): Promise<{ success: boolean; itemsScraped: nu
 
         if (result.affectedRows > 0) {
           itemsScraped += 1;
-          const insertId = result.insertId;
-          
-          const shouldPublishAsReport = source.toLowerCase().includes('reliefweb') || category === 'technical';
-          
-          if (shouldPublishAsReport) {
-            const reportResult = await query<{ insertId: number }>(
-              `INSERT INTO reports (title, category, description, page_count, year, download_url, accent_color, icon, image_url, source, region, disaster_type, severity_level, affected_population) 
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-              [
-                title,
-                'Technical',
-                description,
-                24,
-                new Date().getFullYear(),
-                link,
-                '#EDF2F8',
-                '📡',
-                resolvedImageUrl,
-                source,
-                location,
-                category,
-                'Medium',
-                null
-              ]
-            );
-            
-            await query(
-              "UPDATE scraped_content SET status = 'Published', published_id = ?, published_type = 'Report' WHERE id = ?",
-              [reportResult.insertId, insertId]
-            );
-          } else {
-            const newsResult = await query<{ insertId: number }>(
-              `INSERT INTO news (tag, source, headline, excerpt, published_date, author, external_link, thumbnail_emoji, image_url, category, location) 
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-              [
-                'Alert',
-                source,
-                title,
-                description,
-                publishedDate,
-                'Editor, DCRF',
-                link,
-                '📡',
-                resolvedImageUrl,
-                category,
-                location
-              ]
-            );
-            
-            await query(
-              "UPDATE scraped_content SET status = 'Published', published_id = ?, published_type = 'News' WHERE id = ?",
-              [newsResult.insertId, insertId]
-            );
-          }
         }
       } catch {
         // Safe to ignore duplicate insertions

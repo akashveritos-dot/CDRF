@@ -3,9 +3,24 @@ import { query } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
 
-// GET /api/councils - Fetch all active council members (Public)
-export async function GET() {
+// GET /api/councils - Fetch all active council members (Public) or all members for Admin
+export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url);
+    const showAllRequested = searchParams.get('all') === 'true';
+    let showAll = false;
+
+    if (showAllRequested) {
+      const cookieStore = await cookies();
+      const token = cookieStore.get('auth_token')?.value;
+      if (token) {
+        const session = await verifyToken(token);
+        if (session && (session.role === 'ADMIN' || session.role === 'SUPERADMIN')) {
+          showAll = true;
+        }
+      }
+    }
+
     const rows = await query<any[]>(
       `SELECT 
         id,
@@ -20,7 +35,7 @@ export async function GET() {
         display_order as displayOrder,
         is_active as isActive
       FROM councils 
-      WHERE is_active = TRUE 
+      ${showAll ? '' : 'WHERE is_active = TRUE'} 
       ORDER BY display_order ASC`
     );
     

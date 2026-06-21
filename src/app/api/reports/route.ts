@@ -10,11 +10,11 @@ export async function GET(req: NextRequest) {
     const url = new URL(req.url);
     const category = url.searchParams.get('category');
     
-    let sql = 'SELECT * FROM reports ORDER BY year DESC, id DESC';
+    let sql = 'SELECT * FROM reports ORDER BY display_order ASC, year DESC, id DESC';
     let params: any[] = [];
     
     if (category && category.toLowerCase() !== 'all') {
-      sql = 'SELECT * FROM reports WHERE category = ? ORDER BY year DESC, id DESC';
+      sql = 'SELECT * FROM reports WHERE category = ? ORDER BY display_order ASC, year DESC, id DESC';
       params = [category];
     }
 

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Loader2, Plus, Trash2, CheckCircle, AlertTriangle, Image as ImageIcon } from 'lucide-react';
+import { Loader2, Plus, Trash2, CheckCircle, AlertTriangle, Image as ImageIcon, GripVertical } from 'lucide-react';
 import styles from './page.module.css';
 
 interface GalleryItem {
@@ -54,6 +54,48 @@ export default function AdminGalleryManager() {
     } finally {
       setIsUploading(false);
     }
+  };
+
+  // Drag-and-drop / display limit states
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [displayLimit, setDisplayLimit] = useState(25);
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = async (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === targetIndex) return;
+
+    const reordered = [...items];
+    const [draggedItem] = reordered.splice(draggedIndex, 1);
+    reordered.splice(targetIndex, 0, draggedItem);
+
+    setItems(reordered);
+    setDraggedIndex(null);
+
+    const orderedIds = reordered.map(item => item.id);
+    try {
+      const res = await fetch('/api/admin/reorder', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ table: 'gallery_items', orderedIds })
+      });
+      if (!res.ok) throw new Error('Failed to update display order.');
+    } catch (err: any) {
+      console.error(err);
+      loadGallery(); // Revert on failure
+    }
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
   };
 
   const loadGallery = async () => {
@@ -262,7 +304,31 @@ export default function AdminGalleryManager() {
 
         {/* Right Column: Gallery List */}
         <div className={styles.gallerySection}>
-          <h2 className={styles.sectionTitle}>Staged Photographs</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h2 className={styles.sectionTitle} style={{ margin: 0 }}>Staged Photographs</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>
+              <span>Show limit:</span>
+              <select 
+                value={displayLimit} 
+                onChange={(e) => setDisplayLimit(e.target.value === 'all' ? 9999 : Number(e.target.value))}
+                style={{
+                  backgroundColor: '#121824',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  color: '#ffffff',
+                  borderRadius: '6px',
+                  padding: '4px 10px',
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                  outline: 'none'
+                }}
+              >
+                <option value={10}>10 photos</option>
+                <option value={25}>25 photos</option>
+                <option value={50}>50 photos</option>
+                <option value="all">All photos</option>
+              </select>
+            </div>
+          </div>
           
           {isLoading && items.length === 0 ? (
             <div className={styles.loadingWrapper}>
@@ -275,8 +341,21 @@ export default function AdminGalleryManager() {
             </div>
           ) : (
             <div className={styles.photoGrid}>
-              {items.map((item) => (
-                <div key={item.id} className={styles.photoCard}>
+              {items.slice(0, displayLimit).map((item, index) => (
+                <div 
+                  key={item.id} 
+                  className={styles.photoCard}
+                  draggable={true}
+                  onDragStart={(e) => handleDragStart(e, index)}
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, index)}
+                  onDragEnd={handleDragEnd}
+                  style={{
+                    opacity: draggedIndex === index ? 0.4 : 1,
+                    transition: 'opacity 0.2s',
+                    cursor: 'grab'
+                  }}
+                >
                   <div className={styles.photoWrapper}>
                     <img
                       src={item.imageUrl}
@@ -285,7 +364,10 @@ export default function AdminGalleryManager() {
                     />
                   </div>
                   <div className={styles.photoInfo}>
-                    <h4 className={styles.photoCaption}>{item.caption}</h4>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <h4 className={styles.photoCaption} style={{ margin: 0 }}>{item.caption}</h4>
+                      <GripVertical size={14} style={{ color: 'rgba(255, 255, 255, 0.3)', cursor: 'grab' }} />
+                    </div>
                     <button 
                       onClick={() => handleDelete(item.id)}
                       className={styles.deleteBtn}

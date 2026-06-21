@@ -41,6 +41,71 @@ export default function AdminScrapeQueue() {
   
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // File upload states
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [imageUploadSuccess, setImageUploadSuccess] = useState('');
+  const [isUploadingPdf, setIsUploadingPdf] = useState(false);
+  const [pdfUploadSuccess, setPdfUploadSuccess] = useState('');
+  const [uploadError, setUploadError] = useState('');
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingImage(true);
+    setImageUploadSuccess('');
+    setUploadError('');
+
+    const uploadData = new FormData();
+    uploadData.append('file', file);
+
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: uploadData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to upload image');
+
+      setFormData(prev => ({ ...prev, imageUrl: data.url }));
+      setImageUploadSuccess(file.name);
+    } catch (err: any) {
+      setUploadError(err.message || 'Image upload failed.');
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingPdf(true);
+    setPdfUploadSuccess('');
+    setUploadError('');
+
+    const uploadData = new FormData();
+    uploadData.append('file', file);
+
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: uploadData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to upload PDF');
+
+      setFormData(prev => ({ ...prev, downloadUrl: data.url }));
+      setPdfUploadSuccess(file.name);
+    } catch (err: any) {
+      setUploadError(err.message || 'PDF upload failed.');
+    } finally {
+      setIsUploadingPdf(false);
+    }
+  };
+
   const fetchQueue = useCallback(async () => {
     setLoading(true);
     try {
@@ -77,6 +142,9 @@ export default function AdminScrapeQueue() {
       downloadUrl: item.url || '#'
     });
     setPubType('News');
+    setImageUploadSuccess('');
+    setPdfUploadSuccess('');
+    setUploadError('');
   };
 
   const handlePublishSubmit = async (e: React.FormEvent) => {
@@ -510,28 +578,133 @@ export default function AdminScrapeQueue() {
               {pubType === 'Report' && (
                 <div className={styles.inputGroup}>
                   <label>PDF Download Destination URL</label>
-                  <input
-                    type="text"
-                    value={formData.downloadUrl}
-                    onChange={(e) => setFormData(prev => ({ ...prev, downloadUrl: e.target.value }))}
-                    className={styles.inputField}
-                  />
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px', alignItems: 'center' }}>
+                    <input
+                      type="text"
+                      value={formData.downloadUrl}
+                      onChange={(e) => setFormData(prev => ({ ...prev, downloadUrl: e.target.value }))}
+                      placeholder="Paste PDF link or upload a file"
+                      className={styles.inputField}
+                    />
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        type="file"
+                        accept="application/pdf"
+                        id="scrape-pdf-upload"
+                        style={{ display: 'none' }}
+                        onChange={handlePdfUpload}
+                        disabled={isUploadingPdf}
+                      />
+                      <label
+                        htmlFor="scrape-pdf-upload"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px',
+                          height: '38px',
+                          padding: '0 14px',
+                          borderRadius: '8px',
+                          backgroundColor: '#121824',
+                          border: '1px solid rgba(255, 255, 255, 0.15)',
+                          color: '#ffffff',
+                          cursor: 'pointer',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          transition: 'all 0.2s',
+                          whiteSpace: 'nowrap',
+                          boxSizing: 'border-box'
+                        }}
+                        onMouseEnter={(e) => { 
+                          e.currentTarget.style.backgroundColor = '#1e293b';
+                          e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.25)';
+                        }}
+                        onMouseLeave={(e) => { 
+                          e.currentTarget.style.backgroundColor = '#121824';
+                          e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+                        }}
+                      >
+                        {isUploadingPdf ? 'Uploading...' : 'Upload PDF'}
+                      </label>
+                    </div>
+                  </div>
+                  {pdfUploadSuccess && (
+                    <span style={{ fontSize: '11px', color: '#10b981', display: 'block', marginTop: '2px' }}>
+                      ✓ Uploaded: <strong>{pdfUploadSuccess}</strong>
+                    </span>
+                  )}
                 </div>
               )}
 
               {/* Image URL Cover */}
               <div className={styles.inputGroup}>
                 <label>Visual Cover Image URL</label>
-                <div className={styles.iconInputWrap}>
-                  <ImageIcon size={16} className={styles.inputIcon} />
-                  <input
-                    type="text"
-                    value={formData.imageUrl}
-                    onChange={(e) => setFormData(prev => ({ ...prev, imageUrl: e.target.value }))}
-                    className={styles.inputFieldWithIcon}
-                  />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px', alignItems: 'center' }}>
+                  <div className={styles.iconInputWrap} style={{ width: '100%' }}>
+                    <ImageIcon size={16} className={styles.inputIcon} />
+                    <input
+                      type="text"
+                      value={formData.imageUrl}
+                      onChange={(e) => setFormData(prev => ({ ...prev, imageUrl: e.target.value }))}
+                      placeholder="Paste image link or upload a file"
+                      className={styles.inputFieldWithIcon}
+                    />
+                  </div>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      id="scrape-image-upload"
+                      style={{ display: 'none' }}
+                      onChange={handleImageUpload}
+                      disabled={isUploadingImage}
+                    />
+                    <label
+                      htmlFor="scrape-image-upload"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        height: '38px',
+                        padding: '0 14px',
+                        borderRadius: '8px',
+                        backgroundColor: '#121824',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        color: '#ffffff',
+                        cursor: 'pointer',
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        transition: 'all 0.2s',
+                        whiteSpace: 'nowrap',
+                        boxSizing: 'border-box'
+                      }}
+                      onMouseEnter={(e) => { 
+                        e.currentTarget.style.backgroundColor = '#1e293b';
+                        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.25)';
+                      }}
+                      onMouseLeave={(e) => { 
+                        e.currentTarget.style.backgroundColor = '#121824';
+                        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+                      }}
+                    >
+                      {isUploadingImage ? 'Uploading...' : 'Upload Image'}
+                    </label>
+                  </div>
                 </div>
+                {imageUploadSuccess && (
+                  <span style={{ fontSize: '11px', color: '#10b981', display: 'block', marginTop: '2px' }}>
+                    ✓ Uploaded: <strong>{imageUploadSuccess}</strong>
+                  </span>
+                )}
               </div>
+
+              {uploadError && (
+                <div style={{ color: '#ef4444', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
+                  <AlertCircle size={14} />
+                  <span>{uploadError}</span>
+                </div>
+              )}
 
               {/* Action Buttons */}
               <div className={styles.modalActions}>

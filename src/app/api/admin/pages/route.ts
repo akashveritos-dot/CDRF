@@ -20,7 +20,7 @@ export async function GET() {
     }
 
     const rows = await query<any[]>(
-      'SELECT id, slug, title, category, description, video_url as videoUrl, image_url as imageUrl, content, updated_at as updatedAt FROM cms_pages ORDER BY category, title'
+      'SELECT id, slug, title, category, description, video_url as videoUrl, image_url as imageUrl, content, updated_at as updatedAt FROM cms_pages ORDER BY display_order ASC, category, title'
     );
     return NextResponse.json(rows);
   } catch (error: any) {

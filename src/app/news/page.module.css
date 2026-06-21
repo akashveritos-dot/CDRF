@@ -78,7 +78,7 @@
 /* Featured Article layout */
 .featured {
   display: grid;
-  grid-template-columns: 180px 1fr;
+  grid-template-columns: 400px 1fr;
   background: var(--bg-surface);
   border: none;
   border-radius: var(--radius-lg);
@@ -94,7 +94,7 @@
 }
 
 .featImgContainer {
-  min-height: 240px;
+  min-height: 320px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -315,7 +315,7 @@
     grid-template-columns: 1fr;
   }
   .featImgContainer {
-    min-height: 140px;
+    min-height: 300px;
     border-right: none;
     border-bottom: 1px solid var(--border-color);
   }

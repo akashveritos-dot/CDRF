@@ -27,8 +27,33 @@ export function getDbPool(): mysql.Pool {
       queueLimit: 0,
       ssl: process.env.DB_SSL === 'true' ? {} : undefined
     });
+
+    // Run migrations in the background
+    runMigration(globalForDb.pool);
   }
   return globalForDb.pool;
+}
+
+async function runMigration(pool: mysql.Pool) {
+  try {
+    const alterQueries = [
+      'ALTER TABLE news ADD COLUMN display_order INT DEFAULT 0',
+      'ALTER TABLE reports ADD COLUMN display_order INT DEFAULT 0',
+      'ALTER TABLE cms_pages ADD COLUMN display_order INT DEFAULT 0'
+    ];
+    for (const sql of alterQueries) {
+      try {
+        await pool.execute(sql);
+        console.log(`[DB MIGRATION] Executed query: ${sql}`);
+      } catch (err: any) {
+        if (!err.message?.includes('Duplicate column name') && err.code !== 'ER_DUP_FIELDNAME') {
+          console.warn(`[DB MIGRATION WARN] Alter failed: ${sql}`, err.message || err);
+        }
+      }
+    }
+  } catch (error) {
+    console.error('[DB MIGRATION ERROR] Migration runner failed:', error);
+  }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

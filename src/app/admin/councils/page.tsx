@@ -12,7 +12,8 @@ import {
   Award,
   Linkedin,
   Building,
-  AlertCircle
+  AlertCircle,
+  GripVertical
 } from 'lucide-react';
 import styles from './page.module.css';
 
@@ -49,6 +50,48 @@ export default function AdminCouncils() {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [imageUploadSuccess, setImageUploadSuccess] = useState('');
 
+  // Drag-and-drop / display limit states
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [displayLimit, setDisplayLimit] = useState(25);
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = async (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === targetIndex) return;
+
+    const reordered = [...members];
+    const [draggedItem] = reordered.splice(draggedIndex, 1);
+    reordered.splice(targetIndex, 0, draggedItem);
+
+    setMembers(reordered);
+    setDraggedIndex(null);
+
+    const orderedIds = reordered.map(item => item.id);
+    try {
+      const res = await fetch('/api/admin/reorder', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ table: 'councils', orderedIds })
+      });
+      if (!res.ok) throw new Error('Failed to update display order.');
+    } catch (err: any) {
+      console.error(err);
+      fetchMembers(); // Revert on failure
+    }
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+  };
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -81,7 +124,7 @@ export default function AdminCouncils() {
   const fetchMembers = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/councils');
+      const res = await fetch('/api/councils?all=true');
       const data = await res.json();
       setMembers(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -220,6 +263,32 @@ export default function AdminCouncils() {
         </button>
       </div>
 
+      {/* Controls Bar */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '16px', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>
+          <span>Show limit:</span>
+          <select 
+            value={displayLimit} 
+            onChange={(e) => setDisplayLimit(e.target.value === 'all' ? 9999 : Number(e.target.value))}
+            style={{
+              backgroundColor: '#121824',
+              border: '1px solid rgba(255,255,255,0.15)',
+              color: '#ffffff',
+              borderRadius: '6px',
+              padding: '4px 10px',
+              fontSize: '12px',
+              cursor: 'pointer',
+              outline: 'none'
+            }}
+          >
+            <option value={10}>10 profiles</option>
+            <option value={25}>25 profiles</option>
+            <option value={50}>50 profiles</option>
+            <option value="all">All profiles</option>
+          </select>
+        </div>
+      </div>
+
       {/* Main List Grid/Table */}
       {loading ? (
         <div className={styles.loadingBlock}>
@@ -231,6 +300,7 @@ export default function AdminCouncils() {
           <table className={styles.table}>
             <thead>
               <tr>
+                <th style={{ width: '40px' }}>Sort</th>
                 <th style={{ width: '80px' }}>Initials</th>
                 <th>Name & Organization</th>
                 <th>Council Role</th>
@@ -240,8 +310,24 @@ export default function AdminCouncils() {
               </tr>
             </thead>
             <tbody>
-              {members.map((member) => (
-                <tr key={member.id} className={styles.tableRow}>
+              {members.slice(0, displayLimit).map((member, index) => (
+                <tr 
+                  key={member.id} 
+                  className={styles.tableRow}
+                  draggable={true}
+                  onDragStart={(e) => handleDragStart(e, index)}
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, index)}
+                  onDragEnd={handleDragEnd}
+                  style={{
+                    opacity: draggedIndex === index ? 0.4 : 1,
+                    transition: 'opacity 0.2s',
+                    cursor: 'grab'
+                  }}
+                >
+                  <td style={{ textAlign: 'center', verticalAlign: 'middle', width: '40px' }}>
+                    <GripVertical size={14} style={{ color: 'rgba(255, 255, 255, 0.3)', cursor: 'grab' }} />
+                  </td>
                   <td>
                     <div className={styles.avatarCell}>
                       {member.profileImage ? (

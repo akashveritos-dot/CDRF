@@ -12,7 +12,8 @@ import {
   Calendar,
   User,
   Globe,
-  AlertCircle
+  AlertCircle,
+  GripVertical
 } from 'lucide-react';
 import styles from './page.module.css';
 
@@ -48,6 +49,48 @@ export default function AdminNews() {
   const [error, setError] = useState('');
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [imageUploadSuccess, setImageUploadSuccess] = useState('');
+
+  // Drag-and-drop / display limit states
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [displayLimit, setDisplayLimit] = useState(25);
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = async (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === targetIndex) return;
+
+    const reordered = [...stories];
+    const [draggedItem] = reordered.splice(draggedIndex, 1);
+    reordered.splice(targetIndex, 0, draggedItem);
+
+    setStories(reordered);
+    setDraggedIndex(null);
+
+    const orderedIds = reordered.map(item => item.id);
+    try {
+      const res = await fetch('/api/admin/reorder', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ table: 'news', orderedIds })
+      });
+      if (!res.ok) throw new Error('Failed to update display order.');
+    } catch (err: any) {
+      console.error(err);
+      fetchStories(); // Revert on failure
+    }
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+  };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -220,6 +263,32 @@ export default function AdminNews() {
         </button>
       </div>
 
+      {/* Controls Bar */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '16px', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>
+          <span>Show limit:</span>
+          <select 
+            value={displayLimit} 
+            onChange={(e) => setDisplayLimit(e.target.value === 'all' ? 9999 : Number(e.target.value))}
+            style={{
+              backgroundColor: '#121824',
+              border: '1px solid rgba(255,255,255,0.15)',
+              color: '#ffffff',
+              borderRadius: '6px',
+              padding: '4px 10px',
+              fontSize: '12px',
+              cursor: 'pointer',
+              outline: 'none'
+            }}
+          >
+            <option value={10}>10 stories</option>
+            <option value={25}>25 stories</option>
+            <option value={50}>50 stories</option>
+            <option value="all">All stories</option>
+          </select>
+        </div>
+      </div>
+
       {/* Main List Table */}
       {loading ? (
         <div className={styles.loadingBlock}>
@@ -231,6 +300,7 @@ export default function AdminNews() {
           <table className={styles.table}>
             <thead>
               <tr>
+                <th style={{ width: '40px' }}>Sort</th>
                 <th style={{ width: '80px' }}>Emoji</th>
                 <th>Headline</th>
                 <th>Author & Source</th>
@@ -240,8 +310,24 @@ export default function AdminNews() {
               </tr>
             </thead>
             <tbody>
-              {stories.map((story) => (
-                <tr key={story.id} className={styles.tableRow}>
+              {stories.slice(0, displayLimit).map((story, index) => (
+                <tr 
+                  key={story.id} 
+                  className={styles.tableRow}
+                  draggable={true}
+                  onDragStart={(e) => handleDragStart(e, index)}
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, index)}
+                  onDragEnd={handleDragEnd}
+                  style={{
+                    opacity: draggedIndex === index ? 0.4 : 1,
+                    transition: 'opacity 0.2s',
+                    cursor: 'grab'
+                  }}
+                >
+                  <td style={{ textAlign: 'center', verticalAlign: 'middle', width: '40px' }}>
+                    <GripVertical size={14} style={{ color: 'rgba(255, 255, 255, 0.3)', cursor: 'grab' }} />
+                  </td>
                   <td className={styles.emojiCell}>{story.thumbnail_emoji || '📰'}</td>
                   <td>
                     <div className={styles.headlineCell}>
