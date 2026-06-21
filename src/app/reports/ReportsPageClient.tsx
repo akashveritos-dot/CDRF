@@ -5,6 +5,7 @@ import styles from './page.module.css';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
 import { Search, Download, BookOpen, Thermometer, Waves, Compass, Mountain } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast/ToastContext';
+import PageHero from '@/components/ui/PageHero/PageHero';
 
 const tabs = ['All', 'Annual', 'Policy', 'CSR', 'Technical'];
 
@@ -74,12 +75,13 @@ export default function ReportsPageClient({ initialReports }: ReportsPageClientP
   return (
     <div className={styles.page}>
       <ScrollReveal direction="down">
-        <div className={styles.header}>
-          <h1 className={styles.title}>Research & Publications</h1>
-          <p className={styles.subtitle}>
-            Explore DCRF’s comprehensive repository of disaster risk assessments, heat action briefs, climate finance reports, and geospatial audits.
-          </p>
-        </div>
+        <PageHero
+          theme="reports"
+          eyebrow="DCRF Research Library"
+          line1="RESEARCH"
+          line2="/ PUBLICATIONS"
+          subtitle="Explore DCRF’s comprehensive repository of disaster risk assessments, heat action briefs, climate finance reports, and geospatial audits."
+        />
       </ScrollReveal>
 
       {/* Library Controls */}

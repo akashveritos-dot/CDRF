@@ -1,0 +1,299 @@
+/* ── Base Hero Shell ────────────────────────────────────────────────── */
+.hero {
+  text-align: center;
+  max-width: 820px;
+  margin: 0 auto 56px;
+  padding: 0 24px;
+}
+
+.hero.left {
+  text-align: left;
+  margin: 0 0 48px;
+}
+
+/* ── Eyebrow ────────────────────────────────────────────────────────── */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--wine-red-primary, #b91c1c);
+  margin-bottom: 18px;
+  padding: 5px 14px;
+  border: 1px solid rgba(185,28,28,0.22);
+  border-radius: 20px;
+  background: rgba(185,28,28,0.05);
+}
+
+.eyebrowDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+/* ── Shared Title Stack ──────────────────────────────────────────────── */
+.title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 0 18px;
+  line-height: 1;
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+.hero.left .title {
+  align-items: flex-start;
+}
+
+.line1,
+.line2 {
+  display: block;
+  font-size: clamp(56px, 10vw, 110px);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font-size: 15px;
+  color: #64748b;
+  line-height: 1.7;
+  max-width: 580px;
+  margin: 0 auto;
+}
+
+.hero.left .subtitle {
+  margin: 0;
+}
+
+.accentBar {
+  width: 40px;
+  height: 3px;
+  background: var(--wine-red-primary, #b91c1c);
+  border-radius: 2px;
+  margin: 20px auto 0;
+}
+
+.hero.left .accentBar {
+  margin: 18px 0 0;
+}
+
+@media (max-width: 600px) {
+  .hero { margin-bottom: 36px; padding: 0 16px; }
+  .line1, .line2 { font-size: 38px !important; }
+  .subtitle { font-size: 13px; }
+  .eyebrow { font-size: 9.5px; padding: 4px 10px; }
+  .working .line2 { font-size: 52px !important; }
+  .news .line2::after { bottom: 4px; height: 4px; }
+  .council .title { padding-left: 12px; border-left-width: 4px; }
+}
+
+@media (max-width: 480px) {
+  .line1, .line2 { font-size: 32px !important; }
+  .working .line2 { font-size: 44px !important; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   THEME: gallery — solid + outline stack (as existing)
+══════════════════════════════════════════════════════════════════════ */
+.gallery .line1 {
+  color: #1a1a2e;
+}
+.gallery .line2 {
+  color: transparent;
+  -webkit-text-stroke: 2.5px rgba(30,30,60,0.18);
+  margin-top: -10px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   THEME: about — solid dark + red underline word
+   "ABOUT" solid dark, "FEDERATION" with a red gradient clip
+══════════════════════════════════════════════════════════════════════ */
+.about .line1 {
+  color: #1a1a2e;
+  font-size: clamp(56px, 10vw, 110px);
+}
+.about .line2 {
+  background: linear-gradient(135deg, #b91c1c 0%, #dc2626 40%, #92400e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-top: -8px;
+  font-size: clamp(40px, 7.5vw, 84px);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   THEME: news — skewed line2 accent
+   "CLIMATE &" normal, "DISASTERS" italic with a red ink-slash feel
+══════════════════════════════════════════════════════════════════════ */
+.news .line1 {
+  color: #1a1a2e;
+  font-size: clamp(40px, 7vw, 80px);
+}
+.news .line2 {
+  color: #1a1a2e;
+  font-style: italic;
+  position: relative;
+  display: inline-block;
+}
+.news .line2::after {
+  content: '';
+  position: absolute;
+  bottom: 8px;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: var(--wine-red-primary, #b91c1c);
+  border-radius: 3px;
+  opacity: 0.7;
+  transform: skewX(-6deg);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   THEME: council — centered, clean, red underline accent
+   "GOVERNING" solid dark, "COUNCIL" outlined dark stroke
+══════════════════════════════════════════════════════════════════════ */
+.council .title {
+  align-items: center;
+  text-align: center;
+}
+.hero.council { text-align: center; }
+.council .line1 {
+  color: #1a1a2e;
+  font-size: clamp(44px, 8vw, 90px);
+}
+.council .line2 {
+  color: transparent;
+  -webkit-text-stroke: 2.5px #1a1a2e;
+  font-size: clamp(44px, 8vw, 90px);
+  margin-top: -6px;
+}
+.council .subtitle { margin: 0 auto; }
+.council .accentBar { margin: 18px auto 0; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   THEME: advisory — purple-to-red gradient both lines
+══════════════════════════════════════════════════════════════════════ */
+.advisory .line1 {
+  background: linear-gradient(90deg, #7c3aed, #b91c1c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: clamp(50px, 9vw, 96px);
+}
+.advisory .line2 {
+  color: #1a1a2e;
+  font-size: clamp(40px, 7.5vw, 84px);
+  margin-top: -6px;
+}
+.advisory .eyebrow {
+  color: #7c3aed;
+  border-color: rgba(124,58,237,0.22);
+  background: rgba(124,58,237,0.05);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   THEME: working — oversized number accent + small word stack
+   Line1 = "WORKING" italic small, Line2 = "GROUP" huge solid
+══════════════════════════════════════════════════════════════════════ */
+.working .line1 {
+  color: rgba(30,30,60,0.35);
+  font-size: clamp(24px, 4vw, 44px);
+  font-style: italic;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-family: Arial, sans-serif;
+}
+.working .line2 {
+  color: #1a1a2e;
+  font-size: clamp(60px, 12vw, 128px);
+  margin-top: -4px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   THEME: mission — two lines split color (Mission = red, & Vision = dark)
+══════════════════════════════════════════════════════════════════════ */
+.mission .line1 {
+  color: var(--wine-red-primary, #b91c1c);
+  font-size: clamp(50px, 9vw, 100px);
+}
+.mission .line2 {
+  color: #1a1a2e;
+  font-size: clamp(50px, 9vw, 100px);
+  margin-top: -8px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   THEME: charter — "CHARTER" normal + "10-POINT" outlined red stroke
+══════════════════════════════════════════════════════════════════════ */
+.charter .line1 {
+  color: #1a1a2e;
+  font-size: clamp(44px, 8vw, 92px);
+}
+.charter .line2 {
+  color: transparent;
+  -webkit-text-stroke: 2.5px var(--wine-red-primary, #b91c1c);
+  font-size: clamp(44px, 8vw, 92px);
+  margin-top: -6px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   THEME: events — bold with a diagonal slash visual
+   "EVENTS" dark, "&" tiny red + "SUMMITS" outlined
+══════════════════════════════════════════════════════════════════════ */
+.events .line1 {
+  color: #1a1a2e;
+  font-size: clamp(56px, 10vw, 108px);
+}
+.events .line2 {
+  font-size: clamp(28px, 5vw, 54px);
+  font-family: Arial, sans-serif;
+  font-weight: 800;
+  font-style: normal;
+  color: var(--wine-red-primary, #b91c1c);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   THEME: reports — monospaced data aesthetic
+   "REPORTS" serif big, "&DATA" mono small below
+══════════════════════════════════════════════════════════════════════ */
+.reports .line1 {
+  color: #1a1a2e;
+  font-size: clamp(56px, 10vw, 108px);
+}
+.reports .line2 {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: clamp(18px, 3.5vw, 36px);
+  font-weight: 700;
+  color: var(--wine-red-primary, #b91c1c);
+  letter-spacing: 0.12em;
+  margin-top: 4px;
+  text-transform: uppercase;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   THEME: contact — pulsing soft glow on line1
+══════════════════════════════════════════════════════════════════════ */
+.contact .line1 {
+  color: var(--wine-red-primary, #b91c1c);
+  font-size: clamp(50px, 9vw, 100px);
+  animation: gentlePulse 3s ease-in-out infinite;
+}
+.contact .line2 {
+  color: #1a1a2e;
+  font-size: clamp(50px, 9vw, 100px);
+  margin-top: -8px;
+}
+
+@keyframes gentlePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.75; }
+}

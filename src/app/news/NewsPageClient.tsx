@@ -5,6 +5,7 @@ import Link from 'next/link';
 import styles from './page.module.css';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
 import { ExternalLink } from 'lucide-react';
+import PageHero from '@/components/ui/PageHero/PageHero';
 
 const categories = ['All', 'Breaking', 'Environment', 'Health Crisis', 'Climate', 'Disasters', 'Sustainability'];
 
@@ -97,12 +98,13 @@ export default function NewsPageClient({ initialStories }: NewsPageClientProps) 
   return (
     <div className={styles.page}>
       <ScrollReveal direction="down">
-        <div className={styles.header}>
-          <h1 className={styles.title}>Climate & Disaster News</h1>
-          <p className={styles.subtitle}>
-            Latest reporting on emergency warnings, environmental updates, climate policies, and corporate sustainability.
-          </p>
-        </div>
+        <PageHero
+          theme="news"
+          eyebrow="Live Coverage · DCRF Media Desk"
+          line1="CLIMATE &amp;"
+          line2="DISASTERS"
+          subtitle="Latest reporting on emergency warnings, environmental updates, climate policies, and corporate sustainability."
+        />
       </ScrollReveal>
 
       {/* Category Tabs */}

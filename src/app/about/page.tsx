@@ -4,17 +4,19 @@ import React from 'react';
 import styles from './page.module.css';
 import { partners } from '@/data/dataStore';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
+import PageHero from '@/components/ui/PageHero/PageHero';
 
 export default function AboutPage() {
   return (
     <div className={styles.page}>
       <ScrollReveal direction="down">
-        <div className={styles.header}>
-          <h1 className={styles.title}>About the Federation</h1>
-          <p className={styles.subtitle}>
-            A joint multi-stakeholder alliance driving convergence across climate science, media coordinates, and corporate social investments.
-          </p>
-        </div>
+        <PageHero
+          theme="about"
+          eyebrow="Est. June 4, 2026 · New Delhi"
+          line1="ABOUT"
+          line2="FEDERATION"
+          subtitle="A joint multi-stakeholder alliance driving convergence across climate science, media coordinates, and corporate social investments."
+        />
       </ScrollReveal>
 
       {/* Core Narrative & Partners Split */}

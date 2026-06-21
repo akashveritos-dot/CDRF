@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { X, AlertTriangle, Image as ImageIcon, Camera } from 'lucide-react';
 import styles from './page.module.css';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
+import PageHero from '@/components/ui/PageHero/PageHero';
 
 interface GalleryItem {
   id: number;
@@ -79,20 +80,13 @@ export default function GalleryPage() {
 
       {/* ── Premium Section Header ───────────────────────────────────── */}
       <ScrollReveal direction="down">
-        <div className={styles.header}>
-          <div className={styles.eyebrow}>
-            <Camera size={14} />
-            DCRF Field Deployments &amp; Summits
-          </div>
-          <h1 className={styles.title}>
-            <span className={styles.titleLine}>OUR</span>
-            <span className={styles.titleLineOutline}>GALLERY</span>
-          </h1>
-          <p className={styles.subtitle}>
-            A visual documentation of early warning sensor deployments,
-            cool-roof installations, and national policy summits steered by DCRF working groups.
-          </p>
-        </div>
+        <PageHero
+          theme="gallery"
+          eyebrow="DCRF Field Deployments & Summits"
+          line1="OUR"
+          line2="GALLERY"
+          subtitle="A visual documentation of early warning sensor deployments, cool-roof installations, and national policy summits steered by DCRF working groups."
+        />
       </ScrollReveal>
 
       {/* ── Gallery Carousel ─────────────────────────────────────────── */}

@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import styles from './page.module.css';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
 import { Linkedin } from 'lucide-react';
+import PageHero from '@/components/ui/PageHero/PageHero';
+import FlipCards from '@/components/ui/FlipCards/FlipCards';
 
 interface CouncilCardProps {
   member: any;
@@ -77,33 +79,20 @@ export default function CouncilPageClient({ initialMembers }: CouncilPageClientP
   return (
     <div className={styles.page}>
       <ScrollReveal direction="down">
-        <div className={styles.header}>
-          <h1 className={styles.title}>Governing & Executive Council</h1>
-          <p className={styles.subtitle}>
-            DCRF is steered by a joint council combining academic research, corporate sustainability pipelines, and technical disaster risk analytics.
-          </p>
-        </div>
+        <PageHero
+          theme="council"
+          eyebrow="DCRF Leadership"
+          line1="GOVERNING"
+          line2="COUNCIL"
+          subtitle="DCRF is steered by a joint council combining academic research, corporate sustainability pipelines, and technical disaster risk analytics."
+        />
       </ScrollReveal>
 
-      {/* Leadership Profile Cards Grid */}
-      <div className={styles.grid}>
-        {initialMembers.map((member, idx) => {
-          const isHighlight = member.id === 'bm'; // Highlight convener card
-          return (
-            <ScrollReveal
-              key={member.id}
-              direction="up"
-              delay={0.05 * idx}
-            >
-              <CouncilCard
-                member={member}
-                isHighlight={isHighlight}
-                getBadgeClass={getBadgeClass}
-              />
-            </ScrollReveal>
-          );
-        })}
-      </div>
+      {/* ★ 3D Flip Cards for members ★ */}
+      <ScrollReveal direction="up" delay={0.1}>
+        <p style={{ textAlign: 'center', fontSize: '12px', color: '#94a3b8', marginBottom: '24px', letterSpacing: '0.04em' }}>Tap any card to learn more</p>
+        <FlipCards members={initialMembers} />
+      </ScrollReveal>
 
       {/* Advisory & Technical Board details */}
       <section className={styles.advisorySec}>

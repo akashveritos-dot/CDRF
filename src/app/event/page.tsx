@@ -5,6 +5,7 @@ import styles from './page.module.css';
 import { eventFeatures } from '@/data/dataStore';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
 import { Calendar, MapPin, Users, Award, Shield, ChevronDown, Check } from 'lucide-react';
+import PageHero from '@/components/ui/PageHero/PageHero';
 
 const scheduleDay1 = [
   { time: '09:30 - 10:30', title: 'Inaugural Plenary & Keynote address', desc: 'Welcome address by Secretary General DCRF. Launch of the Annual Disaster & Climate Action Index Report by NDMA officials.' },
@@ -164,12 +165,13 @@ export default function EventPage() {
   return (
     <div className={styles.page}>
       <ScrollReveal direction="down">
-        <div className={styles.header}>
-          <h1 className={styles.title}>DCRC 2026 Conclave</h1>
-          <p className={styles.subtitle}>
-            India’s premier annual convening forum mapping disaster technologies, policy briefs, and corporate CSR resilience frameworks.
-          </p>
-        </div>
+        <PageHero
+          theme="events"
+          eyebrow="Nov 26–27, 2026 · New Delhi"
+          line1="DCRC 2026"
+          line2="CONCLAVE"
+          subtitle="India’s premier annual convening forum mapping disaster technologies, policy briefs, and corporate CSR resilience frameworks."
+        />
       </ScrollReveal>
 
       {/* Main Conclave Banner */}

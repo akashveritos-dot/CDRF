@@ -5,6 +5,7 @@ import styles from './page.module.css';
 import { podcastEpisodes } from '@/data/dataStore';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
 import { useToast } from '@/components/ui/Toast/ToastContext';
+import PageHero from '@/components/ui/PageHero/PageHero';
 import {
   Play,
   Pause,
@@ -95,35 +96,25 @@ export default function PodcastsPage() {
 
   return (
     <div className={styles.page}>
-      {/* ── Page Header ──────────────────────────────────────────────────── */}
+      {/* ── Premium Page Hero ─────────────────────────────────────────────── */}
       <ScrollReveal direction="down">
-        <div className={styles.header}>
-          <div className={styles.headerBadge}>
-            <Radio size={14} />
-            <span>DCRF Podcast Series</span>
-          </div>
-          <h1 className={styles.title}>
-            Intelligence from the <em>field</em>
-          </h1>
-          <p className={styles.subtitle}>
-            Deep conversations with disaster managers, climate researchers and policy experts shaping India's resilience agenda.
-          </p>
-          <div className={styles.headerStats}>
-            <div className={styles.stat}>
-              <Headphones size={16} />
-              <span><strong>14</strong> Episodes</span>
-            </div>
-            <div className={styles.statDivider} />
-            <div className={styles.stat}>
-              <Mic size={16} />
-              <span><strong>12+</strong> Experts</span>
-            </div>
-            <div className={styles.statDivider} />
-            <div className={styles.stat}>
-              <Clock size={16} />
-              <span><strong>9h+</strong> of Content</span>
-            </div>
-          </div>
+        <PageHero
+          theme="news"
+          eyebrow="DCRF Podcast Series"
+          line1="INTELLIGENCE"
+          line2="FROM THE FIELD"
+          subtitle="Deep conversations with disaster managers, climate researchers and policy experts shaping India's resilience agenda."
+        />
+      </ScrollReveal>
+
+      {/* ── Header Stats ────────────────────────────────────────────────────── */}
+      <ScrollReveal direction="up" delay={0.06}>
+        <div className={styles.headerStats}>
+          <div className={styles.stat}><Headphones size={16} /><span><strong>14</strong> Episodes</span></div>
+          <div className={styles.statDivider} />
+          <div className={styles.stat}><Mic size={16} /><span><strong>12+</strong> Experts</span></div>
+          <div className={styles.statDivider} />
+          <div className={styles.stat}><Clock size={16} /><span><strong>9h+</strong> of Content</span></div>
         </div>
       </ScrollReveal>
 

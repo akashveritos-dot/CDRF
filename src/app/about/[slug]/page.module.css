@@ -1348,3 +1348,26 @@
   }
 }
 
+/* ── New utility classes for animated components ─────────────────── */
+.sectionHint {
+  text-align: center;
+  font-size: 12px;
+  color: #94a3b8;
+  margin: -28px 0 24px;
+  letter-spacing: 0.04em;
+}
+
+.introCard {
+  background: rgba(185,28,28,0.03);
+  border: 1px solid rgba(185,28,28,0.1);
+  border-radius: 14px;
+  padding: 24px 28px;
+  margin-bottom: 32px;
+}
+
+@media (max-width: 600px) {
+  .introCard { padding: 16px 18px; }
+  .sectionTitle { font-size: 22px !important; margin-bottom: 20px !important; }
+  .councilSection { margin-top: 36px; }
+  .grid { gap: 24px; }
+}
