@@ -4,6 +4,8 @@ import './globals.css';
 import { ToastProvider } from '@/components/ui/Toast/ToastContext';
 import { TelemetryProvider } from '@/context/TelemetryContext';
 import ClientLayoutWrapper from '@/components/layout/ClientLayoutWrapper';
+import '../bones/registry';
+
 
 const inter = Inter({
   subsets: ['latin'],

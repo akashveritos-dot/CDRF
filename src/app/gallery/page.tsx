@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Loader2, X, AlertTriangle, Image as ImageIcon } from 'lucide-react';
+import { Skeleton } from 'boneyard-js/react';
 import styles from './page.module.css';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
 
@@ -59,16 +60,9 @@ export default function GalleryPage() {
     };
   }, [activeItem]);
 
-  if (isLoading) {
-    return (
-      <div className={styles.loadingState}>
-        <Loader2 size={36} className={styles.spinner} />
-        <span>Loading Media Archives...</span>
-      </div>
-    );
-  }
+  const isBuild = typeof window !== 'undefined' && !!(window as any).__BONEYARD_BUILD;
 
-  if (error) {
+  if (error && !isBuild) {
     return (
       <div className={styles.errorState}>
         <AlertTriangle size={48} className={styles.spinner} />
@@ -77,6 +71,21 @@ export default function GalleryPage() {
       </div>
     );
   }
+
+  // Create a mock skeleton grid for the loader/fixture
+  const skeletonGrid = (
+    <div className={styles.galleryGrid}>
+      {[...Array(6)].map((_, idx) => (
+        <div key={idx} className={styles.galleryCard} style={{ pointerEvents: 'none', opacity: 0.6 }}>
+          <div className={styles.imageWrapper} style={{ backgroundColor: 'rgba(255,255,255,0.06)', height: '220px' }} />
+          <div className={styles.cardInfo}>
+            <div style={{ height: '18px', width: '70%', backgroundColor: 'rgba(255,255,255,0.08)', marginBottom: '10px', borderRadius: '4px' }} />
+            <div style={{ height: '14px', width: '90%', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '4px' }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <div className={styles.page}>
@@ -94,43 +103,51 @@ export default function GalleryPage() {
       </ScrollReveal>
 
       {/* Gallery Photo Grid */}
-      {items.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-muted)' }}>
-          <ImageIcon size={48} style={{ margin: '0 auto 16px', opacity: 0.5 }} />
-          <p>No photos staged in the gallery database yet.</p>
-        </div>
-      ) : (
-        <div className={styles.galleryGrid}>
-          {items.map((item, idx) => (
-            <ScrollReveal 
-              key={item.id} 
-              direction="up" 
-              delay={0.05 * idx}
-            >
-              <div 
-                className={styles.galleryCard}
-                onClick={() => openLightbox(item)}
+      <Skeleton 
+        name="gallery-grid" 
+        loading={isLoading}
+        fallback={skeletonGrid}
+        fixture={skeletonGrid}
+        animate="shimmer"
+      >
+        {items.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-muted)' }}>
+            <ImageIcon size={48} style={{ margin: '0 auto 16px', opacity: 0.5 }} />
+            <p>No photos staged in the gallery database yet.</p>
+          </div>
+        ) : (
+          <div className={styles.galleryGrid}>
+            {items.map((item, idx) => (
+              <ScrollReveal 
+                key={item.id} 
+                direction="up" 
+                delay={0.05 * idx}
               >
-                <div className={styles.imageWrapper}>
-                  <img
-                    src={item.imageUrl}
-                    alt={item.caption}
-                    className={styles.image}
-                  />
+                <div 
+                  className={styles.galleryCard}
+                  onClick={() => openLightbox(item)}
+                >
+                  <div className={styles.imageWrapper}>
+                    <img
+                      src={item.imageUrl}
+                      alt={item.caption}
+                      className={styles.image}
+                    />
+                  </div>
+                  <div className={styles.cardInfo}>
+                    <h3 className={styles.cardTitle}>{item.caption}</h3>
+                    {item.content && (
+                      <p className={styles.cardDesc}>
+                        {item.content.length > 85 ? `${item.content.substring(0, 85)}...` : item.content}
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <div className={styles.cardInfo}>
-                  <h3 className={styles.cardTitle}>{item.caption}</h3>
-                  {item.content && (
-                    <p className={styles.cardDesc}>
-                      {item.content.length > 85 ? `${item.content.substring(0, 85)}...` : item.content}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </ScrollReveal>
-          ))}
-        </div>
-      )}
+              </ScrollReveal>
+            ))}
+          </div>
+        )}
+      </Skeleton>
 
       {/* Lightbox Overlay */}
       <div
