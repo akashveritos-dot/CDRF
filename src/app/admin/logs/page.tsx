@@ -147,7 +147,7 @@ export default function AdminAuditLogs() {
                   </td>
                   
                   {/* Section Label */}
-                  <td style={{ fontWeight: '600', color: '#ffffff' }}>
+                  <td style={{ fontWeight: '600', color: '#1e293b' }}>
                     {log.section}
                   </td>
                   
