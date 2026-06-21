@@ -6,6 +6,7 @@ import { membershipTiers, membershipFeatures, honoraryMembersList } from '@/data
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
 import { Check, Minus, Star, Shield, Zap, Crown, ChevronDown, User, Mail, Building, Award, MessageSquare } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast/ToastContext';
+import PageHero from '@/components/ui/PageHero/PageHero';
 
 // ─── Per-tier design tokens ────────────────────────────────────────────────────
 const TIER_CONFIG = {
@@ -577,13 +578,15 @@ export default function MembershipPage() {
 
   return (
     <div className={styles.page}>
+      {/* ── Premium Hero ────────────────────────────────────── */}
       <ScrollReveal direction="down">
-        <div className={styles.header}>
-          <h1 className={styles.title}>Find Your Place in DCRF</h1>
-          <p className={styles.subtitle}>
-            Unifying academic, corporate, NGO and individual partners. Choose a tiered membership program to match your organizational objectives.
-          </p>
-        </div>
+        <PageHero
+          theme="advisory"
+          eyebrow="DCRF Membership Program"
+          line1="FIND YOUR"
+          line2="PLACE IN DCRF"
+          subtitle="Unifying academic, corporate, NGO and individual partners. Choose a tiered membership to match your organizational objectives."
+        />
       </ScrollReveal>
 
       {/* ── Tier pricing cards ─────────────────────────────────────────── */}

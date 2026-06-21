@@ -12,6 +12,35 @@
   }
 }
 
+/* ── Metadata Chips Strip ────────────────────────────────────────── */
+.metaChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 36px;
+}
+.metaChip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  padding: 7px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-default);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.metaChip:hover {
+  border-color: #b91c1c;
+  background: rgba(185,28,28,0.04);
+}
+.metaChipIcon {
+  color: #b91c1c;
+  flex-shrink: 0;
+}
+
 .loadingState, .errorState {
   display: flex;
   flex-direction: column;

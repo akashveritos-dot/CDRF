@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Loader2, Calendar, MapPin, CheckCircle, AlertTriangle, ChevronDown, Check } from 'lucide-react';
+import { Loader2, Calendar, MapPin, CheckCircle, AlertTriangle, ChevronDown, Check, Building2, Tag, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
 import styles from './page.module.css';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
 import DisasterEffects from '@/components/ui/DisasterEffects/DisasterEffects';
+import PageHero from '@/components/ui/PageHero/PageHero';
 
 export interface PageData {
   slug: string;
@@ -260,13 +261,45 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
   return (
     <div className={styles.page}>
       <DisasterEffects theme="general" intensity="low" />
-      {/* Event Header */}
+
+      {/* ── Premium PageHero ───────────────────────────────────────── */}
       <ScrollReveal direction="down">
-        <div className={styles.header}>
-          <h1 className={styles.title}>{pageData.title}</h1>
-          <p className={styles.subtitle}>{pageData.description}</p>
-        </div>
+        <PageHero
+          theme="charter"
+          eyebrow="26–27 November 2026 · New Delhi"
+          line1={slug === 'dcrc-26' ? 'DCRC \u201926' : pageData.title.toUpperCase()}
+          line2={slug === 'dcrc-26' ? 'CONCLAVE SUMMIT' : ''}
+          subtitle={pageData.description}
+        />
       </ScrollReveal>
+
+      {/* ── Animated Metadata Chips ─────────────────────────────────── */}
+      {slug === 'dcrc-26' && (
+        <ScrollReveal direction="up" delay={0.07}>
+          <div className={styles.metaChips}>
+            <div className={styles.metaChip}>
+              <Calendar size={14} className={styles.metaChipIcon} />
+              <span>26–27 November 2026</span>
+            </div>
+            <div className={styles.metaChip}>
+              <MapPin size={14} className={styles.metaChipIcon} />
+              <span>India International Centre, New Delhi</span>
+            </div>
+            <div className={styles.metaChip}>
+              <Building2 size={14} className={styles.metaChipIcon} />
+              <span>Hybrid: In-Person + Virtual</span>
+            </div>
+            <div className={styles.metaChip}>
+              <Tag size={14} className={styles.metaChipIcon} />
+              <span>&ldquo;Convergence for Action&rdquo;</span>
+            </div>
+            <div className={styles.metaChip}>
+              <Users size={14} className={styles.metaChipIcon} />
+              <span>500+ Expected Delegates</span>
+            </div>
+          </div>
+        </ScrollReveal>
+      )}
 
       {/* Grid: Left is Content + Media, Right is Registration Card */}
       <div className={styles.grid}>

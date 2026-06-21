@@ -5,6 +5,7 @@ import { Loader2, Mail, Phone, MapPin, Send, CheckCircle, AlertTriangle } from '
 import styles from './page.module.css';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
 import DisasterEffects from '@/components/ui/DisasterEffects/DisasterEffects';
+import PageHero from '@/components/ui/PageHero/PageHero';
 
 export default function ContactPage() {
   const [name, setName] = useState('');
@@ -54,16 +55,45 @@ export default function ContactPage() {
   return (
     <div className={styles.page}>
       <DisasterEffects theme="general" intensity="low" />
-      {/* Page Header */}
+
+      {/* ── Premium Hero ────────────────────────────────────── */}
       <ScrollReveal direction="down">
-        <div className={styles.header}>
-          <h1 className={styles.title}>Contact the Secretariat</h1>
-          <p style={{ color: 'var(--wine-red-primary)', fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '8px' }}>
-            DCRF Emergency Coordination Center
-          </p>
-          <p className={styles.subtitle}>
-            Reach out to our operations room or submit a query directly to our policy coordination staff.
-          </p>
+        <PageHero
+          theme="council"
+          eyebrow="DCRF Emergency Coordination Center"
+          line1="CONTACT"
+          line2="SECRETARIAT"
+          subtitle="Reach out to our operations room or submit a query directly to our policy coordination staff."
+        />
+      </ScrollReveal>
+
+      {/* ── Animated Info Tiles ─────────────────────────────── */}
+      <ScrollReveal direction="up" delay={0.08}>
+        <div className={styles.infoTiles}>
+          <div className={styles.infoTile}>
+            <div className={styles.infoTileIcon}><MapPin size={22} /></div>
+            <div>
+              <div className={styles.infoTileLabel}>Headquarters</div>
+              <div className={styles.infoTileValue}>Core 4B, 2nd Floor, India Habitat Centre</div>
+              <div className={styles.infoTileSub}>Lodhi Road, New Delhi — 110003</div>
+            </div>
+          </div>
+          <div className={styles.infoTile}>
+            <div className={styles.infoTileIcon}><Mail size={22} /></div>
+            <div>
+              <div className={styles.infoTileLabel}>Email</div>
+              <div className={styles.infoTileValue}>info@dcrf.org</div>
+              <div className={styles.infoTileSub}>secretariat@dcrf.org</div>
+            </div>
+          </div>
+          <div className={styles.infoTile}>
+            <div className={styles.infoTileIcon}><Phone size={22} /></div>
+            <div>
+              <div className={styles.infoTileLabel}>Hotline</div>
+              <div className={styles.infoTileValue}>+91 11 4355 6700</div>
+              <div className={styles.infoTileSub}>Operations: +91 11 4355 6709</div>
+            </div>
+          </div>
         </div>
       </ScrollReveal>
 

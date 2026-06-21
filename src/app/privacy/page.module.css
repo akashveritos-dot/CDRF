@@ -1,6 +1,9 @@
 .page {
   background: var(--bg-default);
   min-height: 100vh;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 0 80px;
 }
 
 /* Stunning Hero Header */
@@ -76,16 +79,15 @@
   box-shadow: var(--shadow-sm);
 }
 
-.sidebarTitle {
-  font-family: var(--font-display);
-  font-size: 14px;
-  font-weight: 700;
+.sidebarLabel {
+  font-size: 10px;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--text-default);
-  margin-bottom: 20px;
-  border-bottom: 1px solid var(--border-color);
+  letter-spacing: 0.12em;
+  color: #b91c1c;
+  margin-bottom: 16px;
   padding-bottom: 10px;
+  border-bottom: 1px solid rgba(185,28,28,0.15);
 }
 
 .tocList {
@@ -96,25 +98,50 @@
 }
 
 .tocLink {
-  font-size: 13.5px;
+  font-size: 12.5px;
   color: var(--text-muted);
   font-weight: 500;
   cursor: pointer;
   transition: all var(--transition-fast);
-  display: block;
-  padding: 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: none;
+  border: none;
+  text-align: left;
+  width: 100%;
 }
 
 .tocLink:hover {
-  color: var(--wine-red-primary);
-  transform: translateX(3px);
+  color: #b91c1c;
+  background: rgba(185,28,28,0.04);
 }
 
 .activeTocLink {
-  color: var(--wine-red-primary) !important;
+  color: #b91c1c !important;
   font-weight: 700;
-  border-left: 2px solid var(--wine-red-primary);
-  padding-left: 8px;
+  background: rgba(185,28,28,0.06);
+}
+
+.tocNum {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(185,28,28,0.1);
+  color: #b91c1c;
+  font-size: 9px;
+  font-weight: 800;
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+}
+.activeTocLink .tocNum {
+  background: #b91c1c;
+  color: #fff;
 }
 
 /* Content Area */
@@ -219,11 +246,8 @@
 }
 
 @media (max-width: 768px) {
-  .hero {
-    padding: 60px 4% 40px;
-  }
   .layout {
-    padding: 40px 4%;
+    padding: 24px 16px 40px;
   }
   .sectionCard {
     padding: 24px;
@@ -231,13 +255,10 @@
 }
 
 @media (max-width: 480px) {
-  .hero {
-    padding: 40px 16px 30px;
-  }
   .layout {
-    padding: 30px 16px;
+    padding: 20px 12px;
   }
   .sectionCard {
-    padding: 20px 16px;
+    padding: 16px;
   }
 }

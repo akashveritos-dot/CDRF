@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Play, Tv, Monitor, Layers } from 'lucide-react';
+import { Play, Calendar, Users, BookOpen, Radio, Filter, Clock, ChevronRight } from 'lucide-react';
 import styles from './page.module.css';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
 import PageHero from '@/components/ui/PageHero/PageHero';
@@ -24,6 +24,7 @@ interface VideoItem {
   posterUrl: string;
   duration: string;
   date: string;
+  topic: string;
 }
 
 const webinarVideos: VideoItem[] = [
@@ -37,6 +38,7 @@ const webinarVideos: VideoItem[] = [
     posterUrl: 'https://images.unsplash.com/photo-1504370805625-d32c54b16100?auto=format&fit=crop&w=800&q=80',
     duration: '42:18',
     date: 'Apr 14, 2026',
+    topic: 'Heat Action',
   },
   {
     id: 'vid-2',
@@ -48,6 +50,7 @@ const webinarVideos: VideoItem[] = [
     posterUrl: 'https://images.unsplash.com/photo-1486915309851-b0cc1f8a0084?auto=format&fit=crop&w=800&q=80',
     duration: '58:44',
     date: 'Mar 28, 2026',
+    topic: 'Flood Risk',
   },
   {
     id: 'vid-3',
@@ -59,109 +62,140 @@ const webinarVideos: VideoItem[] = [
     posterUrl: 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=800&q=80',
     duration: '31:52',
     date: 'Feb 10, 2026',
+    topic: 'CSR & ESG',
   },
 ];
+
+const upcomingSchedule = [
+  { month: 'JUL', day: '18', title: 'Urban Flooding: Stormwater Resilience Frameworks', speaker: 'Dr. Kavita Sharma, IIT Delhi', duration: '60 min', topic: 'Flood Risk' },
+  { month: 'AUG', day: '22', title: 'Cyclone Preparedness & Early Warning Integration', speaker: 'Capt. Ramesh Patel, IMD', duration: '45 min', topic: 'Cyclone' },
+  { month: 'SEP', day: '12', title: 'CSR for Climate Resilient Infrastructure', speaker: 'Priya Menon, CII Sustainability', duration: '75 min', topic: 'CSR & ESG' },
+];
+
+const speakers = [
+  { name: 'Dr. Kavita Sharma', title: 'Prof. of Urban Planning', org: 'IIT Delhi', initials: 'KS', color: '#b91c1c' },
+  { name: 'Capt. Ramesh Patel', title: 'Director, Cyclone Ops', org: 'IMD', initials: 'RP', color: '#0f766e' },
+  { name: 'Priya Menon', title: 'Head of Sustainability', org: 'CII', initials: 'PM', color: '#7c3aed' },
+  { name: 'Arjun Malhotra', title: 'Senior Researcher', org: 'TERI', initials: 'AM', color: '#b45309' },
+];
+
+const ALL_TOPICS = ['All', 'Heat Action', 'Flood Risk', 'CSR & ESG', 'Cyclone'];
 
 interface EventVideosClientProps {
   pageData: PageData;
 }
 
-const streamStats = [
-  { icon: <Tv size={18} />, label: '3 Events', sub: 'Recorded sessions' },
-  { icon: <Monitor size={18} />, label: '2.4K+ Views', sub: 'Cumulative reach' },
-  { icon: <Layers size={18} />, label: '6 Topics', sub: 'Covered in depth' },
-];
-
 export default function EventVideosClient({ pageData }: EventVideosClientProps) {
   const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
+  const [activeTopic, setActiveTopic] = useState('All');
+
+  const filteredVideos = activeTopic === 'All'
+    ? webinarVideos
+    : webinarVideos.filter(v => v.topic === activeTopic);
 
   return (
     <div className={styles.page}>
-      {/* ── Premium Page Hero ───────────────────────────────────────── */}
+
+      {/* ── Premium Page Hero (working theme — distinct from events) ─── */}
       <ScrollReveal direction="down">
         <PageHero
-          theme="events"
-          eyebrow="DCRF Secretariat Broadcasting"
+          theme="working"
+          eyebrow="DCRF Knowledge Broadcasting"
           line1="MONTHLY"
           line2="WEBINARS"
-          subtitle={pageData.description}
+          subtitle="Curated expert sessions on disaster risk, climate resilience, and CSR frameworks — streamed live and archived for DCRF members."
         />
       </ScrollReveal>
 
-      {/* ── Stream Stats Bar ────────────────────────────────────────── */}
-      <ScrollReveal direction="up" delay={0.08}>
-        <div className={styles.statsBar}>
-          {streamStats.map((s, i) => (
-            <div key={i} className={styles.statItem}>
-              <span className={styles.statIcon}>{s.icon}</span>
-              <span className={styles.statLabel}>{s.label}</span>
-              <span className={styles.statSub}>{s.sub}</span>
+      {/* ── Quick Stats Row ───────────────────────────────────────────── */}
+      <ScrollReveal direction="up" delay={0.07}>
+        <div className={styles.quickStats}>
+          <div className={styles.qStat}><Radio size={16} /> <span>Live Streaming</span></div>
+          <div className={styles.qDivider} />
+          <div className={styles.qStat}><BookOpen size={16} /> <span>3 Recorded Sessions</span></div>
+          <div className={styles.qDivider} />
+          <div className={styles.qStat}><Users size={16} /> <span>2,400+ Total Views</span></div>
+          <div className={styles.qDivider} />
+          <div className={styles.qStat}><Calendar size={16} /> <span>Monthly Cadence</span></div>
+        </div>
+      </ScrollReveal>
+
+      {/* ── Upcoming Webinar Schedule ─────────────────────────────────── */}
+      <ScrollReveal direction="up" delay={0.09}>
+        <div className={styles.sectionHeader}>
+          <span className={styles.sectionEyebrow}>Upcoming</span>
+          <h2 className={styles.sectionTitle}>Next Sessions</h2>
+        </div>
+        <div className={styles.scheduleList}>
+          {upcomingSchedule.map((s, i) => (
+            <div key={i} className={styles.scheduleRow}>
+              <div className={styles.schedDate}>
+                <span className={styles.schedMonth}>{s.month}</span>
+                <span className={styles.schedDay}>{s.day}</span>
+              </div>
+              <div className={styles.schedInfo}>
+                <div className={styles.schedTopic}>{s.topic}</div>
+                <h4 className={styles.schedSessionTitle}>{s.title}</h4>
+                <span className={styles.schedSpeaker}>{s.speaker}</span>
+              </div>
+              <div className={styles.schedMeta}>
+                <span className={styles.schedDuration}><Clock size={12} /> {s.duration}</span>
+                <button className={styles.schedRegBtn}>Register <ChevronRight size={12} /></button>
+              </div>
             </div>
           ))}
         </div>
       </ScrollReveal>
 
-      {/* ── Narrative intro ─────────────────────────────────────────── */}
-      {pageData.content && (
-        <ScrollReveal direction="up" delay={0.1}>
-          <div className={styles.introText} dangerouslySetInnerHTML={{ __html: pageData.content }} />
-        </ScrollReveal>
-      )}
-
-      {/* ── Featured (first) video — large ─────────────────────────── */}
-      <ScrollReveal direction="up" delay={0.12}>
-        <div className={styles.featuredCard}>
-          <div className={styles.featuredPlayer}>
-            {playingVideoId === webinarVideos[0].id ? (
-              <iframe
-                src={`${webinarVideos[0].embedUrl}?autoplay=1`}
-                title={webinarVideos[0].title}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className={styles.iframe}
-              />
-            ) : (
-              <div
-                className={styles.featPoster}
-                onClick={() => setPlayingVideoId(webinarVideos[0].id)}
-                role="button"
-                tabIndex={0}
-                aria-label={`Play: ${webinarVideos[0].title}`}
-                onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && setPlayingVideoId(webinarVideos[0].id)}
-              >
-                <img src={webinarVideos[0].posterUrl} alt="" className={styles.featPosterImg} />
-                <div className={styles.featOverlay}>
-                  <div className={styles.playBigCircle}>
-                    <Play size={30} fill="white" />
-                  </div>
+      {/* ── Speaker Spotlight ─────────────────────────────────────────── */}
+      <ScrollReveal direction="up" delay={0.08}>
+        <div className={styles.sectionHeader}>
+          <span className={styles.sectionEyebrow}>Speakers</span>
+          <h2 className={styles.sectionTitle}>Expert Panel</h2>
+        </div>
+        <div className={styles.speakersRow}>
+          {speakers.map((sp, i) => (
+            <ScrollReveal key={i} direction="up" delay={0.05 * i}>
+              <div className={styles.speakerCard}>
+                <div className={styles.speakerAvatar} style={{ background: `${sp.color}18`, color: sp.color, borderColor: `${sp.color}30` }}>
+                  {sp.initials}
                 </div>
-                <span className={styles.featDuration}>{webinarVideos[0].duration}</span>
+                <div className={styles.speakerName}>{sp.name}</div>
+                <div className={styles.speakerTitle}>{sp.title}</div>
+                <div className={styles.speakerOrg} style={{ color: sp.color }}>{sp.org}</div>
               </div>
-            )}
-          </div>
-          <div className={styles.featInfo}>
-            <span className={styles.featBadge} style={{ background: `${webinarVideos[0].categoryColor}18`, color: webinarVideos[0].categoryColor, borderColor: `${webinarVideos[0].categoryColor}30` }}>
-              {webinarVideos[0].category}
-            </span>
-            <h2 className={styles.featTitle}>{webinarVideos[0].title}</h2>
-            <p className={styles.featDesc}>{webinarVideos[0].description}</p>
-            <span className={styles.featDate}>{webinarVideos[0].date}</span>
-          </div>
+            </ScrollReveal>
+          ))}
         </div>
       </ScrollReveal>
 
-      {/* ── Section label ───────────────────────────────────────────── */}
-      <ScrollReveal direction="up" delay={0.1}>
-        <div className={styles.sectionLabel}>
-          <span className={styles.sectionLabelLine} />
-          <span className={styles.sectionLabelText}>More Sessions</span>
-          <span className={styles.sectionLabelLine} />
+      {/* ── Video Archive ─────────────────────────────────────────────── */}
+      <ScrollReveal direction="up" delay={0.08}>
+        <div className={styles.sectionHeader}>
+          <span className={styles.sectionEyebrow}>Archive</span>
+          <h2 className={styles.sectionTitle}>Past Sessions</h2>
         </div>
       </ScrollReveal>
 
-      {/* ── Remaining videos — 2-col grid ───────────────────────────── */}
+      {/* Topic filter pills */}
+      <ScrollReveal direction="up" delay={0.05}>
+        <div className={styles.filterPills}>
+          <Filter size={14} className={styles.filterIcon} />
+          {ALL_TOPICS.map(topic => (
+            <button
+              key={topic}
+              className={`${styles.pill} ${activeTopic === topic ? styles.pillActive : ''}`}
+              onClick={() => setActiveTopic(topic)}
+            >
+              {topic}
+            </button>
+          ))}
+        </div>
+      </ScrollReveal>
+
+      {/* Videos grid */}
       <div className={styles.videoGrid}>
-        {webinarVideos.slice(1).map((video, idx) => {
+        {filteredVideos.map((video, idx) => {
           const isPlaying = playingVideoId === video.id;
           return (
             <ScrollReveal key={video.id} direction="up" delay={0.06 * idx}>
@@ -206,7 +240,11 @@ export default function EventVideosClient({ pageData }: EventVideosClientProps) 
             </ScrollReveal>
           );
         })}
+        {filteredVideos.length === 0 && (
+          <div className={styles.emptyState}>No sessions found for this topic yet.</div>
+        )}
       </div>
+
     </div>
   );
 }

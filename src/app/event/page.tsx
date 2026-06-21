@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import styles from './page.module.css';
 import { eventFeatures } from '@/data/dataStore';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
-import { Calendar, MapPin, Users, Award, Shield, ChevronDown, Check } from 'lucide-react';
+import { Calendar, MapPin, Users, Award, Shield, ChevronDown, Check, Zap, Building2, Globe, Mic } from 'lucide-react';
 import PageHero from '@/components/ui/PageHero/PageHero';
 
 const scheduleDay1 = [
@@ -26,6 +26,19 @@ const attendanceOptions = [
   { value: 'Virtual Delegate', label: 'Virtual Delegate', subLabel: 'Live Web Stream', icon: <Users size={16} />, color: 'var(--teal-primary)' },
   { value: 'Sponsor / Exhibition partner', label: 'Exhibitor', subLabel: 'Disaster-Tech Expo pavilion', icon: <Award size={16} />, color: 'var(--gold-light)' },
   { value: 'Media representative', label: 'Media delegate', subLabel: 'Press pass', icon: <Shield size={16} />, color: '#64748b' },
+];
+
+const delegateStats = [
+  { icon: <Users size={20} />, value: '500+', label: 'Delegates' },
+  { icon: <Building2 size={20} />, value: '60+', label: 'Organizations' },
+  { icon: <Globe size={20} />, value: '12', label: 'Nations' },
+  { icon: <Mic size={20} />, value: '30+', label: 'Speakers' },
+  { icon: <Zap size={20} />, value: '2', label: 'Days of Sessions' },
+  { icon: <Award size={20} />, value: '4', label: 'Award Categories' },
+];
+
+const partnerLogos = [
+  'NDMA', 'UNDRR', 'World Bank', 'ISRO', 'TERI', 'CEEW', 'IIT Delhi', 'WRI India', 'GIZ', 'NITI Aayog'
 ];
 
 function getFriendlyError(err: any, fallback: string): string {
@@ -228,7 +241,34 @@ export default function EventPage() {
         </div>
       </ScrollReveal>
 
-      {/* Features Grid */}
+      {/* ══ Animated Delegate Stats Strip ════════════════════ */}
+      <ScrollReveal direction="up" delay={0.08}>
+        <div className={styles.statsStrip}>
+          {delegateStats.map((s, i) => (
+            <div key={i} className={styles.statChip}>
+              <span className={styles.statChipIcon}>{s.icon}</span>
+              <span className={styles.statChipValue}>{s.value}</span>
+              <span className={styles.statChipLabel}>{s.label}</span>
+            </div>
+          ))}
+        </div>
+      </ScrollReveal>
+
+      {/* ══ Partner / Org Ticker ════════════════════════ */}
+      <ScrollReveal direction="up" delay={0.1}>
+        <div className={styles.tickerWrap}>
+          <span className={styles.tickerLabel}>PARTNER ORGANISATIONS</span>
+          <div className={styles.tickerTrack}>
+            <div className={styles.tickerInner}>
+              {[...partnerLogos, ...partnerLogos].map((logo, i) => (
+                <span key={i} className={styles.tickerItem}>{logo}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </ScrollReveal>
+
+      {/* ══ Features Grid ════════════════════════════ */}
       <div className={styles.featuresGrid}>
         {eventFeatures.map((feat, idx) => (
           <ScrollReveal
@@ -245,13 +285,15 @@ export default function EventPage() {
         ))}
       </div>
 
-      {/* Schedule Program */}
+      {/* ══ Premium Animated Timeline ═══════════════════ */}
       <section className={styles.scheduleSec}>
         <ScrollReveal direction="up">
-          <h2>Conclave Agenda Program</h2>
+          <div className={styles.scheduleHeader}>
+            <span className={styles.scheduleEyebrow}>Programme</span>
+            <h2 className={styles.scheduleTitle}>Conclave Agenda</h2>
+          </div>
         </ScrollReveal>
 
-        {/* Agenda tabs */}
         <ScrollReveal direction="up" delay={0.1}>
           <div className={styles.scheduleTabs}>
             {['Day 1', 'Day 2'].map((day) => (
@@ -266,19 +308,20 @@ export default function EventPage() {
           </div>
         </ScrollReveal>
 
-        {/* Timeline lists */}
-        <div className={styles.timeline}>
+        {/* Vertical animated timeline */}
+        <div className={styles.verticalTimeline}>
           {(activeTab === 'Day 1' ? scheduleDay1 : scheduleDay2).map((item, idx) => (
-            <ScrollReveal
-              key={idx}
-              direction="left"
-              delay={0.05 * idx}
-            >
-              <div className={styles.tRow}>
-                <div className={styles.tTime}>{item.time}</div>
-                <div className={styles.tDetails}>
-                  <h4>{item.title}</h4>
-                  <p>{item.desc}</p>
+            <ScrollReveal key={idx} direction="left" delay={0.07 * idx}>
+              <div className={styles.tlItem}>
+                <div className={styles.tlLeft}>
+                  <span className={styles.tlTime}>{item.time}</span>
+                  <div className={styles.tlNode}>
+                    <span className={styles.tlNodeInner} />
+                  </div>
+                </div>
+                <div className={styles.tlCard}>
+                  <h4 className={styles.tlTitle}>{item.title}</h4>
+                  <p className={styles.tlDesc}>{item.desc}</p>
                 </div>
               </div>
             </ScrollReveal>

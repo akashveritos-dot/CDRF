@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styles from './page.module.css';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
+import PageHero from '@/components/ui/PageHero/PageHero';
 
 interface Section {
   id: string;
@@ -70,33 +71,32 @@ export default function TermsOfUse() {
 
   return (
     <div className={styles.page}>
-      {/* Sleek Gradient Header */}
-      <div className={styles.hero}>
-        <ScrollReveal direction="down">
-          <div className={styles.heroContent}>
-            <h1 className={styles.title}>Terms of Use</h1>
-            <p className={styles.subtitle}>
-              Effective Date: June 4, 2026. Review the legal agreement governing your participation and usage of the Disaster & Climate Resilience Federation (DCRF) portal.
-            </p>
-          </div>
-        </ScrollReveal>
-      </div>
+      {/* ── Premium Hero ────────────────────────────────────── */}
+      <ScrollReveal direction="down">
+        <PageHero
+          theme="news"
+          eyebrow="Effective: June 4, 2026"
+          line1="TERMS"
+          line2="OF USE"
+          subtitle="The legal agreement governing your participation and usage of the DCRF portal, services, and community networks."
+        />
+      </ScrollReveal>
 
       {/* Two Column Layout */}
       <div className={styles.layout}>
         {/* Sticky Table of Contents */}
         <aside className={styles.sidebar}>
           <ScrollReveal direction="right" delay={0.1}>
-            <h3 className={styles.sidebarTitle}>Navigation</h3>
+            <div className={styles.sidebarLabel}>Table of Contents</div>
             <ul className={styles.tocList}>
               {SECTIONS.map((sec) => (
                 <li key={sec.id}>
                   <button
                     onClick={() => handleScrollToSection(sec.id)}
                     className={`${styles.tocLink} ${activeSection === sec.id ? styles.activeTocLink : ''}`}
-                    style={{ background: 'none', border: 'none', textAlign: 'left', width: '100%' }}
                   >
-                    Section {sec.number}: {sec.title}
+                    <span className={styles.tocNum}>{sec.number}</span>
+                    {sec.title}
                   </button>
                 </li>
               ))}

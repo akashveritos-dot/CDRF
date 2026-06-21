@@ -8,52 +8,257 @@
 
 @media (max-width: 768px) { .page { padding: 24px 16px 60px; } }
 
-/* ── Stats Bar ───────────────────────────────────────────────────── */
-.statsBar {
-  display: flex;
-  justify-content: center;
-  gap: 0;
-  border: 1px solid rgba(0,0,0,0.07);
-  border-radius: 14px;
-  background: #fff;
-  overflow: hidden;
-  margin-bottom: 40px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+/* ── Section Headers ─────────────────────────────────────────────── */
+.sectionHeader {
+  margin-bottom: 20px;
+}
+.sectionEyebrow {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #b91c1c;
+  display: block;
+  margin-bottom: 4px;
+}
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-default);
 }
 
-.statItem {
+/* ── Quick Stats Row ─────────────────────────────────────────────── */
+.quickStats {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.07);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 48px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.qStat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a2e;
   flex: 1;
+  justify-content: center;
+}
+.qStat svg { color: #b91c1c; flex-shrink: 0; }
+.qDivider {
+  width: 1px;
+  height: 30px;
+  background: rgba(0,0,0,0.08);
+  flex-shrink: 0;
+}
+@media (max-width: 640px) {
+  .quickStats { flex-direction: column; }
+  .qStat { justify-content: flex-start; width: 100%; border-bottom: 1px solid rgba(0,0,0,0.06); }
+  .qDivider { display: none; }
+}
+
+/* ── Upcoming Schedule List ──────────────────────────────────────── */
+.scheduleList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 56px;
+}
+.scheduleRow {
+  display: grid;
+  grid-template-columns: 72px 1fr auto;
+  gap: 20px;
+  align-items: center;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.07);
+  border-left: 3px solid #b91c1c;
+  border-radius: 14px;
+  padding: 18px 20px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.scheduleRow:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 16px rgba(185,28,28,0.08);
+}
+.schedDate {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 18px 16px;
-  border-right: 1px solid rgba(0,0,0,0.07);
-  transition: background 0.2s ease;
+  background: rgba(185,28,28,0.06);
+  border-radius: 10px;
+  padding: 10px 6px;
+  text-align: center;
 }
-.statItem:last-child { border-right: none; }
-.statItem:hover { background: rgba(185,28,28,0.02); }
-
-.statIcon {
+.schedMonth {
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
   color: #b91c1c;
-  display: flex;
-  align-items: center;
 }
-.statLabel {
-  font-size: 15px;
+.schedDay {
+  font-family: var(--font-display);
+  font-size: 24px;
   font-weight: 800;
   color: #1a1a2e;
+  line-height: 1;
 }
-.statSub {
+.schedInfo { display: flex; flex-direction: column; gap: 3px; }
+.schedTopic {
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #b91c1c;
+}
+.schedSessionTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a2e;
+  line-height: 1.35;
+}
+.schedSpeaker {
   font-size: 11px;
   color: #64748b;
 }
-
-@media (max-width: 480px) {
-  .statsBar { flex-direction: column; }
-  .statItem { border-right: none; border-bottom: 1px solid rgba(0,0,0,0.07); flex-direction: row; gap: 12px; justify-content: flex-start; padding: 14px 20px; }
-  .statItem:last-child { border-bottom: none; }
+.schedMeta { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.schedDuration {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
 }
+.schedDuration svg { color: #b91c1c; }
+.schedRegBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #b91c1c;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.18s ease;
+  white-space: nowrap;
+}
+.schedRegBtn:hover { background: #991b1b; }
+
+@media (max-width: 640px) {
+  .scheduleRow { grid-template-columns: 60px 1fr; gap: 12px; }
+  .schedMeta { display: none; }
+}
+
+/* ── Speaker Spotlight ───────────────────────────────────────────── */
+.speakersRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 56px;
+}
+.speakerCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.07);
+  border-radius: 16px;
+  padding: 24px 16px;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+.speakerCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+.speakerAvatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 2px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+.speakerName {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1a1a2e;
+  line-height: 1.3;
+  margin-bottom: 3px;
+}
+.speakerTitle {
+  font-size: 11px;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+.speakerOrg {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+@media (max-width: 768px) {
+  .speakersRow { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 400px) {
+  .speakersRow { grid-template-columns: 1fr 1fr; gap: 10px; }
+}
+
+/* ── Topic Filter Pills ──────────────────────────────────────────── */
+.filterPills {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+.filterIcon { color: #b91c1c; flex-shrink: 0; }
+.pill {
+  background: rgba(0,0,0,0.04);
+  border: 1px solid rgba(0,0,0,0.1);
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.pill:hover {
+  background: rgba(185,28,28,0.06);
+  color: #b91c1c;
+  border-color: rgba(185,28,28,0.2);
+}
+.pillActive {
+  background: #b91c1c !important;
+  color: #fff !important;
+  border-color: #b91c1c !important;
+}
+
+/* ── Empty state ─────────────────────────────────────────────────── */
+.emptyState {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 48px;
+  color: #64748b;
+  font-size: 14px;
+}
+
 
 /* ── Intro text ──────────────────────────────────────────────────── */
 .introText {
