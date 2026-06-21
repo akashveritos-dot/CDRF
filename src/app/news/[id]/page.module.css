@@ -144,3 +144,36 @@
   font-weight: 700;
   color: var(--text-default);
 }
+
+.galleryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.galleryItem {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+  aspect-ratio: 4/3;
+  background-color: var(--bg-surface-alt);
+  position: relative;
+}
+
+.galleryLink {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.galleryImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-base);
+}
+
+.galleryImage:hover {
+  transform: scale(1.05);
+}
