@@ -238,6 +238,8 @@ export default function Navbar() {
             src="/dcrf_logo_primary-Photoroom.png" 
             alt="DCRF Logo" 
             className={styles.logoImage}
+            width="150"
+            height="45"
           />
           {weatherAlert?.liveTheme && (
             <span className={`${styles.weatherNavTag} ${weatherAlert.liveTheme === 'storm' ? styles.weatherNavTagStorm : ''}`}>

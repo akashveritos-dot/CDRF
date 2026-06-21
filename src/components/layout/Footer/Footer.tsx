@@ -46,6 +46,8 @@ export default function Footer() {
               src="/dcrf_icon-Photoroom.png" 
               alt="DCRF Icon" 
               className={styles.footerLogo}
+              width="48"
+              height="48"
             />
             <h3>Disaster & Climate Resilience Federation</h3>
           </div>

@@ -1,10 +1,6 @@
 .hero {
   position: relative;
   background: var(--bg-surface);
-  background-image: url('https://images.unsplash.com/photo-1547683905-f686c993aae5?w=1920&q=80');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
   padding: 80px 5% 80px;
   overflow: hidden;
   min-height: 85vh;

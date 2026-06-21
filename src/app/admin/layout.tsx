@@ -77,10 +77,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     checkSession();
   }, [pathname, isLoginPage, router]);
 
-  // Poll for counts every 15s to keep sidebar badges real-time
+  // Poll for counts every 2 minutes (120,000ms) to keep sidebar badges real-time without slamming the server
   useEffect(() => {
     if (isLoginPage || !adminUser) return;
-    const interval = setInterval(fetchCounts, 15000);
+    const interval = setInterval(fetchCounts, 120000);
     return () => clearInterval(interval);
   }, [isLoginPage, adminUser]);
 
