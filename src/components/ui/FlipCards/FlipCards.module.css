@@ -21,10 +21,10 @@
 }
 
 @media (max-width: 640px) {
-  .cardWrap { height: 360px; }
+  .cardWrap { height: 400px; }
 }
 @media (max-width: 400px) {
-  .cardWrap { height: 380px; }
+  .cardWrap { height: 430px; }
 }
 
 @keyframes cardIn {
@@ -83,6 +83,10 @@
   flex-shrink: 0;
   border: 3px solid rgba(185,28,28,0.15);
   box-shadow: 0 4px 16px rgba(185,28,28,0.1);
+}
+
+@media (max-width: 640px) {
+  .imgWrap { width: 68px; height: 68px; }
 }
 
 .img {
@@ -170,25 +174,33 @@
 .backTop {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  padding-bottom: 10px;
+  gap: 8px;
+  padding-bottom: 8px;
   border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
+@media (max-width: 640px) {
+  .backTop { gap: 6px; padding-bottom: 6px; }
+}
+
 .backAvatar {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: rgba(185,28,28,0.4);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 800;
   flex-shrink: 0;
   overflow: hidden;
   border: 2px solid rgba(185,28,28,0.4);
+}
+
+@media (max-width: 640px) {
+  .backAvatar { width: 28px; height: 28px; font-size: 10px; }
 }
 
 .backAvatarImg {
@@ -229,17 +241,21 @@
 .linkedinBtn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 7px 14px;
+  gap: 5px;
+  padding: 6px 12px;
   background: rgba(185,28,28,0.25);
   border: 1px solid rgba(185,28,28,0.4);
   border-radius: 6px;
   color: #fca5a5;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   text-decoration: none;
   transition: all 0.2s ease;
   align-self: flex-start;
+}
+
+@media (max-width: 640px) {
+  .linkedinBtn { padding: 5px 10px; font-size: 10px; gap: 4px; }
 }
 
 .linkedinBtn:hover {
@@ -249,22 +265,22 @@
 
 /* ── Badges ──────────────────────────────────────────────────────── */
 .badge {
-  font-size: 8.5px;
+  font-size: 8px;
   font-weight: 700;
-  padding: 3px 7px;
+  padding: 2px 6px;
   border-radius: 20px;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
+  white-space: normal;
+  word-break: break-word;
   display: inline-block;
-  line-height: 1.4;
+  line-height: 1.45;
+  max-width: 100%;
 }
 
 @media (max-width: 640px) {
-  .badge { font-size: 7.5px; padding: 2px 6px; }
+  /* keep same white-space:normal on mobile — badge wraps instead of cutting off */
+  .badge { font-size: 7px; padding: 2px 5px; letter-spacing: 0.01em; }
 }
 
 .badgeDefault {
