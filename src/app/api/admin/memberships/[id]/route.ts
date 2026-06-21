@@ -25,7 +25,7 @@ export async function PUT(
     }
 
     const body = await req.json();
-    const { status, pay_status, payment_details } = body;
+    const { status, pay_status, payment_details, membership_status } = body;
 
     if (!status || !pay_status) {
       return NextResponse.json(
@@ -42,9 +42,9 @@ export async function PUT(
 
     await query(
       `UPDATE memberships 
-       SET status = ?, pay_status = ?, payment_details = ? 
+       SET status = ?, pay_status = ?, payment_details = ?, membership_status = ? 
        WHERE id = ?`,
-      [status, pay_status, payment_details || '', id]
+      [status, pay_status, payment_details || '', membership_status || 'Active', id]
     );
 
     const [member] = existing;

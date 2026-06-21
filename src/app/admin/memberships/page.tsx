@@ -1,40 +1,62 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  Users, 
-  Search, 
-  Filter, 
-  Edit, 
-  Trash2, 
-  Check, 
-  X, 
-  DollarSign, 
-  Loader2, 
-  ArrowUpDown,
+import {
+  Users,
+  Search,
+  Edit,
+  Trash2,
+  X,
+  Loader2,
   Building,
   Mail,
   Briefcase,
-  AlertCircle
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  TrendingUp,
+  Bell,
+  AlertTriangle,
+  Calendar,
+  Shield
 } from 'lucide-react';
 import styles from './page.module.css';
 
 export default function AdminMemberships() {
   const [registrations, setRegistrations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({ total: 0, active: 0, expiringSoon: 0, expired: 0 });
   const [search, setSearch] = useState('');
   const [filterTier, setFilterTier] = useState('All');
   const [filterStatus, setFilterStatus] = useState('All');
   const [filterPay, setFilterPay] = useState('All');
+  const [filterMemberStatus, setFilterMemberStatus] = useState('All');
 
   // Modal State
   const [editingItem, setEditingItem] = useState<any>(null);
   const [formData, setFormData] = useState({
     status: 'Pending',
     pay_status: 'Unpaid',
+    membership_status: 'Active',
     payment_details: ''
   });
   const [isSaving, setIsSaving] = useState(false);
+
+  // Reminder state
+  const [isSendingReminders, setIsSendingReminders] = useState(false);
+  const [reminderResult, setReminderResult] = useState<any>(null);
+
+  const fetchStats = useCallback(async () => {
+    try {
+      const res = await fetch('/api/admin/memberships?stats=1');
+      if (res.ok) {
+        const data = await res.json();
+        setStats(data);
+      }
+    } catch (err) {
+      console.error('Failed to load stats:', err);
+    }
+  }, []);
 
   const fetchRegistrations = useCallback(async () => {
     setLoading(true);
@@ -43,6 +65,7 @@ export default function AdminMemberships() {
       if (filterTier !== 'All') params.set('tier', filterTier);
       if (filterStatus !== 'All') params.set('status', filterStatus);
       if (filterPay !== 'All') params.set('pay_status', filterPay);
+      if (filterMemberStatus !== 'All') params.set('membership_status', filterMemberStatus);
       if (search) params.set('search', search);
 
       const res = await fetch(`/api/admin/memberships?${params.toString()}`);
@@ -53,21 +76,25 @@ export default function AdminMemberships() {
     } finally {
       setLoading(false);
     }
-  }, [filterTier, filterStatus, filterPay, search]);
+  }, [filterTier, filterStatus, filterPay, filterMemberStatus, search]);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
 
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
       fetchRegistrations();
-    }, 300); // Debounce search changes
-
+    }, 300);
     return () => clearTimeout(delayDebounce);
-  }, [search, filterTier, filterStatus, filterPay, fetchRegistrations]);
+  }, [search, filterTier, filterStatus, filterPay, filterMemberStatus, fetchRegistrations]);
 
   const handleEditClick = (item: any) => {
     setEditingItem(item);
     setFormData({
       status: item.status,
       pay_status: item.pay_status,
+      membership_status: item.membership_status || 'Active',
       payment_details: item.payment_details || ''
     });
   };
@@ -75,7 +102,6 @@ export default function AdminMemberships() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingItem) return;
-    
     setIsSaving(true);
     try {
       const res = await fetch(`/api/admin/memberships/${editingItem.id}`, {
@@ -83,11 +109,10 @@ export default function AdminMemberships() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
-
       if (!res.ok) throw new Error('Failed to update');
-      
       setEditingItem(null);
       fetchRegistrations();
+      fetchStats();
     } catch (err) {
       // eslint-disable-next-line no-alert
       alert('Error updating application details');
@@ -99,18 +124,34 @@ export default function AdminMemberships() {
   const handleDelete = async (id: number) => {
     // eslint-disable-next-line no-alert
     if (!confirm('Are you sure you want to permanently delete this registration record?')) return;
-
     try {
-      const res = await fetch(`/api/admin/memberships/${id}`, {
-        method: 'DELETE'
-      });
-
+      const res = await fetch(`/api/admin/memberships/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to delete');
       fetchRegistrations();
+      fetchStats();
     } catch (err) {
       // eslint-disable-next-line no-alert
       alert('Error deleting application record');
     }
+  };
+
+  const handleSendReminders = async () => {
+    setIsSendingReminders(true);
+    setReminderResult(null);
+    try {
+      const res = await fetch('/api/admin/send-reminders', { method: 'POST' });
+      const data = await res.json();
+      setReminderResult(data);
+    } catch (err) {
+      setReminderResult({ success: false, message: 'Failed to send reminders' });
+    } finally {
+      setIsSendingReminders(false);
+    }
+  };
+
+  const getEffectiveStatus = (item: any) => {
+    if (item.expires_at && new Date(item.expires_at) < new Date()) return 'Expired';
+    return item.membership_status || 'Active';
   };
 
   const getStatusBadgeClass = (status: string) => {
@@ -129,6 +170,30 @@ export default function AdminMemberships() {
     }
   };
 
+  const getMemberStatusClass = (status: string) => {
+    switch (status) {
+      case 'Active': return styles.badgeSuccess;
+      case 'Expired': return styles.badgeDanger;
+      case 'Cancelled': return styles.badgeWarning;
+      case 'Renewed': return styles.badgeInfo;
+      default: return styles.badgeWarning;
+    }
+  };
+
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return '—';
+    return new Date(dateStr).toLocaleDateString('en-IN', {
+      year: 'numeric', month: 'short', day: 'numeric'
+    });
+  };
+
+  const getDaysUntilExpiry = (expiresAt: string | null) => {
+    if (!expiresAt) return null;
+    const diff = new Date(expiresAt).getTime() - Date.now();
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    return days;
+  };
+
   return (
     <div className={styles.page}>
       {/* Title */}
@@ -137,14 +202,65 @@ export default function AdminMemberships() {
           <Users className={styles.headerIcon} size={28} />
           <div>
             <h1>Membership Applications</h1>
-            <p>Review organization submissions, approve tiers, and log payment records.</p>
+            <p>Review organization submissions, approve tiers, manage lifecycles, and dispatch renewal reminders.</p>
+          </div>
+        </div>
+        <button
+          onClick={handleSendReminders}
+          disabled={isSendingReminders}
+          className={styles.reminderBtn}
+          title="Send renewal reminders to members expiring in 30, 7, or 0 days"
+        >
+          {isSendingReminders ? (
+            <><Loader2 size={14} className={styles.spinner} /> Sending...</>
+          ) : (
+            <><Bell size={14} /> Send Expiry Reminders</>
+          )}
+        </button>
+      </div>
+
+      {/* Reminder Result */}
+      {reminderResult && (
+        <div className={`${styles.reminderResult} ${reminderResult.success ? styles.reminderSuccess : styles.reminderError}`}>
+          {reminderResult.success ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
+          <span>{reminderResult.message}</span>
+        </div>
+      )}
+
+      {/* Stats Dashboard */}
+      <div className={styles.statsGrid}>
+        <div className={styles.statCard}>
+          <div className={styles.statIcon} style={{ color: '#3b82f6' }}><Shield size={20} /></div>
+          <div>
+            <div className={styles.statValue}>{stats.total}</div>
+            <div className={styles.statLabel}>Total Paid Members</div>
+          </div>
+        </div>
+        <div className={styles.statCard}>
+          <div className={styles.statIcon} style={{ color: '#10b981' }}><CheckCircle size={20} /></div>
+          <div>
+            <div className={styles.statValue}>{stats.active}</div>
+            <div className={styles.statLabel}>Active Members</div>
+          </div>
+        </div>
+        <div className={styles.statCard}>
+          <div className={styles.statIcon} style={{ color: '#f59e0b' }}><Clock size={20} /></div>
+          <div>
+            <div className={styles.statValue}>{stats.expiringSoon}</div>
+            <div className={styles.statLabel}>Expiring in 30 Days</div>
+          </div>
+        </div>
+        <div className={styles.statCard}>
+          <div className={styles.statIcon} style={{ color: '#ef4444' }}><AlertTriangle size={20} /></div>
+          <div>
+            <div className={styles.statValue}>{stats.expired}</div>
+            <div className={styles.statLabel}>Expired Members</div>
           </div>
         </div>
       </div>
 
       {/* Filter and Search Dashboard */}
       <div className={styles.controls}>
-        {/* Search */}
         <div className={styles.searchWrapper}>
           <Search size={18} className={styles.searchIcon} />
           <input
@@ -155,8 +271,6 @@ export default function AdminMemberships() {
             className={styles.searchInput}
           />
         </div>
-
-        {/* Filter Selection Grid */}
         <div className={styles.filters}>
           <div className={styles.filterGroup}>
             <label>Tier</label>
@@ -168,7 +282,6 @@ export default function AdminMemberships() {
               <option value="Gold">Gold</option>
             </select>
           </div>
-
           <div className={styles.filterGroup}>
             <label>Approval Status</label>
             <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className={styles.select}>
@@ -178,7 +291,6 @@ export default function AdminMemberships() {
               <option value="Rejected">Rejected</option>
             </select>
           </div>
-
           <div className={styles.filterGroup}>
             <label>Payment</label>
             <select value={filterPay} onChange={(e) => setFilterPay(e.target.value)} className={styles.select}>
@@ -188,10 +300,20 @@ export default function AdminMemberships() {
               <option value="Waived">Waived</option>
             </select>
           </div>
+          <div className={styles.filterGroup}>
+            <label>Membership Status</label>
+            <select value={filterMemberStatus} onChange={(e) => setFilterMemberStatus(e.target.value)} className={styles.select}>
+              <option value="All">All</option>
+              <option value="Active">Active</option>
+              <option value="Expired">Expired</option>
+              <option value="Cancelled">Cancelled</option>
+              <option value="Renewed">Renewed</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      {/* Database Output List */}
+      {/* Table */}
       {loading ? (
         <div className={styles.loadingBlock}>
           <Loader2 size={32} className={styles.spinner} />
@@ -203,74 +325,77 @@ export default function AdminMemberships() {
             <thead>
               <tr>
                 <th>Applicant / Organization</th>
-                <th>Target Tier</th>
-                <th>Submitted Date</th>
+                <th>Tier</th>
+                <th>Membership Status</th>
+                <th>Submitted</th>
+                <th>Expires</th>
                 <th>Approval</th>
                 <th>Payment</th>
                 <th style={{ textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {registrations.map((item) => (
-                <tr key={item.id} className={styles.tableRow}>
-                  <td>
-                    <div className={styles.applicantInfo}>
-                      <span className={styles.name}>{item.name}</span>
-                      <span className={styles.subMeta}>
-                        <Building size={11} /> {item.organization}
+              {registrations.map((item) => {
+                const effectiveStatus = getEffectiveStatus(item);
+                const daysLeft = getDaysUntilExpiry(item.expires_at);
+                const isExpiringSoon = daysLeft !== null && daysLeft >= 0 && daysLeft <= 30;
+
+                return (
+                  <tr key={item.id} className={styles.tableRow}>
+                    <td>
+                      <div className={styles.applicantInfo}>
+                        <span className={styles.name}>{item.name}</span>
+                        <span className={styles.subMeta}><Building size={11} /> {item.organization}</span>
+                        <span className={styles.subMeta}><Mail size={11} /> {item.email}</span>
+                        {item.title && <span className={styles.subMeta}><Briefcase size={11} /> {item.title}</span>}
+                      </div>
+                    </td>
+                    <td>
+                      <span className={`${styles.tierBadge} ${styles['tier' + item.tier]}`}>{item.tier}</span>
+                    </td>
+                    <td>
+                      <span className={`${styles.statusBadge} ${getMemberStatusClass(effectiveStatus)}`}>
+                        {effectiveStatus}
                       </span>
-                      <span className={styles.subMeta}>
-                        <Mail size={11} /> {item.email}
-                      </span>
-                      {item.title && (
-                        <span className={styles.subMeta}>
-                          <Briefcase size={11} /> {item.title}
-                        </span>
+                      {isExpiringSoon && effectiveStatus === 'Active' && (
+                        <div className={styles.expiryWarning}>
+                          <Clock size={10} /> {daysLeft}d left
+                        </div>
                       )}
-                    </div>
-                  </td>
-                  <td>
-                    <span className={`${styles.tierBadge} ${styles['tier' + item.tier]}`}>
-                      {item.tier}
-                    </span>
-                  </td>
-                  <td className={styles.dateCell}>
-                    {new Date(item.created_at).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric'
-                    })}
-                  </td>
-                  <td>
-                    <span className={`${styles.statusBadge} ${getStatusBadgeClass(item.status)}`}>
-                      {item.status}
-                    </span>
-                  </td>
-                  <td>
-                    <span className={`${styles.statusBadge} ${getPayStatusBadgeClass(item.pay_status)}`}>
-                      {item.pay_status}
-                    </span>
-                  </td>
-                  <td>
-                    <div className={styles.actionCell}>
-                      <button 
-                        onClick={() => handleEditClick(item)} 
-                        className={styles.editBtn}
-                        title="Edit Registration Properties"
-                      >
-                        <Edit size={14} />
-                      </button>
-                      <button 
-                        onClick={() => handleDelete(item.id)} 
-                        className={styles.deleteBtn}
-                        title="Delete Record"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className={styles.dateCell}>{formatDate(item.created_at)}</td>
+                    <td className={styles.dateCell}>
+                      {item.expires_at ? (
+                        <span style={{ color: daysLeft !== null && daysLeft < 0 ? '#ef4444' : daysLeft !== null && daysLeft <= 30 ? '#f59e0b' : '#94a3b8' }}>
+                          {formatDate(item.expires_at)}
+                        </span>
+                      ) : (
+                        <span style={{ color: '#64748b' }}>—</span>
+                      )}
+                    </td>
+                    <td>
+                      <span className={`${styles.statusBadge} ${getStatusBadgeClass(item.status)}`}>
+                        {item.status}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`${styles.statusBadge} ${getPayStatusBadgeClass(item.pay_status)}`}>
+                        {item.pay_status}
+                      </span>
+                    </td>
+                    <td>
+                      <div className={styles.actionCell}>
+                        <button onClick={() => handleEditClick(item)} className={styles.editBtn} title="Edit Registration">
+                          <Edit size={14} />
+                        </button>
+                        <button onClick={() => handleDelete(item.id)} className={styles.deleteBtn} title="Delete Record">
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -282,7 +407,7 @@ export default function AdminMemberships() {
         </div>
       )}
 
-      {/* Editing Application Modal Form */}
+      {/* Edit Modal */}
       {editingItem && (
         <div className={styles.modalOverlay}>
           <div className={styles.modal}>
@@ -298,6 +423,10 @@ export default function AdminMemberships() {
                 <div><strong>Applicant:</strong> {editingItem.name}</div>
                 <div><strong>Organization:</strong> {editingItem.organization}</div>
                 <div><strong>Target Tier:</strong> {editingItem.tier}</div>
+                <div><strong>Email:</strong> {editingItem.email}</div>
+                {editingItem.expires_at && (
+                  <div><strong>Expires:</strong> {formatDate(editingItem.expires_at)}</div>
+                )}
                 {editingItem.message && (
                   <div className={styles.messageBox}>
                     <strong>Description:</strong>
@@ -308,8 +437,8 @@ export default function AdminMemberships() {
 
               <div className={styles.inputGroup}>
                 <label>Review Approval Status</label>
-                <select 
-                  value={formData.status} 
+                <select
+                  value={formData.status}
                   onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
                   className={styles.selectField}
                 >
@@ -320,9 +449,23 @@ export default function AdminMemberships() {
               </div>
 
               <div className={styles.inputGroup}>
+                <label>Membership Lifecycle Status</label>
+                <select
+                  value={formData.membership_status}
+                  onChange={(e) => setFormData(prev => ({ ...prev, membership_status: e.target.value }))}
+                  className={styles.selectField}
+                >
+                  <option value="Active">Active</option>
+                  <option value="Expired">Expired</option>
+                  <option value="Cancelled">Cancelled</option>
+                  <option value="Renewed">Renewed</option>
+                </select>
+              </div>
+
+              <div className={styles.inputGroup}>
                 <label>Payment Reconciliation</label>
-                <select 
-                  value={formData.pay_status} 
+                <select
+                  value={formData.pay_status}
                   onChange={(e) => setFormData(prev => ({ ...prev, pay_status: e.target.value }))}
                   className={styles.selectField}
                 >
@@ -333,7 +476,7 @@ export default function AdminMemberships() {
               </div>
 
               <div className={styles.inputGroup}>
-                <label>Payment Reference logs</label>
+                <label>Payment Reference Logs</label>
                 <textarea
                   rows={3}
                   value={formData.payment_details}
@@ -344,18 +487,9 @@ export default function AdminMemberships() {
               </div>
 
               <div className={styles.modalActions}>
-                <button type="button" onClick={() => setEditingItem(null)} className={styles.cancelBtn}>
-                  Cancel
-                </button>
+                <button type="button" onClick={() => setEditingItem(null)} className={styles.cancelBtn}>Cancel</button>
                 <button type="submit" disabled={isSaving} className={styles.saveBtn}>
-                  {isSaving ? (
-                    <>
-                      <Loader2 size={14} className={styles.spinner} />
-                      Saving changes...
-                    </>
-                  ) : (
-                    'Save changes'
-                  )}
+                  {isSaving ? <><Loader2 size={14} className={styles.spinner} /> Saving...</> : 'Save Changes'}
                 </button>
               </div>
             </form>

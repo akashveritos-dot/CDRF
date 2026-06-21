@@ -109,6 +109,23 @@ export default function MembershipPage() {
   const [lockedPrice, setLockedPrice] = useState<number | null>(null);
   const [lockedDiscount, setLockedDiscount] = useState<any | null>(null);
 
+  // Smart email detection state
+  const [emailCheckLoading, setEmailCheckLoading] = useState(false);
+  const [emailCheckResult, setEmailCheckResult] = useState<{
+    hasMembership: boolean;
+    tier?: string;
+    membershipStatus?: string;
+    expiresAt?: string;
+    tierRank?: number;
+    isExpired?: boolean;
+  } | null>(null);
+
+  // Review step — inline edit state
+  const [editingField, setEditingField] = useState<string | null>(null);
+  const [reviewDraft, setReviewDraft] = useState<Record<string, string>>({});
+  const [reviewEmailWarning, setReviewEmailWarning] = useState<string | null>(null);
+  const [reviewEmailChecking, setReviewEmailChecking] = useState(false);
+
   // Dynamic Pricing and Campaigns State
   const [tiers, setTiers] = useState<any[]>([
     { name: 'Basic', price: 0, priceSubText: 'Individual & Student Access', features: membershipTiers[0].features, discount: null },
@@ -175,6 +192,49 @@ export default function MembershipPage() {
     }
     return `₹${t.price.toLocaleString('en-IN')}/yr — ${subTextClean}`;
   };
+
+  // Tier rank map for upgrade UI filtering
+  const TIER_RANK: Record<string, number> = { Basic: 0, Prime: 1, Premium: 2, Gold: 3 };
+
+  // ── Debounced email membership check ────────────────────────────────────────
+  // Fires automatically 600ms after the user stops typing a valid email.
+  // Works with autofill, paste, and manual typing — no blur needed.
+  useEffect(() => {
+    const email = formData.email.trim().toLowerCase();
+
+    // Must look like a valid email
+    if (!email || !email.includes('@') || !email.includes('.')) {
+      setEmailCheckResult(null);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setEmailCheckLoading(true);
+      try {
+        const res = await fetch(`/api/membership/check-email?email=${encodeURIComponent(email)}`);
+        if (res.ok) {
+          const data = await res.json();
+          setEmailCheckResult(data);
+          // Auto-select the next upgrade tier so the panel has something pre-selected
+          if (data.hasMembership && !data.isExpired && typeof data.tierRank === 'number') {
+            const RANK_TO_TIER = ['Basic', 'Prime', 'Premium', 'Gold'];
+            const nextUpgradeTier = RANK_TO_TIER[(data.tierRank ?? 0) + 1];
+            if (nextUpgradeTier) {
+              setFormData(prev => ({ ...prev, tier: nextUpgradeTier }));
+            }
+          }
+        }
+      } catch (err) {
+        console.error('[email-check] fetch failed:', err);
+        setEmailCheckResult(null);
+      } finally {
+        setEmailCheckLoading(false);
+      }
+    }, 600);
+
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.email]);
 
   const triggerScrollToForm = (e?: Event) => {
     if (e) {
@@ -275,10 +335,22 @@ export default function MembershipPage() {
 
         const data = await res.json();
         if (data.alreadyExists) {
-          warning(
-            'Already Applied',
-            data.message || 'This email is already registered for membership.'
-          );
+          if (data.downgradeBlocked) {
+            warning(
+              'Plan Downgrade Blocked',
+              data.message || 'You cannot downgrade to a lower tier while having an active higher membership.'
+            );
+          } else if (data.sameplan) {
+            warning(
+              'Already a Member',
+              data.message || 'You are already an active member of this plan.'
+            );
+          } else {
+            warning(
+              'Already Applied',
+              data.message || 'This email is already registered for membership.'
+            );
+          }
         } else {
           if (!isPaidTier) {
             setApplicationId(data.applicationId);
@@ -480,7 +552,28 @@ export default function MembershipPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    // Clear email check when email changes
+    if (name === 'email') {
+      setEmailCheckResult(null);
+    }
   };
+
+  // Derive which tiers to show based on email check result
+  const visibleTiers = (() => {
+    if (!emailCheckResult?.hasMembership || emailCheckResult.isExpired) {
+      return tiers; // Show all tiers for new users or expired members
+    }
+    const existingRank = emailCheckResult.tierRank ?? 0;
+    return tiers.filter(t => (TIER_RANK[t.name] ?? 0) > existingRank); // Only show upgrades
+  })();
+
+  const tierOptionsFiltered = (() => {
+    if (!emailCheckResult?.hasMembership || emailCheckResult.isExpired) {
+      return tierOptions;
+    }
+    const existingRank = emailCheckResult.tierRank ?? 0;
+    return tierOptions.filter(t => (TIER_RANK[t.value] ?? 0) > existingRank);
+  })();
 
   return (
     <div className={styles.page}>
@@ -495,7 +588,7 @@ export default function MembershipPage() {
 
       {/* ── Tier pricing cards ─────────────────────────────────────────── */}
       <div className={styles.tiersGrid}>
-        {tiers.map((tier, idx) => {
+        {visibleTiers.map((tier, idx) => {
           const cfg = TIER_CONFIG[tier.name as keyof typeof TIER_CONFIG];
           return (
             <ScrollReveal key={tier.name} direction="up" delay={0.06 * idx}>
@@ -841,103 +934,328 @@ export default function MembershipPage() {
                 Register Another
               </button>
             </div>
-          ) : flowStep === 'payment' ? (
-            <div className={styles.paymentBox}>
-              <h3 className={styles.paymentTitle}>Review Application Details</h3>
-              <p className={styles.paymentSubtitle}>
-                Please verify your membership order information below to proceed with the transaction.
-              </p>
+          ) : flowStep === 'payment' ? (() => {
+            const selectedTierMeta: Record<string, { accent: string; pale: string; icon: React.ReactNode }> = {
+              Basic:   { accent: '#64748b', pale: '#f1f5f9', icon: <Shield size={14} /> },
+              Prime:   { accent: '#0e7a6b', pale: '#f0fdf9', icon: <Zap size={14} /> },
+              Premium: { accent: '#6d28d9', pale: '#f5f3ff', icon: <Star size={14} /> },
+              Gold:    { accent: '#b45309', pale: '#fffbeb', icon: <Crown size={14} /> },
+            };
+            const tm = selectedTierMeta[formData.tier] || selectedTierMeta.Basic;
 
-              {/* Summary Card */}
-              <div className={styles.paymentSummary}>
-                <div className={styles.previewTitle}>Membership Order Preview</div>
-                <div className={styles.summaryRow}>
-                  <span className={styles.summaryLabel}>
-                    <User size={14} style={{ marginRight: '8px', verticalAlign: 'middle', opacity: 0.7 }} />
-                    Applicant
-                  </span>
-                  <span className={styles.summaryValue}>{formData.name}</span>
+            const priceDisplay = (() => {
+              const raw = lockedPrice === null
+                ? tiers.find(x => x.name === formData.tier)?.price ?? 0
+                : lockedPrice;
+              if (raw === 0) return { main: 'Free', crossed: null, badge: null };
+              if (lockedDiscount) {
+                const base = tiers.find(x => x.name === formData.tier)?.price ?? raw;
+                return {
+                  main: `₹${raw.toLocaleString('en-IN')}`,
+                  crossed: `₹${base.toLocaleString('en-IN')}`,
+                  badge: `${lockedDiscount.percentage}% OFF — ${lockedDiscount.title}`,
+                };
+              }
+              return { main: `₹${raw.toLocaleString('en-IN')}`, crossed: null, badge: null };
+            })();
+
+            return (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0', width: '100%' }}>
+                {/* ── Page Header */}
+                <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+                  <div style={{
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    width: '52px', height: '52px', borderRadius: '14px',
+                    background: `linear-gradient(135deg, ${tm.accent}20, ${tm.accent}08)`,
+                    border: `1.5px solid ${tm.accent}30`,
+                    marginBottom: '14px',
+                  }}>
+                    <Shield size={24} style={{ color: tm.accent }} />
+                  </div>
+                  <h3 style={{ margin: '0 0 8px', fontSize: '22px', fontWeight: 800, color: '#0f172a', fontFamily: "'Playfair Display', serif", letterSpacing: '-0.3px' }}>
+                    Review Your Order
+                  </h3>
+                  <p style={{ margin: 0, fontSize: '13px', color: '#64748b', lineHeight: 1.6 }}>
+                    Confirm the details below before proceeding to secure payment
+                  </p>
                 </div>
-                <div className={styles.summaryRow}>
-                  <span className={styles.summaryLabel}>
-                    <Mail size={14} style={{ marginRight: '8px', verticalAlign: 'middle', opacity: 0.7 }} />
-                    Email Address
-                  </span>
-                  <span className={styles.summaryValue}>{formData.email}</span>
-                </div>
-                <div className={styles.summaryRow}>
-                  <span className={styles.summaryLabel}>
-                    <Building size={14} style={{ marginRight: '8px', verticalAlign: 'middle', opacity: 0.7 }} />
-                    Organization
-                  </span>
-                  <span className={styles.summaryValue}>{formData.organization}</span>
-                </div>
-                <div className={styles.summaryRow}>
-                  <span className={styles.summaryLabel}>
-                    <Award size={14} style={{ marginRight: '8px', verticalAlign: 'middle', opacity: 0.7 }} />
-                    Selected Tier
-                  </span>
-                  <span className={styles.summaryValue} style={{ fontWeight: 'bold' }}>{formData.tier}</span>
-                </div>
-                <div className={styles.summaryDivider}></div>
-                <div className={styles.summaryRow}>
-                  <span className={styles.summaryLabel} style={{ fontWeight: 'bold' }}>Total Due</span>
-                  <span className={styles.summaryTotal}>
-                    {(() => {
-                      if (lockedPrice === null) {
-                        const t = tiers.find(x => x.name === formData.tier);
-                        if (!t) return formData.tier === 'Prime' ? '₹20,000' : formData.tier === 'Premium' ? '₹50,000' : '₹1,00,000';
-                        if (t.price === 0) return 'Free';
-                        return `₹${t.price.toLocaleString('en-IN')}`;
+
+                {/* ── Order Card */}
+                <div style={{
+                  background: '#ffffff',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '14px',
+                  overflow: 'hidden',
+                  marginBottom: '16px',
+                  boxShadow: '0 1px 8px rgba(0,0,0,0.06)',
+                }}>
+                  {/* Card header */}
+                  <div style={{
+                    padding: '12px 20px',
+                    borderBottom: '1px solid #f1f5f9',
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    background: '#f8fafc',
+                  }}>
+                    <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: tm.accent }} />
+                    <span style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#64748b' }}>
+                      Membership Order Summary
+                    </span>
+                  </div>
+
+                  {/* Rows — inline editable */}
+                  {(() => {
+                    const editableRows: { key: string; icon: React.ReactNode; label: string; type?: string }[] = [
+                      { key: 'name',         icon: <User size={15} />,     label: 'Applicant',       type: 'text' },
+                      { key: 'email',        icon: <Mail size={15} />,     label: 'Email',           type: 'email' },
+                      { key: 'organization', icon: <Building size={15} />, label: 'Organization',    type: 'text' },
+                      { key: 'tier',         icon: <Award size={15} />,    label: 'Membership Tier', type: 'select' },
+                    ];
+
+                    const handleStartEdit = (key: string) => {
+                      setEditingField(key);
+                      setReviewDraft(prev => ({ ...prev, [key]: (formData as any)[key] }));
+                      setReviewEmailWarning(null);
+                    };
+
+                    const handleSaveEdit = async (key: string) => {
+                      const val = reviewDraft[key] ?? '';
+                      if (key === 'email') {
+                        // Re-check membership for new email
+                        const clean = val.trim().toLowerCase();
+                        if (clean && clean.includes('@') && clean.includes('.')) {
+                          setReviewEmailChecking(true);
+                          try {
+                            const res = await fetch(`/api/membership/check-email?email=${encodeURIComponent(clean)}`);
+                            if (res.ok) {
+                              const data = await res.json();
+                              if (data.hasMembership && !data.isExpired) {
+                                if (data.tier === formData.tier) {
+                                  setReviewEmailWarning(`This email already has an active ${data.tier} membership. Please choose a different plan or use a different email.`);
+                                  setEditingField(null);
+                                  setFormData(prev => ({ ...prev, [key]: val }));
+                                  setReviewEmailChecking(false);
+                                  return;
+                                }
+                              }
+                              setReviewEmailWarning(null);
+                            }
+                          } catch { /* ignore */ }
+                          finally { setReviewEmailChecking(false); }
+                        }
                       }
-                      if (lockedPrice === 0) return 'Free';
-                      if (lockedDiscount) {
-                        const t = tiers.find(x => x.name === formData.tier);
-                        const basePrice = t ? t.price : (lockedPrice / (1 - lockedDiscount.percentage / 100));
-                        return (
-                          <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
-                            <span style={{ textDecoration: 'line-through', fontSize: '12px', color: 'var(--text-muted)', fontWeight: 500 }}>
-                              ₹{basePrice.toLocaleString('en-IN')}
-                            </span>
-                            <span style={{ color: '#10b981', fontWeight: 'bold' }}>₹{lockedPrice.toLocaleString('en-IN')}</span>
-                            <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
-                              ({lockedDiscount.title} — {lockedDiscount.percentage}% OFF)
-                            </span>
-                          </span>
-                        );
-                      }
-                      return `₹${lockedPrice.toLocaleString('en-IN')}`;
-                    })()}
-                  </span>
+                      setFormData(prev => ({ ...prev, [key]: val }));
+                      setEditingField(null);
+                    };
+
+                    const handleCancelEdit = () => setEditingField(null);
+
+                    return (
+                      <div style={{ padding: '4px 0' }}>
+                        {editableRows.map((row, i) => {
+                          const isEditing = editingField === row.key;
+                          const currentVal = (formData as any)[row.key] ?? '';
+                          const isLast = i === editableRows.length - 1;
+
+                          return (
+                            <div key={row.key} style={{
+                              borderBottom: isLast ? 'none' : '1px solid #f1f5f9',
+                            }}>
+                              {/* Display row */}
+                              {!isEditing && (
+                                <div style={{
+                                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                  padding: '11px 20px',
+                                }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#64748b', fontSize: '13px', flexShrink: 0 }}>
+                                    {row.icon} {row.label}
+                                  </div>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', maxWidth: '60%' }}>
+                                    {row.key === 'tier' ? (
+                                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: tm.pale, color: tm.accent, fontWeight: 700, fontSize: '12px', padding: '3px 10px', borderRadius: '20px', border: `1px solid ${tm.accent}30` }}>
+                                        {tm.icon} {currentVal}
+                                      </span>
+                                    ) : (
+                                      <span style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a', textAlign: 'right', wordBreak: 'break-all' }}>{currentVal}</span>
+                                    )}
+                                    <button
+                                      type="button"
+                                      onClick={() => handleStartEdit(row.key)}
+                                      title={`Edit ${row.label}`}
+                                      style={{
+                                        background: 'none', border: '1px solid #e2e8f0',
+                                        borderRadius: '6px', padding: '4px 6px',
+                                        cursor: 'pointer', color: '#94a3b8',
+                                        display: 'flex', alignItems: 'center',
+                                        flexShrink: 0, transition: 'all 0.15s',
+                                      }}
+                                    >
+                                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Edit row */}
+                              {isEditing && (
+                                <div style={{ padding: '10px 16px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>
+                                  <label style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: '#64748b', marginBottom: '6px', display: 'block' }}>
+                                    Editing: {row.label}
+                                  </label>
+                                  {row.type === 'select' ? (
+                                    <select
+                                      value={reviewDraft[row.key] ?? currentVal}
+                                      onChange={e => setReviewDraft(prev => ({ ...prev, [row.key]: e.target.value }))}
+                                      style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1.5px solid #cbd5e1', fontSize: '13px', fontWeight: 600, color: '#0f172a', background: '#fff', outline: 'none', marginBottom: '8px' }}
+                                    >
+                                      {tiers.filter(t => t.price > 0).map((t: any) => (
+                                        <option key={t.name} value={t.name}>{t.name} — ₹{t.price.toLocaleString('en-IN')}/yr</option>
+                                      ))}
+                                    </select>
+                                  ) : (
+                                    <input
+                                      type={row.type}
+                                      value={reviewDraft[row.key] ?? currentVal}
+                                      onChange={e => setReviewDraft(prev => ({ ...prev, [row.key]: e.target.value }))}
+                                      autoFocus
+                                      style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1.5px solid #cbd5e1', fontSize: '13px', color: '#0f172a', background: '#fff', outline: 'none', marginBottom: '8px', boxSizing: 'border-box' }}
+                                    />
+                                  )}
+                                  <div style={{ display: 'flex', gap: '8px' }}>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleSaveEdit(row.key)}
+                                      disabled={reviewEmailChecking}
+                                      style={{ flex: 1, padding: '7px', borderRadius: '7px', border: 'none', background: tm.accent, color: '#fff', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
+                                    >
+                                      {reviewEmailChecking ? 'Checking…' : '✓ Save'}
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={handleCancelEdit}
+                                      style={{ flex: 1, padding: '7px', borderRadius: '7px', border: '1px solid #e2e8f0', background: '#fff', color: '#64748b', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+
+                        {/* Email same-plan warning */}
+                        {reviewEmailWarning && (
+                          <div style={{ margin: '0 16px 12px', padding: '12px 14px', background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: '8px', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                            <span style={{ fontSize: '16px', lineHeight: 1 }}>⚠️</span>
+                            <div>
+                              <p style={{ margin: '0 0 6px', fontSize: '12px', fontWeight: 700, color: '#92400e' }}>Already a Member</p>
+                              <p style={{ margin: '0 0 8px', fontSize: '11px', color: '#78350f', lineHeight: 1.5 }}>{reviewEmailWarning}</p>
+                              <button
+                                type="button"
+                                onClick={() => { setReviewEmailWarning(null); setFlowStep('form'); }}
+                                style={{ fontSize: '11px', fontWeight: 700, color: '#b45309', background: 'none', border: '1px solid #f59e0b', borderRadius: '5px', padding: '4px 10px', cursor: 'pointer' }}
+                              >
+                                Change Plan →
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+
+                  {/* Total row */}
+                  <div style={{
+                    padding: '14px 20px',
+                    background: '#f8fafc',
+                    borderTop: '1.5px solid #e2e8f0',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  }}>
+                    <span style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a' }}>Total Due</span>
+                    <div style={{ textAlign: 'right' }}>
+                      {priceDisplay.crossed && (
+                        <p style={{ margin: '0 0 2px', fontSize: '11px', textDecoration: 'line-through', color: '#94a3b8' }}>
+                          {priceDisplay.crossed}
+                        </p>
+                      )}
+                      <p style={{ margin: 0, fontSize: '20px', fontWeight: 900, color: tm.accent, letterSpacing: '-0.5px' }}>
+                        {priceDisplay.main}
+                      </p>
+                      {priceDisplay.badge && (
+                        <span style={{
+                          display: 'inline-block', marginTop: '3px',
+                          background: '#fef2f2', color: '#dc2626',
+                          fontSize: '9px', fontWeight: 800, padding: '2px 7px', borderRadius: '4px',
+                        }}>
+                          {priceDisplay.badge}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* ── Trust badge */}
+                <div style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  gap: '7px', padding: '10px 16px',
+                  background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px',
+                  marginBottom: '20px',
+                  fontSize: '12px', color: '#15803d', fontWeight: 500,
+                }}>
+                  <Shield size={14} fill="#15803d" color="#15803d" />
+                  256-bit encrypted · Secured by Razorpay · DCRF Verified
+                </div>
+
+                {/* ── Action buttons */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '12px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setFlowStep('form')}
+                    disabled={isPaying}
+                    style={{
+                      padding: '13px 16px',
+                      borderRadius: '10px',
+                      border: '1.5px solid #e2e8f0',
+                      background: '#ffffff',
+                      color: '#475569',
+                      fontSize: '14px', fontWeight: 600,
+                      cursor: isPaying ? 'not-allowed' : 'pointer',
+                      transition: 'all 0.15s ease',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                    }}
+                  >
+                    ← Go Back
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handlePayment}
+                    disabled={isPaying}
+                    style={{
+                      padding: '13px 20px',
+                      borderRadius: '10px',
+                      border: 'none',
+                      background: isPaying
+                        ? '#e2e8f0'
+                        : `linear-gradient(135deg, ${tm.accent} 0%, ${tm.accent}cc 100%)`,
+                      color: isPaying ? '#94a3b8' : '#ffffff',
+                      fontSize: '14px', fontWeight: 700,
+                      cursor: isPaying ? 'not-allowed' : 'pointer',
+                      boxShadow: isPaying ? 'none' : `0 4px 16px ${tm.accent}35`,
+                      transition: 'all 0.18s ease',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                      letterSpacing: '0.2px',
+                    }}
+                  >
+                    {isPaying ? (
+                      <>Processing…</>
+                    ) : (
+                      <><Shield size={15} fill="white" color="white" /> Proceed to Payment · {priceDisplay.main}</>
+                    )}
+                  </button>
                 </div>
               </div>
-
-              <div className={styles.secureBadge}>
-                <Shield size={16} /> Secure transaction processed via encrypted payment gateway
-              </div>
-
-              {/* Action Buttons */}
-              <div className={styles.payActions}>
-                <button
-                  type="button"
-                  className={styles.backBtn}
-                  onClick={() => setFlowStep('form')}
-                  disabled={isPaying}
-                >
-                  Go Back
-                </button>
-                <button
-                  type="button"
-                  className={styles.submitBtn}
-                  onClick={handlePayment}
-                  disabled={isPaying}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                >
-                  {isPaying ? 'Processing...' : 'Proceed to Payment'}
-                </button>
-              </div>
-            </div>
-          ) : (
+            );
+          })() : (
             <form onSubmit={handleSubmit}>
               <h2 className={styles.formTitle}>Join the Resilience Movement</h2>
               <p className={styles.formSubtitle}>
@@ -956,8 +1274,36 @@ export default function MembershipPage() {
                   <label className={styles.label}>Corporate Email</label>
                   <div className={styles.inputWrapper}>
                     <Mail className={styles.inputIcon} size={18} />
-                    <input type="email" name="email" required placeholder="name@organization.org" className={styles.input} value={formData.email} onChange={handleInputChange} />
+                    <input
+                      type="email"
+                      name="email"
+                      required
+                      placeholder="name@organization.org"
+                      className={styles.input}
+                      value={formData.email}
+                      onChange={handleInputChange}
+                    />
                   </div>
+                  {/* Loading spinner */}
+                  {emailCheckLoading && (
+                    <div style={{ marginTop: '8px', fontSize: '12px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⟳</span> Checking membership...
+                    </div>
+                  )}
+                  {/* Expired member notice */}
+                  {emailCheckResult?.hasMembership && emailCheckResult.isExpired && (
+                    <div style={{
+                      marginTop: '10px',
+                      background: 'rgba(59,130,246,0.06)',
+                      border: '1px solid rgba(59,130,246,0.18)',
+                      borderRadius: '10px',
+                      padding: '12px 16px',
+                      fontSize: '12px',
+                      color: '#94a3b8'
+                    }}>
+                      <span style={{ color: '#60a5fa', fontWeight: 600 }}>↻ Your {emailCheckResult.tier} membership has expired.</span> Select a plan below to renew or upgrade.
+                    </div>
+                  )}
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>Organization / Institution</label>
@@ -973,6 +1319,8 @@ export default function MembershipPage() {
                     <input type="text" name="title" placeholder="e.g. Director Sustainability" className={styles.input} value={formData.title} onChange={handleInputChange} />
                   </div>
                 </div>
+                {/* Tier dropdown — only shown when no active membership detected */}
+                {!(emailCheckResult?.hasMembership && !emailCheckResult.isExpired) && (
                 <div className={`${styles.formGroup} ${styles.fieldFull}`}>
                   <label className={styles.label}>Select Target Membership Tier</label>
                   <div className={styles.customDropdown} ref={dropdownRef}>
@@ -984,8 +1332,8 @@ export default function MembershipPage() {
                       aria-expanded={dropdownOpen}
                     >
                       <div className={styles.dropdownSelected}>
-                        <span className={styles.dropdownIcon} style={{ color: tierOptions.find(t => t.value === formData.tier)?.color }}>
-                          {tierOptions.find(t => t.value === formData.tier)?.icon}
+                        <span className={styles.dropdownIcon} style={{ color: tierOptionsFiltered.find(t => t.value === formData.tier)?.color || tierOptions.find(t => t.value === formData.tier)?.color }}>
+                          {tierOptionsFiltered.find(t => t.value === formData.tier)?.icon || tierOptions.find(t => t.value === formData.tier)?.icon}
                         </span>
                         <div className={styles.dropdownText}>
                           <span className={styles.dropdownLabel}>
@@ -1003,7 +1351,7 @@ export default function MembershipPage() {
                     </button>
                     {isMounted && dropdownOpen && (
                       <div className={styles.dropdownMenu}>
-                        {tierOptions.map((option) => (
+                        {tierOptionsFiltered.map((option) => (
                           <button
                             key={option.value}
                             type="button"
@@ -1031,6 +1379,7 @@ export default function MembershipPage() {
                     )}
                   </div>
                 </div>
+                )}
                 <div className={`${styles.formGroup} ${styles.fieldFull}`}>
                   <label className={styles.label}>Resilience Focus / Brief Description</label>
                   <div className={styles.textareaWrapper}>
@@ -1038,10 +1387,186 @@ export default function MembershipPage() {
                     <textarea name="message" rows={4} placeholder="Briefly describe your interest in DCRF working groups..." className={styles.textarea} value={formData.message} onChange={handleInputChange} />
                   </div>
                 </div>
-                <button type="submit" className={`${styles.submitBtn} ${styles.fieldFull}`}>
-                  Submit Application
-                </button>
-              </div>
+
+                {/* ── Premium Inline Upgrade Panel ─────────────────────────── */}
+                {emailCheckResult?.hasMembership && !emailCheckResult.isExpired ? (() => {
+                  const existingRank = emailCheckResult.tierRank ?? 0;
+                  const selectedRank = TIER_RANK[formData.tier] ?? 0;
+                  const upgradeTiers = tiers.filter(t => (TIER_RANK[t.name] ?? 0) > existingRank && t.price > 0);
+                  const isValidUpgrade = selectedRank > existingRank;
+
+                  const tierMeta: Record<string, { icon: React.ReactNode; accent: string; pale: string; border: string }> = {
+                    Prime:   { icon: <Zap size={16} />,   accent: '#0e7a6b', pale: '#f0fdf9', border: '#5eead4' },
+                    Premium: { icon: <Star size={16} />,  accent: '#6d28d9', pale: '#f5f3ff', border: '#c4b5fd' },
+                    Gold:    { icon: <Crown size={16} />, accent: '#b45309', pale: '#fffbeb', border: '#fcd34d' },
+                  };
+
+                  return (
+                    <div className={styles.fieldFull} style={{
+                      background: '#f8fafc',
+                      border: '1.5px solid #e2e8f0',
+                      borderRadius: '14px',
+                      overflow: 'hidden',
+                    }}>
+                      {/* ── Header strip */}
+                      <div style={{
+                        background: 'linear-gradient(135deg, #7f0000 0%, #b91c1c 100%)',
+                        padding: '14px 20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                      }}>
+                        <Shield size={22} fill="white" color="white" strokeWidth={1.5} />
+                        <div>
+                          <p style={{ margin: 0, fontSize: '13px', fontWeight: 700, color: '#fff', letterSpacing: '0.2px' }}>
+                            You&apos;re already a <span style={{ color: '#fcd34d' }}>{emailCheckResult.tier}</span> Member
+                          </p>
+                          <p style={{ margin: 0, fontSize: '11px', color: 'rgba(255,255,255,0.75)', marginTop: '2px' }}>
+                            {emailCheckResult.expiresAt
+                              ? <>Valid until <strong>{new Date(emailCheckResult.expiresAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</strong></>
+                              : '✓ Lifetime access · Upgrade to unlock more benefits'
+                            }
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* ── Tier picker */}
+                      <div style={{ padding: '16px 20px 20px' }}>
+                        <p style={{
+                          margin: '0 0 12px',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          letterSpacing: '0.07em',
+                          textTransform: 'uppercase',
+                          color: '#64748b',
+                        }}>
+                          Select upgrade plan
+                        </p>
+
+                        {upgradeTiers.length > 0 ? (
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px', marginBottom: '16px' }}>
+                            {upgradeTiers.map(t => {
+                              const meta = tierMeta[t.name] || { icon: <Star size={16} />, accent: '#334155', pale: '#f8fafc', border: '#e2e8f0' };
+                              const isSelected = formData.tier === t.name;
+                              const isDiscountActive = t.discount &&
+                                new Date(t.discount.startDate) <= currentTime &&
+                                new Date(t.discount.endDate) >= currentTime;
+                              const displayPrice = isDiscountActive && t.discount
+                                ? t.price - (t.price * t.discount.percentage / 100)
+                                : t.price;
+
+                              return (
+                                <button
+                                  key={t.name}
+                                  type="button"
+                                  onClick={() => setFormData(prev => ({ ...prev, tier: t.name }))}
+                                  style={{
+                                    background: isSelected ? meta.pale : '#ffffff',
+                                    border: `2px solid ${isSelected ? meta.accent : '#e2e8f0'}`,
+                                    borderRadius: '10px',
+                                    padding: '12px 14px',
+                                    cursor: 'pointer',
+                                    textAlign: 'left',
+                                    transition: 'all 0.18s ease',
+                                    position: 'relative',
+                                    outline: 'none',
+                                    boxShadow: isSelected ? `0 0 0 3px ${meta.accent}18` : 'none',
+                                  }}
+                                >
+                                  {/* Selected checkmark */}
+                                  {isSelected && (
+                                    <span style={{
+                                      position: 'absolute', top: '8px', right: '8px',
+                                      width: '18px', height: '18px', borderRadius: '50%',
+                                      background: meta.accent,
+                                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    }}>
+                                      <Check size={10} strokeWidth={3} color="#fff" />
+                                    </span>
+                                  )}
+
+                                  {/* Icon + Name */}
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                                    <span style={{ color: meta.accent }}>{meta.icon}</span>
+                                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a' }}>{t.name}</span>
+                                  </div>
+
+                                  {/* Price */}
+                                  {isDiscountActive && t.discount && (
+                                    <p style={{ margin: '0 0 1px', fontSize: '10px', textDecoration: 'line-through', color: '#94a3b8' }}>
+                                      ₹{t.price.toLocaleString('en-IN')}
+                                    </p>
+                                  )}
+                                  <p style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: isDiscountActive ? '#059669' : meta.accent }}>
+                                    ₹{displayPrice.toLocaleString('en-IN')}
+                                  </p>
+                                  <p style={{ margin: '1px 0 0', fontSize: '10px', color: '#94a3b8' }}>/year</p>
+
+                                  {isDiscountActive && t.discount && (
+                                    <span style={{
+                                      display: 'inline-block', marginTop: '4px',
+                                      background: '#fef2f2', color: '#dc2626',
+                                      fontSize: '9px', fontWeight: 800,
+                                      padding: '2px 6px', borderRadius: '4px',
+                                      letterSpacing: '0.3px',
+                                    }}>
+                                      {t.discount.percentage}% OFF
+                                    </span>
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <p style={{ margin: '0 0 16px', fontSize: '13px', color: '#64748b', textAlign: 'center' }}>
+                            You are on the highest tier. No upgrades available.
+                          </p>
+                        )}
+
+                        {/* CTA */}
+                        {upgradeTiers.length > 0 && (
+                          <button
+                            type="submit"
+                            disabled={!isValidUpgrade}
+                            style={{
+                              width: '100%',
+                              padding: '13px 20px',
+                              borderRadius: '9px',
+                              border: 'none',
+                              cursor: isValidUpgrade ? 'pointer' : 'not-allowed',
+                              fontSize: '14px',
+                              fontWeight: 700,
+                              letterSpacing: '0.2px',
+                              transition: 'all 0.18s ease',
+                              background: isValidUpgrade
+                                ? `linear-gradient(135deg, ${(tierMeta[formData.tier] || tierMeta.Prime).accent}, ${(tierMeta[formData.tier] || tierMeta.Prime).accent}cc)`
+                                : '#e2e8f0',
+                              color: isValidUpgrade ? '#ffffff' : '#94a3b8',
+                              boxShadow: isValidUpgrade
+                                ? `0 4px 16px ${(tierMeta[formData.tier] || tierMeta.Prime).accent}35`
+                                : 'none',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '8px',
+                            }}
+                          >
+                            {isValidUpgrade ? (
+                              <>{(tierMeta[formData.tier] || tierMeta.Prime).icon} Upgrade to {formData.tier} →</>
+                            ) : (
+                              <>Select a plan above</>
+                            )}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })() : (
+                  <button type="submit" className={`${styles.submitBtn} ${styles.fieldFull}`}>
+                    Submit Application
+                  </button>
+                )}
+                </div>
             </form>
           )}
         </div>

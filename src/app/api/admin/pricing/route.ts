@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized or Forbidden' }, { status: 403 });
     }
 
-    const plans = await query<any[]>('SELECT id, name, price, price_sub_text as priceSubText, is_popular as isPopular, features_json as featuresJson FROM membership_plans');
+    const plans = await query<any[]>('SELECT id, name, price, price_sub_text as priceSubText, is_popular as isPopular, features_json as featuresJson, duration_months as durationMonths FROM membership_plans');
     const discounts = await query<any[]>('SELECT id, tier_name as tierName, title, percentage, start_date as startDate, end_date as endDate FROM membership_discounts');
 
     const parsedPlans = plans.map(p => {
@@ -46,7 +46,7 @@ export async function PUT(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { name, price, priceSubText, isPopular, features } = body;
+    const { name, price, priceSubText, isPopular, features, durationMonths } = body;
 
     if (!name) {
       return NextResponse.json({ error: 'Plan name is required' }, { status: 400 });
@@ -56,8 +56,8 @@ export async function PUT(req: NextRequest) {
     const isPopularInt = isPopular ? 1 : 0;
 
     await query(
-      'UPDATE membership_plans SET price = ?, price_sub_text = ?, is_popular = ?, features_json = ? WHERE name = ?',
-      [price, priceSubText, isPopularInt, featuresJson, name]
+      'UPDATE membership_plans SET price = ?, price_sub_text = ?, is_popular = ?, features_json = ?, duration_months = ? WHERE name = ?',
+      [price, priceSubText, isPopularInt, featuresJson, durationMonths ?? 12, name]
     );
 
     return NextResponse.json({ success: true, message: `Plan ${name} updated successfully` });

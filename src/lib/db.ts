@@ -42,7 +42,15 @@ async function runMigration(pool: mysql.Pool) {
       'ALTER TABLE cms_pages ADD COLUMN display_order INT DEFAULT 0',
       'ALTER TABLE news ADD COLUMN gallery_images TEXT NULL',
       'ALTER TABLE membership_discounts MODIFY COLUMN start_date DATETIME NOT NULL',
-      'ALTER TABLE membership_discounts MODIFY COLUMN end_date DATETIME NOT NULL'
+      'ALTER TABLE membership_discounts MODIFY COLUMN end_date DATETIME NOT NULL',
+      // Membership plan duration
+      'ALTER TABLE membership_plans ADD COLUMN duration_months INT DEFAULT 12',
+      // Membership lifecycle columns
+      "ALTER TABLE memberships ADD COLUMN membership_status ENUM('Active','Expired','Cancelled','Renewed') DEFAULT 'Active'",
+      'ALTER TABLE memberships ADD COLUMN starts_at DATETIME NULL',
+      'ALTER TABLE memberships ADD COLUMN expires_at DATETIME NULL',
+      'ALTER TABLE memberships ADD COLUMN parent_id INT NULL',
+      'ALTER TABLE memberships ADD COLUMN is_current TINYINT DEFAULT 1'
     ];
     for (const sql of alterQueries) {
       try {
@@ -79,20 +87,44 @@ async function runMigration(pool: mysql.Pool) {
     `;
     await pool.execute(createPricingTable);
     await pool.execute(createDiscountTable);
-    console.log('[DB MIGRATION] Ensured membership plans & discounts tables exist.');
+
+    // Create membership history table
+    const createHistoryTable = `
+      CREATE TABLE IF NOT EXISTS membership_history (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        membership_id INT NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        tier VARCHAR(50),
+        action ENUM('Created','Upgraded','Renewed','Cancelled','Expired') NOT NULL,
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB;
+    `;
+    await pool.execute(createHistoryTable);
+
+    // Ensure email index for fast lookups
+    try {
+      await pool.execute('CREATE INDEX idx_memberships_email ON memberships(email)');
+    } catch (err: any) {
+      if (!err.message?.includes('Duplicate key name')) {
+        // Index may already exist, ignore
+      }
+    }
+
+    console.log('[DB MIGRATION] Ensured membership plans, discounts, and history tables exist.');
 
     // Seed default plans if empty
     const [rows]: any = await pool.execute('SELECT COUNT(*) as count FROM membership_plans');
     if (rows[0] && (rows[0].count === 0)) {
       const seedPlans = [
-        ['Basic', 0, 'Individual & Student Access', 0, '{"News & analytical information sharing":true,"Capacity building programmes":true,"Stakeholder engagements":false,"Event participation (DCRC)":false,"National Delegation participation":false,"International Delegation participation":false,"Advisory Committee membership":false}'],
-        ['Prime', 20000, 'Per Annum — NGO & Academia', 0, '{"News & analytical information sharing":true,"Capacity building programmes":true,"Stakeholder engagements":false,"Event participation (DCRC)":true,"National Delegation participation":false,"International Delegation participation":false,"Advisory Committee membership":false}'],
-        ['Premium', 50000, 'Per Annum — SME & Consultancies', 0, '{"News & analytical information sharing":true,"Capacity building programmes":true,"Stakeholder engagements":true,"Event participation (DCRC)":true,"National Delegation participation":true,"International Delegation participation":true,"Advisory Committee membership":false}'],
-        ['Gold', 100000, 'Per Annum — Corporates & Leaders', 1, '{"News & analytical information sharing":true,"Capacity building programmes":true,"Stakeholder engagements":true,"Event participation (DCRC)":true,"National Delegation participation":true,"International Delegation participation":true,"Advisory Committee membership":true}']
+        ['Basic', 0, 'Individual & Student Access', 0, '{"News & analytical information sharing":true,"Capacity building programmes":true,"Stakeholder engagements":false,"Event participation (DCRC)":false,"National Delegation participation":false,"International Delegation participation":false,"Advisory Committee membership":false}', 0],
+        ['Prime', 20000, 'Per Annum — NGO & Academia', 0, '{"News & analytical information sharing":true,"Capacity building programmes":true,"Stakeholder engagements":false,"Event participation (DCRC)":true,"National Delegation participation":false,"International Delegation participation":false,"Advisory Committee membership":false}', 12],
+        ['Premium', 50000, 'Per Annum — SME & Consultancies', 0, '{"News & analytical information sharing":true,"Capacity building programmes":true,"Stakeholder engagements":true,"Event participation (DCRC)":true,"National Delegation participation":true,"International Delegation participation":true,"Advisory Committee membership":false}', 12],
+        ['Gold', 100000, 'Per Annum — Corporates & Leaders', 1, '{"News & analytical information sharing":true,"Capacity building programmes":true,"Stakeholder engagements":true,"Event participation (DCRC)":true,"National Delegation participation":true,"International Delegation participation":true,"Advisory Committee membership":true}', 12]
       ];
       for (const plan of seedPlans) {
         await pool.execute(
-          'INSERT INTO membership_plans (name, price, price_sub_text, is_popular, features_json) VALUES (?, ?, ?, ?, ?)',
+          'INSERT INTO membership_plans (name, price, price_sub_text, is_popular, features_json, duration_months) VALUES (?, ?, ?, ?, ?, ?)',
           plan
         );
       }

@@ -8,7 +8,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid #e2e8f0;
   padding-bottom: 20px;
   gap: 20px;
 }
@@ -20,24 +20,24 @@
 }
 
 .headerIcon {
-  color: var(--red-primary, #ef4444);
+  color: #b91c1c;
 }
 
 .titleBlock h1 {
   font-family: 'Playfair Display', serif;
   font-size: 26px;
   font-weight: 700;
-  color: #ffffff;
+  color: #0f172a;
   margin-bottom: 4px;
 }
 
 .titleBlock p {
   font-size: 13px;
-  color: #94a3b8;
+  color: #64748b;
 }
 
 .addBtn {
-  background: linear-gradient(135deg, var(--red-primary, #ef4444) 0%, #dc2626 100%);
+  background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%);
   color: #ffffff;
   border: none;
   padding: 10px 20px;
@@ -48,7 +48,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+  box-shadow: 0 4px 12px rgba(185, 28, 28, 0.2);
   transition: opacity 0.2s ease;
 }
 
@@ -57,9 +57,9 @@
 }
 
 .errorBox {
-  background-color: rgba(239, 68, 68, 0.08);
-  border: 1px solid rgba(239, 68, 68, 0.15);
-  color: #f87171;
+  background-color: #fef2f2;
+  border: 1px solid #fca5a5;
+  color: #b91c1c;
   padding: 12px 16px;
   border-radius: 8px;
   font-size: 13px;
@@ -82,7 +82,7 @@
 
 .spinner {
   animation: spin 1s linear infinite;
-  color: var(--red-primary, #ef4444);
+  color: #b91c1c;
 }
 
 @keyframes spin {
@@ -104,29 +104,31 @@
   }
 }
 
+/* Section Cards — LIGHT THEME */
 .sectionCard {
-  background-color: #0a0f1d;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
 
 .sectionHeader {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #94a3b8;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: #64748b;
+  border-bottom: 1px solid #f1f5f9;
   padding-bottom: 12px;
 }
 
 .sectionHeader h2 {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 700;
-  color: #ffffff;
+  color: #0f172a;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -135,23 +137,23 @@
 .plansList {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .planCard {
-  background-color: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 10px;
   padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  transition: all var(--transition-base);
+  gap: 14px;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .planCard:hover {
-  border-color: rgba(255, 255, 255, 0.08);
-  background-color: rgba(255, 255, 255, 0.03);
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
 }
 
 .planMeta {
@@ -161,19 +163,19 @@
 }
 
 .planName {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
-  color: #ffffff;
-  margin-bottom: 4px;
+  color: #0f172a;
+  margin-bottom: 3px;
 }
 
 .planSub {
-  font-size: 13px;
+  font-size: 12px;
   color: #64748b;
 }
 
 .popularTag {
-  background-color: var(--wine-red-primary);
+  background-color: #b91c1c;
   color: #ffffff;
   font-size: 10px;
   font-weight: 800;
@@ -186,16 +188,16 @@
   display: none;
 }
 
-/* Prices HUD details */
+/* Prices */
 .planPriceWrapper {
   display: flex;
   align-items: center;
 }
 
 .normalPrice {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 800;
-  color: #ffffff;
+  color: #0f172a;
 }
 
 .discountedGrid {
@@ -207,30 +209,31 @@
 }
 
 .originalPriceStrike {
-  font-size: 16px;
+  font-size: 15px;
   text-decoration: line-through;
-  color: #64748b;
+  color: #94a3b8;
 }
 
 .activePrice {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 800;
-  color: #10b981;
+  color: #059669;
 }
 
 .discountBadge {
   grid-column: span 2;
   font-size: 11px;
   font-weight: 700;
-  color: var(--wine-red-light);
-  background-color: rgba(239, 68, 68, 0.08);
+  color: #b91c1c;
+  background-color: #fef2f2;
   padding: 3px 8px;
   border-radius: 4px;
-  border: 1px solid rgba(239, 68, 68, 0.15);
+  border: 1px solid #fca5a5;
   display: inline-block;
   width: fit-content;
 }
 
+/* Features */
 .featuresPreviewList {
   display: flex;
   flex-direction: column;
@@ -239,7 +242,7 @@
 }
 
 .featuresPreviewList strong {
-  color: #94a3b8;
+  color: #475569;
 }
 
 .featureChipsContainer {
@@ -249,9 +252,9 @@
 }
 
 .featureChip {
-  background-color: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  color: #e2e8f0;
+  background-color: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #334155;
   font-size: 11px;
   padding: 4px 8px;
   border-radius: 6px;
@@ -261,50 +264,50 @@
 
 .noFeaturesChip {
   font-style: italic;
-  color: #64748b;
+  color: #94a3b8;
 }
 
 .cardActions {
   display: flex;
   justify-content: flex-end;
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
-  padding-top: 14px;
-  margin-top: 4px;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 12px;
+  margin-top: 2px;
 }
 
 .editCardBtn {
   background: none;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #94a3b8;
-  padding: 6px 12px;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  padding: 6px 14px;
   border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 0.15s ease;
 }
 
 .editCardBtn:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.2);
+  background-color: #f1f5f9;
+  color: #0f172a;
+  border-color: #94a3b8;
 }
 
-/* Discount Campaigns list */
+/* Discount Campaigns */
 .discountsList {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 .discountCard {
-  background-color: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 10px;
-  padding: 18px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .discountHeader {
@@ -314,15 +317,15 @@
 }
 
 .discountTitle {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
-  color: #ffffff;
+  color: #0f172a;
   margin-bottom: 2px;
 }
 
 .discountTarget {
   font-size: 12px;
-  color: #94a3b8;
+  color: #64748b;
 }
 
 .statusLabel {
@@ -335,21 +338,21 @@
 }
 
 .statusActive {
-  background-color: rgba(16, 185, 129, 0.1);
-  color: #10b981;
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  background-color: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
 }
 
 .statusScheduled {
-  background-color: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
-  border: 1px solid rgba(59, 130, 246, 0.2);
+  background-color: #dbeafe;
+  color: #1d4ed8;
+  border: 1px solid #93c5fd;
 }
 
 .statusExpired {
-  background-color: rgba(239, 68, 68, 0.08);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.15);
+  background-color: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
 }
 
 .discountDetails {
@@ -357,7 +360,8 @@
   flex-direction: column;
   gap: 8px;
   font-size: 12px;
-  background-color: rgba(0, 0, 0, 0.15);
+  background-color: #ffffff;
+  border: 1px solid #f1f5f9;
   padding: 10px 14px;
   border-radius: 6px;
 }
@@ -366,11 +370,11 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #94a3b8;
+  color: #64748b;
 }
 
 .detailItem strong {
-  color: #ffffff;
+  color: #0f172a;
 }
 
 .discountActions {
@@ -381,29 +385,28 @@
 
 .editMiniBtn, .deleteMiniBtn {
   background: none;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  color: #94a3b8;
-  padding: 4px 8px;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  padding: 5px 10px;
   border-radius: 4px;
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 0.15s ease;
 }
 
 .editMiniBtn:hover {
-  background-color: rgba(255, 255, 255, 0.04);
-  color: #ffffff;
+  background-color: #f1f5f9;
+  color: #0f172a;
 }
 
 .deleteMiniBtn {
-  border-color: rgba(239, 68, 68, 0.15);
-  color: rgba(239, 68, 68, 0.7);
+  border-color: #fca5a5;
+  color: #b91c1c;
 }
 
 .deleteMiniBtn:hover {
-  background-color: rgba(239, 68, 68, 0.05);
-  color: #ef4444;
+  background-color: #fef2f2;
 }
 
 .emptyDiscounts {
@@ -412,13 +415,13 @@
   align-items: center;
   justify-content: center;
   padding: 40px;
-  color: #475569;
+  color: #94a3b8;
   text-align: center;
   gap: 12px;
 }
 
 .emptyDiscounts h3 {
-  color: #94a3b8;
+  color: #64748b;
   font-size: 14px;
 }
 
@@ -427,14 +430,14 @@
   max-width: 280px;
 }
 
-/* Modals Overlay details */
+/* Modal Overlay */
 .modalOverlay {
   position: fixed;
   top: 0;
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(4px);
   z-index: 100;
   display: flex;
@@ -443,13 +446,14 @@
   padding: 24px;
 }
 
+/* Modal — LIGHT THEME */
 .modal {
-  background-color: #0a0f1d;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
   border-radius: 16px;
   max-width: 600px;
   width: 100%;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
   overflow: hidden;
 }
 
@@ -458,31 +462,32 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid #f1f5f9;
+  background-color: #f8fafc;
 }
 
 .modalHeader h2 {
   font-family: 'Playfair Display', serif;
   font-size: 18px;
   font-weight: 700;
-  color: #ffffff;
+  color: #0f172a;
 }
 
 .modalCloseBtn {
   background: none;
   border: none;
-  color: #64748b;
+  color: #94a3b8;
   cursor: pointer;
 }
 
 .modalCloseBtn:hover {
-  color: #ffffff;
+  color: #0f172a;
 }
 
 .modalError {
-  background-color: rgba(239, 68, 68, 0.08);
-  border: 1px solid rgba(239, 68, 68, 0.15);
-  color: #f87171;
+  background-color: #fef2f2;
+  border: 1px solid #fca5a5;
+  color: #b91c1c;
   padding: 12px 16px;
   margin: 20px 24px 0 24px;
   border-radius: 8px;
@@ -494,9 +499,9 @@
 }
 
 .modalSuccess {
-  background-color: rgba(16, 185, 129, 0.08);
-  border: 1px solid rgba(16, 185, 129, 0.15);
-  color: #34d399;
+  background-color: #f0fdf4;
+  border: 1px solid #86efac;
+  color: #15803d;
   padding: 12px 16px;
   margin: 20px 24px 0 24px;
   border-radius: 8px;
@@ -514,36 +519,38 @@
 .formGrid {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
 }
 
 .inputGroup {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .inputGroup label {
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  color: #64748b;
+  color: #475569;
   letter-spacing: 0.05em;
 }
 
 .inputField {
   width: 100%;
-  background-color: #050811;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
   padding: 11px 14px;
-  color: #ffffff;
+  color: #0f172a;
   outline: none;
   font-size: 14px;
+  transition: border-color 0.15s ease;
 }
 
 .inputField:focus {
-  border-color: var(--wine-red-primary, #b91c1c);
+  border-color: #b91c1c;
+  background-color: #ffffff;
 }
 
 .checkboxGroup {
@@ -556,13 +563,13 @@
 .checkboxField {
   width: 16px;
   height: 16px;
-  accent-color: var(--wine-red-primary, #b91c1c);
+  accent-color: #b91c1c;
   cursor: pointer;
 }
 
 .fieldHelp {
   font-size: 11px;
-  color: #64748b;
+  color: #94a3b8;
 }
 
 .featuresGrid {
@@ -572,8 +579,8 @@
 }
 
 .checklist {
-  background-color: #050811;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
   padding: 14px;
   display: flex;
@@ -591,7 +598,7 @@
 
 .checklistLabel {
   font-size: 13px;
-  color: #e2e8f0;
+  color: #334155;
   cursor: pointer;
   user-select: none;
 }
@@ -602,10 +609,10 @@
   gap: 16px;
 }
 
-/* Calculations Live HUD Box */
+/* Live Preview Box */
 .previewBox {
-  background-color: rgba(239, 68, 68, 0.03);
-  border: 1px dashed rgba(239, 68, 68, 0.2);
+  background-color: #fef2f2;
+  border: 1px dashed #fca5a5;
   border-radius: 8px;
   padding: 14px;
   display: flex;
@@ -615,7 +622,7 @@
 }
 
 .previewBox strong {
-  color: #94a3b8;
+  color: #64748b;
   font-size: 10px;
   letter-spacing: 0.5px;
   margin-bottom: 4px;
@@ -625,12 +632,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: #e2e8f0;
+  color: #334155;
 }
 
 .previewDivider {
   height: 1px;
-  background-color: rgba(255, 255, 255, 0.06);
+  background-color: #fca5a5;
   margin: 4px 0;
 }
 
@@ -638,28 +645,29 @@
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid #f1f5f9;
   padding-top: 20px;
   margin-top: 24px;
 }
 
 .cancelBtn {
-  background-color: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  color: #ffffff;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #334155;
   padding: 10px 20px;
   border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  transition: background-color 0.15s ease;
 }
 
 .cancelBtn:hover {
-  background-color: rgba(255, 255, 255, 0.04);
+  background-color: #f1f5f9;
 }
 
 .saveBtn {
-  background: linear-gradient(135deg, var(--red-primary, #ef4444) 0%, #dc2626 100%);
+  background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%);
   color: #ffffff;
   border: none;
   padding: 10px 20px;
@@ -670,6 +678,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  transition: opacity 0.2s ease;
 }
 
 .saveBtn:hover {

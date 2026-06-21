@@ -35,6 +35,7 @@ interface Plan {
   price: number;
   priceSubText: string;
   isPopular: boolean;
+  durationMonths: number;
   features: Record<string, boolean>;
 }
 
@@ -62,6 +63,7 @@ export default function AdminPricingPage() {
     price: 0,
     priceSubText: '',
     isPopular: false,
+    durationMonths: 12,
     features: {} as Record<string, boolean>
   });
 
@@ -129,6 +131,7 @@ export default function AdminPricingPage() {
       price: plan.price,
       priceSubText: plan.priceSubText || '',
       isPopular: plan.isPopular,
+      durationMonths: plan.durationMonths ?? 12,
       features: { ...plan.features }
     });
     setError('');
@@ -322,6 +325,11 @@ export default function AdminPricingPage() {
                       <div>
                         <h3 className={styles.planName}>{plan.name} Tier</h3>
                         <p className={styles.planSub}>{plan.priceSubText || 'No description set'}</p>
+                        {plan.name !== 'Basic' && (
+                          <p className={styles.planSub} style={{ color: '#60a5fa', fontSize: '11px', marginTop: '2px' }}>
+                            ⏱ {plan.durationMonths ?? 12}-month validity
+                          </p>
+                        )}
                       </div>
                       <div className={plan.isPopular ? styles.popularTag : styles.hidden}>
                         POPULAR
@@ -499,6 +507,26 @@ export default function AdminPricingPage() {
                     className={styles.inputField}
                   />
                 </div>
+
+                {/* Duration Months */}
+                {editingPlan.name !== 'Basic' && (
+                  <div className={styles.inputGroup}>
+                    <label htmlFor="durationMonths">Membership Duration (Months)</label>
+                    <input
+                      type="number"
+                      id="durationMonths"
+                      name="durationMonths"
+                      required
+                      min={1}
+                      max={120}
+                      value={planForm.durationMonths}
+                      onChange={(e) => setPlanForm(prev => ({ ...prev, durationMonths: parseInt(e.target.value) || 12 }))}
+                      className={styles.inputField}
+                      placeholder="12"
+                    />
+                    <span className={styles.fieldHelp}>How long this membership tier is valid after purchase (e.g. 12 = 1 year, 6 = 6 months).</span>
+                  </div>
+                )}
 
                 {/* Popular toggle */}
                 <div className={styles.checkboxGroup}>
