@@ -1,8 +1,21 @@
 import type { Metadata } from 'next';
+import { Inter, Playfair_Display } from 'next/font/google';
 import './globals.css';
 import { ToastProvider } from '@/components/ui/Toast/ToastContext';
 import { TelemetryProvider } from '@/context/TelemetryContext';
 import ClientLayoutWrapper from '@/components/layout/ClientLayoutWrapper';
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-body',
+});
+
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-display',
+});
 
 export const viewport = {
   width: 'device-width',
@@ -29,7 +42,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} ${playfair.variable}`} suppressHydrationWarning>
       <body suppressHydrationWarning>
         <ToastProvider>
           <TelemetryProvider>
@@ -40,4 +53,3 @@ export default function RootLayout({
     </html>
   );
 }
-

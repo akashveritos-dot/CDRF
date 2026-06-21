@@ -207,7 +207,7 @@ export default function HomeClient({
         {/* Next.js Optimized Hero Background Image for Preloading & Speed (Solves LCP Discovery) */}
         <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
           <Image
-            src="https://images.unsplash.com/photo-1547683905-f686c993aae5?w=1920&q=80"
+            src="https://images.unsplash.com/photo-1547683905-f686c993aae5?auto=format&fit=crop&q=80"
             alt="Disaster & Climate Resilience Federation Background"
             fill
             priority
