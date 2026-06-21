@@ -1381,6 +1381,76 @@
   flex-shrink: 0;
 }
 
+/* ── Bell Badge (desktop) ────────────────────────────────────────────── */
+.bellBadge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 16px;
+  height: 16px;
+  background: #b91c1c;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  border: 1.5px solid #fff;
+  animation: badgePulse 2s ease-in-out infinite;
+  line-height: 1;
+}
+
+@keyframes badgePulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(185,28,28,0.4); }
+  50% { transform: scale(1.1); box-shadow: 0 0 0 4px rgba(185,28,28,0); }
+}
+
+/* ── Bell Tab (mobile bottom dock) ──────────────────────────────────── */
+.bellTabWrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bellBadgeMobile {
+  position: absolute;
+  top: -5px;
+  right: -7px;
+  min-width: 15px;
+  height: 15px;
+  background: #b91c1c;
+  color: #fff;
+  font-size: 8px;
+  font-weight: 800;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 2px;
+  border: 1.5px solid #fff;
+  animation: badgePulse 2s ease-in-out infinite;
+  line-height: 1;
+}
+
+/* ── Mobile alert backdrop ───────────────────────────────────────────── */
+.alertMobileBackdrop {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .alertMobileBackdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: 99997;
+  }
+}
+
+
 .weatherCircleBtnAlert {
   background: var(--wine-red-pale);
   color: var(--wine-red-primary);
@@ -1668,11 +1738,16 @@
 
 @media (max-width: 768px) {
   .weatherPopupAlert {
-    top: 85px;
-    right: 4vw;
-    left: 4vw;
-    width: auto;
-    max-width: none;
-    box-shadow: 0 15px 30px rgba(15, 23, 42, 0.1);
+    /* Slide up from bottom as a sheet */
+    top: auto !important;
+    bottom: calc(64px + env(safe-area-inset-bottom, 16px) + 12px) !important;
+    left: 12px !important;
+    right: 12px !important;
+    width: auto !important;
+    max-width: none !important;
+    border-radius: 18px !important;
+    box-shadow: 0 -4px 24px rgba(15, 23, 42, 0.18) !important;
+    z-index: 99998 !important;
+    padding: 16px !important;
   }
-}
+}

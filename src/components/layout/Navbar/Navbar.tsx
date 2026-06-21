@@ -212,17 +212,7 @@ export default function Navbar() {
     }
   }, [weatherAlert, telemetryData.cityTemps]);
 
-  // Handle auto-showing on mount (unless dismissed)
-  useEffect(() => {
-    if (activeAlerts.length > 0) {
-      const dismissed = sessionStorage.getItem('dcrs_alert_dismissed');
-      // Only auto-open if there is an active warning (storm, flood, heatwave)
-      const hasActiveWarning = activeAlerts.some(a => a.type === 'storm' || a.type === 'flood' || a.type === 'heat');
-      if (!dismissed && hasActiveWarning) {
-        setShowAlertPopup(true);
-      }
-    }
-  }, [activeAlerts]);
+  // No auto-open — popup only opens on explicit user click
 
   // Rotate through alerts sequentially
   useEffect(() => {
@@ -419,14 +409,19 @@ export default function Navbar() {
               </Link>
             );
           })}
-          {/* Weather Alert Trigger Button (Circle Icon) */}
+          {/* Weather Alert Trigger Button (Circle Icon) — desktop only */}
           <button 
-            onClick={() => setShowAlertPopup(true)} 
-            className={`${styles.weatherCircleBtn} ${activeAlerts.some(a => a.type === 'storm' || a.type === 'flood') ? styles.weatherCircleBtnAlert : ''}`}
+            onClick={() => setShowAlertPopup(prev => !prev)} 
+            className={`${styles.weatherCircleBtn} ${activeAlerts.some(a => a.type === 'storm' || a.type === 'flood' || a.type === 'heat') ? styles.weatherCircleBtnAlert : ''}`}
             title="Open active weather alerts"
             aria-label="Open weather alerts"
           >
             <Bell size={16} className={styles.bellIcon} />
+            {activeAlerts.some(a => a.type === 'storm' || a.type === 'flood' || a.type === 'heat') && (
+              <span className={styles.bellBadge}>
+                {activeAlerts.filter(a => a.type === 'storm' || a.type === 'flood' || a.type === 'heat').length}
+              </span>
+            )}
           </button>
 
           <button onClick={() => setIsSubscribeOpen(true)} className={styles.subscribeBtn}>
@@ -714,6 +709,23 @@ export default function Navbar() {
             <MessageSquare size={20} />
             <span>Chat</span>
           </button>
+
+          {/* Bell Alert Tab — mobile */}
+          <button
+            className={`${styles.bottomTab} ${showAlertPopup ? styles.bottomTabActive : ''}`}
+            onClick={() => { setShowAlertPopup(prev => !prev); setActiveSubmenu(null); }}
+            aria-label="Weather alerts"
+          >
+            <span className={styles.bellTabWrap}>
+              <Bell size={20} />
+              {activeAlerts.some(a => a.type === 'storm' || a.type === 'flood' || a.type === 'heat') && (
+                <span className={styles.bellBadgeMobile}>
+                  {activeAlerts.filter(a => a.type === 'storm' || a.type === 'flood' || a.type === 'heat').length}
+                </span>
+              )}
+            </span>
+            <span>Alerts</span>
+          </button>
         </div>
 
         {/* Floating Submenus Rendered Above */}
@@ -827,79 +839,89 @@ export default function Navbar() {
       {/* Dynamic Weather Alert Rotator Popup */}
       <AnimatePresence>
         {showAlertPopup && activeAlerts.length > 0 && (
-          <motion.div
-            className={`${styles.weatherPopupAlert} ${
-              activeAlerts[currentSlideIndex].type === 'storm' 
-                ? styles.weatherPopupStorm 
-                : activeAlerts[currentSlideIndex].type === 'heat' 
-                  ? styles.weatherPopupHeat 
-                  : ''
-            }`}
-            initial={{ opacity: 0, y: -20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -15, scale: 0.95 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 280 }}
-          >
-            <div className={styles.alertHeader}>
-              <div className={styles.alertTitleRow}>
-                <span className={styles.alertPulseDot} />
-                <span className={styles.alertHeaderLabel}>
-                  {activeAlerts[currentSlideIndex].type === 'storm' 
-                    ? '⚠️ Severe Alert' 
-                    : activeAlerts[currentSlideIndex].type === 'flood' 
-                      ? '⚠️ Weather Alert' 
-                      : activeAlerts[currentSlideIndex].type === 'heat' 
-                        ? '⚠️ Heat Advisory' 
-                        : 'ℹ️ Info'}
-                </span>
-              </div>
-              <button 
-                onClick={dismissAlertPopup}
-                className={styles.alertCloseBtn}
-                aria-label="Close weather alert"
-              >
-                <X size={14} />
-              </button>
-            </div>
-
-            <div className={styles.alertContent}>
-              <span className={styles.alertContentEmoji}>
-                {activeAlerts[currentSlideIndex].emoji}
-              </span>
-              <div className={styles.alertTextGroup}>
-                <div className={styles.alertCityRow}>
-                  <span className={styles.alertCityName}>
-                    {activeAlerts[currentSlideIndex].city}
-                  </span>
-                  {activeAlerts[currentSlideIndex].state && (
-                    <span className={styles.alertStateName}>
-                      , {activeAlerts[currentSlideIndex].state}
-                    </span>
-                  )}
-                  <span className={styles.alertTemp}>
-                    • {activeAlerts[currentSlideIndex].temp}°C
+          <>
+            {/* Mobile backdrop tap-to-close */}
+            <motion.div
+              className={styles.alertMobileBackdrop}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={dismissAlertPopup}
+            />
+            <motion.div
+              className={`${styles.weatherPopupAlert} ${
+                activeAlerts[currentSlideIndex].type === 'storm' 
+                  ? styles.weatherPopupStorm 
+                  : activeAlerts[currentSlideIndex].type === 'heat' 
+                    ? styles.weatherPopupHeat 
+                    : ''
+              }`}
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -15, scale: 0.95 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 280 }}
+            >
+              <div className={styles.alertHeader}>
+                <div className={styles.alertTitleRow}>
+                  <span className={styles.alertPulseDot} />
+                  <span className={styles.alertHeaderLabel}>
+                    {activeAlerts[currentSlideIndex].type === 'storm' 
+                      ? '⚠️ Severe Alert' 
+                      : activeAlerts[currentSlideIndex].type === 'flood' 
+                        ? '⚠️ Weather Alert' 
+                        : activeAlerts[currentSlideIndex].type === 'heat' 
+                          ? '⚠️ Heat Advisory' 
+                          : 'ℹ️ Info'}
                   </span>
                 </div>
-                <p className={styles.alertMsgText}>
-                  {activeAlerts[currentSlideIndex].alert}
-                </p>
+                <button 
+                  onClick={dismissAlertPopup}
+                  className={styles.alertCloseBtn}
+                  aria-label="Close weather alert"
+                >
+                  <X size={14} />
+                </button>
               </div>
-            </div>
 
-            {/* Linear Progress Bar Timer (Moving Line) */}
-            <div className={styles.alertProgressContainer}>
-              <div 
-                key={currentSlideIndex}
-                className={`${styles.alertProgressBar} ${
-                  activeAlerts[currentSlideIndex].type === 'storm' 
-                    ? styles.progressBarStorm 
-                    : activeAlerts[currentSlideIndex].type === 'heat' 
-                      ? styles.progressBarHeat 
-                      : ''
-                }`}
-              />
-            </div>
-          </motion.div>
+              <div className={styles.alertContent}>
+                <span className={styles.alertContentEmoji}>
+                  {activeAlerts[currentSlideIndex].emoji}
+                </span>
+                <div className={styles.alertTextGroup}>
+                  <div className={styles.alertCityRow}>
+                    <span className={styles.alertCityName}>
+                      {activeAlerts[currentSlideIndex].city}
+                    </span>
+                    {activeAlerts[currentSlideIndex].state && (
+                      <span className={styles.alertStateName}>
+                        , {activeAlerts[currentSlideIndex].state}
+                      </span>
+                    )}
+                    <span className={styles.alertTemp}>
+                      &bull; {activeAlerts[currentSlideIndex].temp}°C
+                    </span>
+                  </div>
+                  <p className={styles.alertMsgText}>
+                    {activeAlerts[currentSlideIndex].alert}
+                  </p>
+                </div>
+              </div>
+
+              {/* Linear Progress Bar Timer */}
+              <div className={styles.alertProgressContainer}>
+                <div 
+                  key={currentSlideIndex}
+                  className={`${styles.alertProgressBar} ${
+                    activeAlerts[currentSlideIndex].type === 'storm' 
+                      ? styles.progressBarStorm 
+                      : activeAlerts[currentSlideIndex].type === 'heat' 
+                        ? styles.progressBarHeat 
+                        : ''
+                  }`}
+                />
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </>
