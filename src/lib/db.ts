@@ -52,6 +52,50 @@ async function runMigration(pool: mysql.Pool) {
         }
       }
     }
+
+    // Create pricing and discount tables if they don't exist
+    const createPricingTable = `
+      CREATE TABLE IF NOT EXISTS membership_plans (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(50) NOT NULL UNIQUE,
+        price INT NOT NULL DEFAULT 0,
+        price_sub_text VARCHAR(255) DEFAULT NULL,
+        is_popular INT DEFAULT 0,
+        features_json TEXT DEFAULT NULL
+      ) ENGINE=InnoDB;
+    `;
+    const createDiscountTable = `
+      CREATE TABLE IF NOT EXISTS membership_discounts (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        tier_name VARCHAR(50) NOT NULL UNIQUE,
+        title VARCHAR(255) NOT NULL,
+        percentage INT NOT NULL DEFAULT 0,
+        start_date DATE NOT NULL,
+        end_date DATE NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB;
+    `;
+    await pool.execute(createPricingTable);
+    await pool.execute(createDiscountTable);
+    console.log('[DB MIGRATION] Ensured membership plans & discounts tables exist.');
+
+    // Seed default plans if empty
+    const [rows]: any = await pool.execute('SELECT COUNT(*) as count FROM membership_plans');
+    if (rows[0] && (rows[0].count === 0)) {
+      const seedPlans = [
+        ['Basic', 0, 'Individual & Student Access', 0, '{"News & analytical information sharing":true,"Capacity building programmes":true,"Stakeholder engagements":false,"Event participation (DCRC)":false,"National Delegation participation":false,"International Delegation participation":false,"Advisory Committee membership":false}'],
+        ['Prime', 20000, 'Per Annum — NGO & Academia', 0, '{"News & analytical information sharing":true,"Capacity building programmes":true,"Stakeholder engagements":false,"Event participation (DCRC)":true,"National Delegation participation":false,"International Delegation participation":false,"Advisory Committee membership":false}'],
+        ['Premium', 50000, 'Per Annum — SME & Consultancies', 0, '{"News & analytical information sharing":true,"Capacity building programmes":true,"Stakeholder engagements":true,"Event participation (DCRC)":true,"National Delegation participation":true,"International Delegation participation":true,"Advisory Committee membership":false}'],
+        ['Gold', 100000, 'Per Annum — Corporates & Leaders', 1, '{"News & analytical information sharing":true,"Capacity building programmes":true,"Stakeholder engagements":true,"Event participation (DCRC)":true,"National Delegation participation":true,"International Delegation participation":true,"Advisory Committee membership":true}']
+      ];
+      for (const plan of seedPlans) {
+        await pool.execute(
+          'INSERT INTO membership_plans (name, price, price_sub_text, is_popular, features_json) VALUES (?, ?, ?, ?, ?)',
+          plan
+        );
+      }
+      console.log('[DB MIGRATION] Seeded membership plans successfully.');
+    }
   } catch (error) {
     console.error('[DB MIGRATION ERROR] Migration runner failed:', error);
   }

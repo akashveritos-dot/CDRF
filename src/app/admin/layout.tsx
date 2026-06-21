@@ -130,11 +130,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: 'Audit Logs', path: '/admin/logs', icon: <FileText size={18} /> }
   ];
 
-  // Add Users and Launch Registrations menu items only for SUPERADMIN
+  // Add Users, Launch Registrations, and Pricing menu items only for SUPERADMIN
   if (adminUser?.role === 'SUPERADMIN') {
-    // Keep 'Launch Registrations' and 'Users' next to Audit Logs
+    // Keep 'Launch Registrations', 'Users', and 'Membership Pricing' next to Audit Logs
     menuItems.splice(12, 0, { name: 'Launch Registrations', path: '/admin/soon', icon: <Globe size={18} /> });
     menuItems.splice(13, 0, { name: 'Users', path: '/admin/users', icon: <UserCog size={18} /> });
+    menuItems.splice(14, 0, { name: 'Membership Pricing', path: '/admin/pricing', icon: <Award size={18} /> });
   }
 
   return (

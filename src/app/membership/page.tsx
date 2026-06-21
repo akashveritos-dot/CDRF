@@ -103,9 +103,53 @@ export default function MembershipPage() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLDivElement>(null);
 
+  // Dynamic Pricing and Campaigns State
+  const [tiers, setTiers] = useState<any[]>([
+    { name: 'Basic', price: 0, priceSubText: 'Individual & Student Access', features: membershipTiers[0].features, discount: null },
+    { name: 'Prime', price: 20000, priceSubText: 'Per Annum — NGO & Academia', features: membershipTiers[1].features, discount: null },
+    { name: 'Premium', price: 50000, priceSubText: 'Per Annum — SME & Consultancies', features: membershipTiers[2].features, discount: null },
+    { name: 'Gold', price: 100000, priceSubText: 'Per Annum — Corporates & Leaders', isPopular: true, features: membershipTiers[3].features, discount: null }
+  ]);
+  const [tiersLoading, setTiersLoading] = useState(true);
+
   useEffect(() => {
     setIsMounted(true);
+    async function loadPlans() {
+      try {
+        const res = await fetch('/api/membership/plans');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && Array.isArray(data.plans)) {
+            setTiers(data.plans);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch dynamic pricing tiers:', err);
+      } finally {
+        setTiersLoading(false);
+      }
+    }
+    loadPlans();
   }, []);
+
+  const getTierSubLabel = (tierName: string) => {
+    const t = tiers.find(x => x.name === tierName);
+    if (!t) {
+      if (tierName === 'Basic') return 'Free individual / student';
+      if (tierName === 'Prime') return '₹20,000/yr — NGO/Academia';
+      if (tierName === 'Premium') return '₹50,000/yr — Small SME';
+      return '₹1,00,000/yr — Corporate / Enterprise';
+    }
+
+    if (t.price === 0) return 'Free individual / student';
+
+    const subTextClean = t.priceSubText ? t.priceSubText.replace('Per Annum — ', '') : '';
+    if (t.discount) {
+      const discPrice = t.price - (t.price * t.discount.percentage / 100);
+      return `₹${discPrice.toLocaleString('en-IN')}/yr (${t.discount.title} — ${t.discount.percentage}% OFF) — ${subTextClean}`;
+    }
+    return `₹${t.price.toLocaleString('en-IN')}/yr — ${subTextClean}`;
+  };
 
   const triggerScrollToForm = (e?: Event) => {
     if (e) {
@@ -272,9 +316,15 @@ export default function MembershipPage() {
 
       let amountPaisa = orderData.amount;
       if (!amountPaisa) {
-        if (formData.tier === 'Prime') amountPaisa = 2000000;
-        else if (formData.tier === 'Premium') amountPaisa = 5000000;
-        else if (formData.tier === 'Gold') amountPaisa = 10000000;
+        const t = tiers.find(x => x.name === formData.tier);
+        if (t) {
+          const finalPrice = t.discount ? t.price - (t.price * t.discount.percentage / 100) : t.price;
+          amountPaisa = Math.round(finalPrice * 100);
+        } else {
+          if (formData.tier === 'Prime') amountPaisa = 2000000;
+          else if (formData.tier === 'Premium') amountPaisa = 5000000;
+          else if (formData.tier === 'Gold') amountPaisa = 10000000;
+        }
       }
 
       const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_L88P4F2zUqI2lX';
@@ -406,7 +456,7 @@ export default function MembershipPage() {
 
       {/* ── Tier pricing cards ─────────────────────────────────────────── */}
       <div className={styles.tiersGrid}>
-        {membershipTiers.map((tier, idx) => {
+        {tiers.map((tier, idx) => {
           const cfg = TIER_CONFIG[tier.name as keyof typeof TIER_CONFIG];
           return (
             <ScrollReveal key={tier.name} direction="up" delay={0.06 * idx}>
@@ -441,7 +491,32 @@ export default function MembershipPage() {
                     {tier.name}
                   </span>
                   <div className={styles.price} style={{ color: cfg.accentColor }}>
-                    {tier.price}
+                    {tier.discount ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ fontSize: '13px', textDecoration: 'line-through', color: 'var(--text-muted)', fontWeight: 500 }}>
+                          ₹{tier.price.toLocaleString('en-IN')}
+                        </span>
+                        <span style={{ fontSize: '32px', fontWeight: 800 }}>
+                          ₹{(tier.price - (tier.price * tier.discount.percentage / 100)).toLocaleString('en-IN')}
+                        </span>
+                        <span style={{
+                          fontSize: '10px',
+                          fontWeight: 700,
+                          padding: '3px 8px',
+                          borderRadius: '4px',
+                          backgroundColor: 'rgba(239, 68, 68, 0.08)',
+                          border: '1px solid rgba(239, 68, 68, 0.15)',
+                          color: 'var(--wine-red-primary)',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                          marginTop: '4px'
+                        }}>
+                          {tier.discount.title} (-{tier.discount.percentage}%)
+                        </span>
+                      </div>
+                    ) : (
+                      typeof tier.price === 'number' ? (tier.price === 0 ? 'Free' : `₹${tier.price.toLocaleString('en-IN')}`) : tier.price
+                    )}
                   </div>
                   <span className={styles.priceSub}>{tier.priceSubText}</span>
                 </div>
@@ -493,7 +568,7 @@ export default function MembershipPage() {
             <thead>
               <tr>
                 <th className={styles.thFeature}>Benefit Criteria</th>
-                {membershipTiers.map(tier => {
+                {tiers.map(tier => {
                   const cfg = TIER_CONFIG[tier.name as keyof typeof TIER_CONFIG];
                   return (
                     <th
@@ -520,7 +595,7 @@ export default function MembershipPage() {
               {membershipFeatures.map((feat, rowIdx) => (
                 <tr key={feat} className={rowIdx % 2 === 0 ? styles.trEven : ''}>
                   <td className={styles.tdFeature}>{feat}</td>
-                  {membershipTiers.map(tier => {
+                  {tiers.map(tier => {
                     const cfg = TIER_CONFIG[tier.name as keyof typeof TIER_CONFIG];
                     const has = tier.features[feat];
                     return (
@@ -545,7 +620,7 @@ export default function MembershipPage() {
 
         {/* Mobile Card View */}
         <div className={styles.mobileComparisonView}>
-          {membershipTiers.map((tier) => {
+          {tiers.map((tier) => {
             const cfg = TIER_CONFIG[tier.name as keyof typeof TIER_CONFIG];
             return (
               <div key={tier.name} className={styles.mobileTierCard}>
@@ -642,7 +717,7 @@ export default function MembershipPage() {
                 <ul className={styles.unlockedList}>
                   {membershipFeatures
                     .filter(feat => {
-                      const tierObj = membershipTiers.find(t => t.name === formData.tier);
+                      const tierObj = tiers.find(t => t.name === formData.tier);
                       return tierObj ? (tierObj.features as Record<string, boolean>)[feat] : false;
                     })
                     .map(feat => (
@@ -736,7 +811,23 @@ export default function MembershipPage() {
                 <div className={styles.summaryRow}>
                   <span className={styles.summaryLabel} style={{ fontWeight: 'bold' }}>Total Due</span>
                   <span className={styles.summaryTotal}>
-                    {formData.tier === 'Prime' ? '₹20,000' : formData.tier === 'Premium' ? '₹50,000' : '₹1,00,000'}
+                    {(() => {
+                      const t = tiers.find(x => x.name === formData.tier);
+                      if (!t) return formData.tier === 'Prime' ? '₹20,000' : formData.tier === 'Premium' ? '₹50,000' : '₹1,00,000';
+                      if (t.price === 0) return 'Free';
+                      if (t.discount) {
+                        const discPrice = t.price - (t.price * t.discount.percentage / 100);
+                        return (
+                          <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                            <span style={{ textDecoration: 'line-through', fontSize: '12px', color: 'var(--text-muted)', fontWeight: 500 }}>
+                              ₹{t.price.toLocaleString('en-IN')}
+                            </span>
+                            <span>₹{discPrice.toLocaleString('en-IN')}</span>
+                          </span>
+                        );
+                      }
+                      return `₹${t.price.toLocaleString('en-IN')}`;
+                    })()}
                   </span>
                 </div>
               </div>
@@ -821,7 +912,7 @@ export default function MembershipPage() {
                             {tierOptions.find(t => t.value === formData.tier)?.label}
                           </span>
                           <span className={styles.dropdownSubLabel}>
-                            {tierOptions.find(t => t.value === formData.tier)?.subLabel}
+                            {getTierSubLabel(formData.tier)}
                           </span>
                         </div>
                       </div>
@@ -849,7 +940,7 @@ export default function MembershipPage() {
                             </span>
                             <div className={styles.dropdownText}>
                               <span className={styles.dropdownLabel}>{option.label}</span>
-                              <span className={styles.dropdownSubLabel}>{option.subLabel}</span>
+                              <span className={styles.dropdownSubLabel}>{getTierSubLabel(option.value)}</span>
                             </div>
                             {formData.tier === option.value && (
                               <Check size={16} className={styles.dropdownCheck} />
@@ -900,7 +991,16 @@ export default function MembershipPage() {
                 <div className={styles.receiptRow}>
                   <span>Amount:</span>
                   <span style={{ fontWeight: 'bold', color: 'var(--gold-primary)' }}>
-                    {formData.tier === 'Prime' ? '₹20,000' : formData.tier === 'Premium' ? '₹50,000' : '₹1,00,000'}
+                    {(() => {
+                      const t = tiers.find(x => x.name === formData.tier);
+                      if (!t) return formData.tier === 'Prime' ? '₹20,000' : formData.tier === 'Premium' ? '₹50,000' : '₹1,00,000';
+                      if (t.price === 0) return 'Free';
+                      if (t.discount) {
+                        const discPrice = t.price - (t.price * t.discount.percentage / 100);
+                        return `₹${discPrice.toLocaleString('en-IN')}`;
+                      }
+                      return `₹${t.price.toLocaleString('en-IN')}`;
+                    })()}
                   </span>
                 </div>
                 <div className={styles.receiptRow}>

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { query } from '@/lib/db';
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,8 +10,33 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Tier is required' }, { status: 400 });
     }
 
-    // For testing, override the tier amount to 1 rupee (100 paisa)
-    const amountPaisa = 100; // 1 INR
+    // Fetch plan price dynamically from database
+    const planRes = await query<any[]>('SELECT price FROM membership_plans WHERE name = ?', [tier]);
+    if (!planRes || planRes.length === 0) {
+      return NextResponse.json({ error: `Plan tier ${tier} not found` }, { status: 404 });
+    }
+
+    let originalPrice = planRes[0].price; // INR price
+    let finalPrice = originalPrice;
+
+    // Check for active discount
+    const discountRes = await query<any[]>('SELECT percentage, start_date, end_date FROM membership_discounts WHERE tier_name = ?', [tier]);
+    if (discountRes && discountRes.length > 0) {
+      const d = discountRes[0];
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const start = new Date(d.start_date);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(d.end_date);
+      end.setHours(23, 59, 59, 999);
+
+      if (today >= start && today <= end) {
+        finalPrice = originalPrice - (originalPrice * (d.percentage / 100));
+      }
+    }
+
+    const amountPaisa = Math.round(finalPrice * 100);
 
     const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
