@@ -425,10 +425,7 @@ export default function AdminCouncils() {
                 </div>
 
                 <div className={styles.inputGroup}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <label htmlFor="profile_image">Profile Image URL</label>
-                    <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>— OR —</span>
-                  </div>
+                  <label htmlFor="profile_image">Profile Image URL</label>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px', alignItems: 'center' }}>
                     <input
                       id="profile_image"
@@ -436,7 +433,7 @@ export default function AdminCouncils() {
                       name="profile_image"
                       value={formData.profile_image}
                       onChange={handleInputChange}
-                      placeholder="e.g. /councils/name.jpg or uploaded path"
+                      placeholder="Paste image link or upload a file"
                       className={styles.inputField}
                     />
                     <div style={{ position: 'relative' }}>
@@ -453,28 +450,37 @@ export default function AdminCouncils() {
                         style={{
                           display: 'inline-flex',
                           alignItems: 'center',
+                          justifyContent: 'center',
                           gap: '6px',
-                          padding: '11px 16px',
+                          height: '38px',
+                          padding: '0 14px',
                           borderRadius: '8px',
-                          backgroundColor: 'rgba(255, 255, 255, 0.04)',
-                          border: '1px solid rgba(255, 255, 255, 0.08)',
+                          backgroundColor: '#121824',
+                          border: '1px solid rgba(255, 255, 255, 0.15)',
                           color: '#ffffff',
                           cursor: 'pointer',
-                          fontSize: '13px',
+                          fontSize: '11px',
                           fontWeight: 600,
-                          transition: 'background-color 0.2s',
-                          whiteSpace: 'nowrap'
+                          transition: 'all 0.2s',
+                          whiteSpace: 'nowrap',
+                          boxSizing: 'border-box'
                         }}
-                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.04)'; }}
+                        onMouseEnter={(e) => { 
+                          e.currentTarget.style.backgroundColor = '#1e293b';
+                          e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.25)';
+                        }}
+                        onMouseLeave={(e) => { 
+                          e.currentTarget.style.backgroundColor = '#121824';
+                          e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+                        }}
                       >
-                        {isUploadingImage ? '...' : 'Upload'}
+                        {isUploadingImage ? 'Uploading...' : 'Upload Image'}
                       </label>
                     </div>
                   </div>
                   {imageUploadSuccess && (
                     <span style={{ fontSize: '11px', color: '#10b981', display: 'block', marginTop: '2px' }}>
-                      ✓ Uploaded: {imageUploadSuccess}
+                      ✓ Uploaded: <strong>{imageUploadSuccess}</strong>
                     </span>
                   )}
                 </div>

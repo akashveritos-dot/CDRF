@@ -432,14 +432,10 @@ export default function AdminNews() {
                     className={styles.inputField}
                   />
                 </div>
-
-                 {/* Image URL / Local Upload */}
+                {/* Image URL / Local Upload */}
                 <div className={`${styles.inputGroup} ${styles.colSpan2}`}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <label htmlFor="image_url">Visual Cover Image URL</label>
-                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>— OR —</span>
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '12px', alignItems: 'center' }}>
+                  <label htmlFor="image_url">Visual Cover Image URL</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px', alignItems: 'center' }}>
                     <div className={styles.iconInputWrap} style={{ width: '100%' }}>
                       <ImageIcon size={16} className={styles.inputIcon} />
                       <input
@@ -448,7 +444,7 @@ export default function AdminNews() {
                         name="image_url"
                         value={formData.image_url}
                         onChange={handleInputChange}
-                        placeholder="https://images.unsplash.com/photo-... or uploaded path"
+                        placeholder="Paste image link or upload a file"
                         className={styles.inputFieldWithIcon}
                       />
                     </div>
@@ -466,28 +462,37 @@ export default function AdminNews() {
                         style={{
                           display: 'inline-flex',
                           alignItems: 'center',
+                          justifyContent: 'center',
                           gap: '6px',
-                          padding: '11px 16px',
+                          height: '38px',
+                          padding: '0 14px',
                           borderRadius: '8px',
-                          backgroundColor: 'rgba(255, 255, 255, 0.04)',
-                          border: '1px solid rgba(255, 255, 255, 0.08)',
+                          backgroundColor: '#121824',
+                          border: '1px solid rgba(255, 255, 255, 0.15)',
                           color: '#ffffff',
                           cursor: 'pointer',
-                          fontSize: '13px',
+                          fontSize: '11px',
                           fontWeight: 600,
-                          transition: 'background-color 0.2s',
-                          whiteSpace: 'nowrap'
+                          transition: 'all 0.2s',
+                          whiteSpace: 'nowrap',
+                          boxSizing: 'border-box'
                         }}
-                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.04)'; }}
+                        onMouseEnter={(e) => { 
+                          e.currentTarget.style.backgroundColor = '#1e293b';
+                          e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.25)';
+                        }}
+                        onMouseLeave={(e) => { 
+                          e.currentTarget.style.backgroundColor = '#121824';
+                          e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+                        }}
                       >
-                        {isUploadingImage ? 'Uploading...' : 'Upload File'}
+                        {isUploadingImage ? 'Uploading...' : 'Upload Image'}
                       </label>
                     </div>
                   </div>
                   {imageUploadSuccess && (
-                    <span style={{ fontSize: '12px', color: '#10b981', display: 'block', marginTop: '2px' }}>
-                      ✓ Successfully uploaded: <strong>{imageUploadSuccess}</strong>
+                    <span style={{ fontSize: '11px', color: '#10b981', display: 'block', marginTop: '2px' }}>
+                      ✓ Uploaded: <strong>{imageUploadSuccess}</strong>
                     </span>
                   )}
                 </div>

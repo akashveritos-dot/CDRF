@@ -149,15 +149,12 @@ export default function AdminGalleryManager() {
           
           <form onSubmit={handleAddPhoto} className={styles.form}>
             <div className={styles.formGroup}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <label className={styles.label}>Image URL</label>
-                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>— OR —</span>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '12px', alignItems: 'center' }}>
+              <label className={styles.label}>Image URL</label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px', alignItems: 'center' }}>
                 <input
                   type="text"
                   className={styles.input}
-                  placeholder="e.g. https://images.unsplash.com/... or uploaded path"
+                  placeholder="Paste image link or upload a file"
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
                   required
@@ -176,28 +173,37 @@ export default function AdminGalleryManager() {
                     style={{
                       display: 'inline-flex',
                       alignItems: 'center',
+                      justifyContent: 'center',
                       gap: '6px',
-                      padding: '11px 16px',
+                      height: '38px',
+                      padding: '0 14px',
                       borderRadius: '8px',
-                      backgroundColor: 'rgba(255, 255, 255, 0.04)',
-                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      backgroundColor: '#121824',
+                      border: '1px solid rgba(255, 255, 255, 0.15)',
                       color: '#ffffff',
                       cursor: 'pointer',
-                      fontSize: '13px',
+                      fontSize: '11px',
                       fontWeight: 600,
-                      transition: 'background-color 0.2s',
-                      whiteSpace: 'nowrap'
+                      transition: 'all 0.2s',
+                      whiteSpace: 'nowrap',
+                      boxSizing: 'border-box'
                     }}
-                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.04)'; }}
+                    onMouseEnter={(e) => { 
+                      e.currentTarget.style.backgroundColor = '#1e293b';
+                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.25)';
+                    }}
+                    onMouseLeave={(e) => { 
+                      e.currentTarget.style.backgroundColor = '#121824';
+                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+                    }}
                   >
-                    {isUploading ? 'Uploading...' : 'Upload File'}
+                    {isUploading ? 'Uploading...' : 'Upload Image'}
                   </label>
                 </div>
               </div>
               {uploadSuccess && (
-                <span style={{ fontSize: '12px', color: '#10b981', display: 'block', marginTop: '2px' }}>
-                  ✓ Successfully uploaded: <strong>{uploadSuccess}</strong>
+                <span style={{ fontSize: '11px', color: '#10b981', display: 'block', marginTop: '2px' }}>
+                  ✓ Uploaded: <strong>{uploadSuccess}</strong>
                 </span>
               )}
             </div>
