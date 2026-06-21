@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  /* Standalone output for Hostinger Node.js deployment */
+  output: 'standalone',
   /* Security Headers Configuration */
   async headers() {
     return [
