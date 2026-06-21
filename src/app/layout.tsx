@@ -27,6 +27,11 @@ export const metadata: Metadata = {
   description: 'India\'s premier multi-stakeholder federation unifying corporates, NGOs, academia and government to advance disaster preparedness and climate resilience — from early warning to recovery.',
   keywords: 'Disaster Management, Climate Resilience, India Climate Index, India Disaster Dashboard, CSR Climate Adaptation, DCRC Conclave',
   authors: [{ name: 'DCRF Secretariat' }],
+  icons: {
+    icon: '/dcrf_icon-Photoroom.png',
+    shortcut: '/dcrf_icon-Photoroom.png',
+    apple: '/dcrf_icon-Photoroom.png',
+  },
   openGraph: {
     title: 'Disaster & Climate Resilience Federation (DCRF)',
     description: 'Building resilience through knowledge, convergence and action.',
