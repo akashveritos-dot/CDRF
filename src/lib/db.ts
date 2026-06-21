@@ -13,9 +13,7 @@ export function getDbPool(): mysql.Pool {
     const password = process.env.DB_PASSWORD || process.env.MYSQL_ADDON_PASSWORD || '';
     const database = process.env.DB_NAME || process.env.MYSQL_ADDON_DB || 'dcrs_db';
     const port = parseInt(process.env.DB_PORT || process.env.MYSQL_ADDON_PORT || '3306', 10);
-    // Enforce strict connection limit of 1 per pool instance to prevent exceeding the database's 5 max_user_connections limit.
-    // Setting maxIdle to 0 ensures released connections are immediately closed and not kept alive as idle.
-    const connectionLimit = 3;
+    const connectionLimit = parseInt(process.env.DB_CONNECTION_LIMIT || '10', 10);
     console.log('[DEBUG DB] Initializing connection pool with config:', { host, port, user, database, connectionLimit });
 
     globalForDb.pool = mysql.createPool({
@@ -26,10 +24,7 @@ export function getDbPool(): mysql.Pool {
       port,
       waitForConnections: true,
       connectionLimit,
-      maxIdle: 0, // Ensure no idle connections are kept alive in the pool
-      idleTimeout: 100, // Close idle connections immediately (100ms) to free slots
       queueLimit: 0,
-      enableKeepAlive: false, // Disable keep-alive to allow connections to close immediately
       ssl: process.env.DB_SSL === 'true' ? {} : undefined
     });
   }

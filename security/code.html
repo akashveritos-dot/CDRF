@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Audit Report – The CSR Universe</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        @media print {
+            body {
+                background-color: white;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .print-container {
+                max-width: 100% !important;
+                box-shadow: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            .page-break {
+                page-break-before: always;
+            }
+
+            .break-inside-avoid {
+                page-break-inside: avoid;
+            }
+        }
+
+        /* Flowchart Connector Lines */
+        .flow-line-vertical {
+            position: relative;
+        }
+
+        .flow-line-vertical::before {
+            content: '';
+            position: absolute;
+            left: -1rem;
+            top: 50%;
+            width: 1rem;
+            border-top: 2px solid currentColor;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen py-10">
+
+    <!-- Main Document Container -->
+    <div
+        class="print-container max-w-5xl mx-auto bg-white shadow-xl border border-slate-200 rounded-xl overflow-hidden relative">
+
+        <!-- Print Button (Hidden when printing) -->
+        <button onclick="window.print()"
+            class="no-print absolute top-6 right-6 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm">
+            <i class="fa-solid fa-print"></i> Save as PDF / Print
+        </button>
+
+        <!-- Header Section -->
+        <header class="bg-slate-900 text-white p-10 lg:p-14 border-b-8 border-indigo-500">
+            <div class="flex items-center gap-4 mb-4 text-indigo-300 font-medium text-sm tracking-wider uppercase">
+                <i class="fa-solid fa-shield-check text-xl"></i>
+                <span>Security Assessment</span>
+            </div>
+            <h1 class="text-4xl lg:text-5xl font-bold mb-4 leading-tight">Security Audit Report</h1>
+            <h2 class="text-2xl text-slate-300 font-light mb-6">The CSR Universe</h2>
+            <div class="flex flex-wrap items-center gap-6 text-sm text-slate-400">
+                <span class="flex items-center gap-2"><i class="fa-regular fa-calendar"></i> June 2026</span>
+                <span class="flex items-center gap-2"><i class="fa-solid fa-users"></i> Prepared for: Non-Technical
+                    Audience</span>
+                <span class="flex items-center gap-2 text-indigo-400 bg-indigo-900/50 px-3 py-1 rounded-full"><i
+                        class="fa-solid fa-lock"></i> Confidential Document</span>
+            </div>
+        </header>
+
+        <div class="p-10 lg:p-14 space-y-16">
+
+            <!-- Executive Summary -->
+            <section class="break-inside-avoid">
+                <h3 class="text-2xl font-bold text-slate-900 mb-4 border-b pb-2 flex items-center gap-3">
+                    <i class="fa-solid fa-file-lines text-indigo-500"></i> In Plain Words: What We Found
+                </h3>
+                <div class="bg-slate-50 border border-slate-200 rounded-lg p-6 text-lg leading-relaxed text-slate-700">
+                    <p>The system is currently missing several basic safety checks. As a result, sensitive files can be
+                        seen, harmful files can be uploaded, and the login area is not properly protected.</p>
+                    <p class="mt-4 font-medium">Four core issues were found: <span class="text-rose-600">1
+                            Critical</span>, <span class="text-amber-600">2 High</span>, and <span
+                            class="text-blue-600">1 Medium</span> priority. None of them are unusually difficult to fix,
+                        but they require immediate attention.</p>
+                </div>
+            </section>
+
+            <!-- Risk Tiles Layout -->
+            <section>
+                <div class="flex items-center justify-between border-b pb-2 mb-6">
+                    <h3 class="text-2xl font-bold text-slate-900 flex items-center gap-3">
+                        <i class="fa-solid fa-triangle-exclamation text-indigo-500"></i> Risk Assessment Overview
+                    </h3>
+                    <!-- Legend -->
+                    <div class="hidden md:flex gap-4 text-xs font-semibold uppercase tracking-wide">
+                        <span class="flex items-center gap-1 text-rose-600"><span
+                                class="w-3 h-3 rounded-full bg-rose-500"></span> Critical</span>
+                        <span class="flex items-center gap-1 text-amber-600"><span
+                                class="w-3 h-3 rounded-full bg-amber-500"></span> High</span>
+                        <span class="flex items-center gap-1 text-blue-600"><span
+                                class="w-3 h-3 rounded-full bg-blue-500"></span> Medium</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    <!-- Tile 1: Unsafe Uploads (CRITICAL) -->
+                    <div
+                        class="break-inside-avoid bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col relative">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-rose-500"></div>
+                        <div class="p-6 flex-grow">
+                            <div class="flex justify-between items-start mb-4">
+                                <h4 class="text-xl font-bold text-slate-900">Unsafe Uploads</h4>
+                                <span
+                                    class="bg-rose-100 text-rose-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide border border-rose-200">Critical</span>
+                            </div>
+                            <div
+                                class="mb-4 bg-slate-50 p-2 rounded border border-slate-100 text-sm font-mono text-slate-600 break-all">
+                                <i class="fa-solid fa-link text-slate-400 mr-1"></i>
+                                https://thecsruniverse.com/adminxsafe/uploads/
+                            </div>
+                            <p class="text-slate-700 mb-4 font-medium">Files are accepted without being scanned, so an
+                                attacker can upload a malicious program.</p>
+                            <div class="mt-auto bg-rose-50 border border-rose-100 rounded p-4 text-sm text-rose-900">
+                                <i class="fa-solid fa-lightbulb text-rose-500 mr-2"></i><strong>Real-life
+                                    example:</strong> Accepting a mystery package without checking whether it contains a
+                                bomb.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tile 2: Exposed Files (HIGH) -->
+                    <div
+                        class="break-inside-avoid bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col relative">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-amber-500"></div>
+                        <div class="p-6 flex-grow">
+                            <div class="flex justify-between items-start mb-4">
+                                <h4 class="text-xl font-bold text-slate-900">Exposed Files</h4>
+                                <span
+                                    class="bg-amber-100 text-amber-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide border border-amber-200">High</span>
+                            </div>
+                            <div
+                                class="mb-4 bg-slate-50 p-2 rounded border border-slate-100 text-sm font-mono text-slate-600 break-all">
+                                <i class="fa-solid fa-link text-slate-400 mr-1"></i>
+                                https://thecsruniverse.com/adminxsafe/uploads/
+                            </div>
+                            <p class="text-slate-700 mb-4 font-medium">The system shows a public list of every file,
+                                revealing exactly where sensitive data is stored.</p>
+                            <div class="mt-auto bg-amber-50 border border-amber-100 rounded p-4 text-sm text-amber-900">
+                                <i class="fa-solid fa-lightbulb text-amber-500 mr-2"></i><strong>Real-life
+                                    example:</strong> Like leaving a map of a building's secure zones taped to the front
+                                door.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tile 3: Weak Login (HIGH) -->
+                    <div
+                        class="break-inside-avoid bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col relative">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-amber-500"></div>
+                        <div class="p-6 flex-grow">
+                            <div class="flex justify-between items-start mb-4">
+                                <h4 class="text-xl font-bold text-slate-900">Weak Login</h4>
+                                <span
+                                    class="bg-amber-100 text-amber-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide border border-amber-200">High</span>
+                            </div>
+                            <div
+                                class="mb-4 bg-slate-50 p-2 rounded border border-slate-100 text-sm font-mono text-slate-600 break-all">
+                                <i class="fa-solid fa-link text-slate-400 mr-1"></i>
+                                https://thecsruniverse.com/login<br>
+                                <span class="text-xs text-slate-400">(Includes Sign In, Sign Up, Password
+                                    Recovery)</span>
+                            </div>
+                            <p class="text-slate-700 mb-4 font-medium">The login process is not secure, allowing
+                                unauthorised access or theft of user data.</p>
+                            <div class="mt-auto bg-amber-50 border border-amber-100 rounded p-4 text-sm text-amber-900">
+                                <i class="fa-solid fa-lightbulb text-amber-500 mr-2"></i><strong>Real-life
+                                    example:</strong> A security guard letting anyone inside without checking their ID.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tile 4: Predictable Locations (MEDIUM) -->
+                    <div
+                        class="break-inside-avoid bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col relative">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
+                        <div class="p-6 flex-grow">
+                            <div class="flex justify-between items-start mb-4">
+                                <h4 class="text-xl font-bold text-slate-900">Predictable Locations</h4>
+                                <span
+                                    class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide border border-blue-200">Medium</span>
+                            </div>
+                            <div
+                                class="mb-4 bg-slate-50 p-2 rounded border border-slate-100 text-sm font-mono text-slate-600 break-all">
+                                <i class="fa-solid fa-link text-slate-400 mr-1"></i>
+                                https://thecsruniverse.com/adminxsafe/uploads/file1.pdf
+                            </div>
+                            <p class="text-slate-700 mb-4 font-medium">Files are saved with easy-to-guess names (file1,
+                                file2…), making private data simple to find.</p>
+                            <div class="mt-auto bg-blue-50 border border-blue-100 rounded p-4 text-sm text-blue-900">
+                                <i class="fa-solid fa-lightbulb text-blue-500 mr-2"></i><strong>Real-life
+                                    example:</strong> If safe-deposit boxes are numbered in order, a thief can easily
+                                guess where valuables are.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- Page Break for Printing -->
+            <div class="page-break"></div>
+
+            <!-- Flowchart Diagrams Section -->
+            <section class="break-inside-avoid">
+                <h3 class="text-2xl font-bold text-slate-900 mb-4 border-b pb-2 flex items-center gap-3">
+                    <i class="fa-solid fa-diagram-project text-indigo-500"></i> Visualising the Risk: Safe vs.
+                    Vulnerable
+                </h3>
+                <p class="text-slate-700 mb-8">
+                    The two diagrams below explain the problem at a glance. In a secure system, every request passes
+                    through safety checks before any file is opened or stored. Right now, those checks are missing — so
+                    an attacker has a direct path to your data.
+                </p>
+
+                <!-- Diagram 1: The Safe Path -->
+                <div class="mb-12 bg-slate-50 p-8 border border-slate-200 rounded-xl">
+                    <h4 class="text-center text-xl font-extrabold text-emerald-800 uppercase tracking-widest mb-8">The
+                        Normal (Safe) Path</h4>
+
+                    <div class="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-4 w-full">
+                        <div
+                            class="bg-emerald-50 border-2 border-emerald-500 text-emerald-900 font-bold py-4 px-6 rounded-lg shadow-sm text-center min-w-[140px]">
+                            User
+                        </div>
+                        <i class="fa-solid fa-arrow-right md:rotate-0 rotate-90 text-2xl text-emerald-600"></i>
+                        <div
+                            class="bg-emerald-50 border-2 border-emerald-500 text-emerald-900 font-bold py-4 px-6 rounded-lg shadow-sm text-center min-w-[140px]">
+                            Request
+                        </div>
+                        <i class="fa-solid fa-arrow-right md:rotate-0 rotate-90 text-2xl text-emerald-600"></i>
+                        <div
+                            class="bg-emerald-100 border-4 border-emerald-600 text-emerald-900 py-3 px-6 rounded-lg shadow-md text-center">
+                            <div class="font-bold text-lg mb-1">Security Checks</div>
+                            <div class="text-xs opacity-80 uppercase tracking-wider">Validation + Virus Scan</div>
+                        </div>
+                        <i class="fa-solid fa-arrow-right md:rotate-0 rotate-90 text-2xl text-emerald-600"></i>
+                        <div
+                            class="bg-emerald-50 border-2 border-emerald-500 text-emerald-900 py-3 px-6 rounded-lg shadow-sm text-center">
+                            <div class="font-bold text-lg mb-1">Safe Access</div>
+                            <div class="text-xs opacity-80 uppercase tracking-wider">& Secure Storage</div>
+                        </div>
+                    </div>
+                    <p class="text-center italic text-slate-500 mt-8">Every request is checked before anything is stored
+                        or shared.</p>
+                </div>
+
+                <!-- Diagram 2: The Vulnerable Path -->
+                <div class="bg-slate-50 p-8 border border-slate-200 rounded-xl">
+                    <h4 class="text-center text-xl font-extrabold text-rose-800 uppercase tracking-widest mb-8">The
+                        Vulnerable Path (Where Attackers Get In)</h4>
+
+                    <div class="flex flex-col md:flex-row items-center justify-center gap-4 w-full">
+                        <div
+                            class="bg-rose-50 border-2 border-rose-500 text-rose-900 font-bold py-5 px-6 rounded-lg shadow-sm text-center min-w-[140px]">
+                            Attacker
+                        </div>
+                        <i class="fa-solid fa-arrow-right md:rotate-0 rotate-90 text-2xl text-rose-600"></i>
+                        <div
+                            class="bg-rose-100 border-4 border-rose-600 text-rose-900 py-4 px-6 rounded-lg shadow-md text-center">
+                            <div class="font-bold text-lg mb-1">No Checks</div>
+                            <div class="text-xs opacity-80 uppercase tracking-wider">Nothing is validated</div>
+                        </div>
+                        <i
+                            class="fa-solid fa-arrow-right md:rotate-0 rotate-90 text-2xl text-rose-600 hidden md:block"></i>
+
+                        <!-- Splitting Paths -->
+                        <div
+                            class="flex flex-col gap-3 relative md:pl-4 text-amber-900 font-bold border-l-4 md:border-l border-transparent md:border-amber-400">
+                            <div
+                                class="bg-amber-50 border-2 border-amber-500 py-3 px-6 rounded-lg shadow-sm text-center flex items-center md:before:content-[''] md:before:w-4 md:before:border-b-2 md:before:border-amber-400 md:before:absolute md:before:-left-4 md:before:top-[12%]">
+                                Direct file access
+                            </div>
+                            <div
+                                class="bg-amber-50 border-2 border-amber-500 py-3 px-6 rounded-lg shadow-sm text-center flex items-center md:before:content-[''] md:before:w-4 md:before:border-b-2 md:before:border-amber-400 md:before:absolute md:before:-left-4 md:before:top-[50%]">
+                                Unchecked upload
+                            </div>
+                            <div
+                                class="bg-amber-50 border-2 border-amber-500 py-3 px-6 rounded-lg shadow-sm text-center flex items-center md:before:content-[''] md:before:w-4 md:before:border-b-2 md:before:border-amber-400 md:before:absolute md:before:-left-4 md:before:top-[88%]">
+                                Weak login
+                            </div>
+                        </div>
+
+                        <i
+                            class="fa-solid fa-arrow-right md:rotate-0 rotate-90 text-2xl text-rose-600 hidden md:block"></i>
+                        <div
+                            class="bg-rose-100 border-2 border-rose-600 text-rose-900 py-5 px-6 rounded-lg shadow-md text-center">
+                            <div class="font-bold text-xl">Data<br>Exposed</div>
+                        </div>
+                    </div>
+                    <p class="text-center italic text-slate-500 mt-8 text-sm max-w-2xl mx-auto">The takeaway: The safety
+                        checks shown in the green diagram are currently missing. With no checks in place, any of these
+                        weak points leads straight to exposed data.</p>
+                </div>
+            </section>
+
+            <!-- Recommendations Section -->
+            <section class="break-inside-avoid">
+                <h3 class="text-2xl font-bold text-slate-900 mb-4 border-b pb-2 flex items-center gap-3">
+                    <i class="fa-solid fa-list-check text-indigo-500"></i> Recommended Actions
+                </h3>
+                <p class="text-slate-700 mb-6">Each finding has a straightforward fix. We recommend tackling them in the
+                    priority order listed below:</p>
+
+                <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-900 text-white">
+                                <th class="p-4 font-semibold text-sm w-1/4">Risk</th>
+                                <th class="p-4 font-semibold text-sm w-1/2">What to do about it</th>
+                                <th class="p-4 font-semibold text-sm w-1/4">Priority</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200">
+                            <tr class="bg-white hover:bg-slate-50 transition-colors">
+                                <td class="p-4 font-bold text-slate-900">Unsafe Uploads</td>
+                                <td class="p-4 text-slate-700">Scan every uploaded file for malware and allow only safe,
+                                    expected file types.</td>
+                                <td class="p-4"><span
+                                        class="bg-rose-100 text-rose-800 text-xs font-bold px-3 py-1 rounded-full border border-rose-200">CRITICAL</span>
+                                </td>
+                            </tr>
+                            <tr class="bg-slate-50 hover:bg-slate-100 transition-colors">
+                                <td class="p-4 font-bold text-slate-900">Exposed Files</td>
+                                <td class="p-4 text-slate-700">Turn off the public folder listing so the directory
+                                    cannot be browsed.</td>
+                                <td class="p-4"><span
+                                        class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full border border-amber-200">HIGH</span>
+                                </td>
+                            </tr>
+                            <tr class="bg-white hover:bg-slate-50 transition-colors">
+                                <td class="p-4 font-bold text-slate-900">Weak Login</td>
+                                <td class="p-4 text-slate-700">Secure sign-in with encryption, account lockouts,
+                                    multi-factor authentication, and a safe password-reset flow.</td>
+                                <td class="p-4"><span
+                                        class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full border border-amber-200">HIGH</span>
+                                </td>
+                            </tr>
+                            <tr class="bg-slate-50 hover:bg-slate-100 transition-colors">
+                                <td class="p-4 font-bold text-slate-900">Predictable Locations</td>
+                                <td class="p-4 text-slate-700">Save files using random, unguessable names so they cannot
+                                    be discovered by guessing.</td>
+                                <td class="p-4"><span
+                                        class="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full border border-blue-200">MEDIUM</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- Footer -->
+        <footer class="bg-slate-50 border-t border-slate-200 p-8 text-center text-slate-500 text-sm mt-8">
+            <p><i class="fa-solid fa-circle-info text-slate-400 mr-2"></i>Questions about this report can be directed to
+                your security or development team. This document is intended to support that conversation, not replace
+                it.</p>
+            <p class="mt-4 text-xs font-medium uppercase tracking-widest text-slate-400">The CSR Universe — 2026 Audit
+                Report</p>
+        </footer>
+
+    </div>
+
+</body>
+
+</html>
+```eof
+
+### Key Updates Added:
+1. **Real File Paths:** Added the exact URLs (e.g.,
+`[https://thecsruniverse.com/adminxsafe/uploads/](https://thecsruniverse.com/adminxsafe/uploads/)`) mapping to each
+specific vulnerability inside the tiles for context.
+2. **Priority Scoring Tiles:** Built out visual "cards" that are colour-coded for Critical (Red), High (Orange/Amber),
+and Medium (Blue) so it's instantly recognizable.
+3. **Interactive PDF/Print Button:** Added a button at the top right so you can instantly save it to PDF or print it out
+to share with the executives.
+4. **CSS Generated Flowcharts:** Because the Google Mail image links you sent are private and would show up as "broken
+images" to anyone you shared the doc with, I carefully rebuilt the visual diagrams using clean HTML and CSS, matching
+your flow exactly.
+
+You can click the code button to copy this or download it, open it in any web browser, and you are good to go! Let me
+know if you need any text or colors adjusted.
