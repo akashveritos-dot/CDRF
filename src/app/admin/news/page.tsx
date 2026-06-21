@@ -46,6 +46,37 @@ export default function AdminNews() {
   });
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [imageUploadSuccess, setImageUploadSuccess] = useState('');
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingImage(true);
+    setImageUploadSuccess('');
+    setError('');
+
+    const uploadData = new FormData();
+    uploadData.append('file', file);
+
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: uploadData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to upload image');
+
+      setFormData(prev => ({ ...prev, image_url: data.url }));
+      setImageUploadSuccess(file.name);
+    } catch (err: any) {
+      setError(err.message || 'Image upload failed.');
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
 
   const fetchStories = async () => {
     setLoading(true);
@@ -80,6 +111,7 @@ export default function AdminNews() {
       category: 'disasters'
     });
     setError('');
+    setImageUploadSuccess('');
     setIsFormOpen(true);
   };
 
@@ -116,6 +148,7 @@ export default function AdminNews() {
       category: story.category || 'disasters'
     });
     setError('');
+    setImageUploadSuccess('');
     setIsFormOpen(true);
   };
 
@@ -400,21 +433,63 @@ export default function AdminNews() {
                   />
                 </div>
 
-                {/* Image URL */}
+                 {/* Image URL / Local Upload */}
                 <div className={`${styles.inputGroup} ${styles.colSpan2}`}>
-                  <label htmlFor="image_url">Visual Cover Image URL (Unsplash/Static)</label>
-                  <div className={styles.iconInputWrap}>
-                    <ImageIcon size={16} className={styles.inputIcon} />
-                    <input
-                      id="image_url"
-                      type="text"
-                      name="image_url"
-                      value={formData.image_url}
-                      onChange={handleInputChange}
-                      placeholder="https://images.unsplash.com/photo-..."
-                      className={styles.inputFieldWithIcon}
-                    />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <label htmlFor="image_url">Visual Cover Image URL</label>
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>— OR —</span>
                   </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '12px', alignItems: 'center' }}>
+                    <div className={styles.iconInputWrap} style={{ width: '100%' }}>
+                      <ImageIcon size={16} className={styles.inputIcon} />
+                      <input
+                        id="image_url"
+                        type="text"
+                        name="image_url"
+                        value={formData.image_url}
+                        onChange={handleInputChange}
+                        placeholder="https://images.unsplash.com/photo-... or uploaded path"
+                        className={styles.inputFieldWithIcon}
+                      />
+                    </div>
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        id="news-image-upload"
+                        style={{ display: 'none' }}
+                        onChange={handleImageUpload}
+                        disabled={isUploadingImage}
+                      />
+                      <label
+                        htmlFor="news-image-upload"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '11px 16px',
+                          borderRadius: '8px',
+                          backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                          border: '1px solid rgba(255, 255, 255, 0.08)',
+                          color: '#ffffff',
+                          cursor: 'pointer',
+                          fontSize: '13px',
+                          fontWeight: 600,
+                          transition: 'background-color 0.2s',
+                          whiteSpace: 'nowrap'
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.04)'; }}
+                      >
+                        {isUploadingImage ? 'Uploading...' : 'Upload File'}
+                      </label>
+                    </div>
+                  </div>
+                  {imageUploadSuccess && (
+                    <span style={{ fontSize: '12px', color: '#10b981', display: 'block', marginTop: '2px' }}>
+                      ✓ Successfully uploaded: <strong>{imageUploadSuccess}</strong>
+                    </span>
+                  )}
                 </div>
 
                 {/* External Link */}

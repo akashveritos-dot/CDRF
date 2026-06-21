@@ -24,6 +24,37 @@ export default function AdminGalleryManager() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState('');
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    setUploadSuccess('');
+    setError('');
+
+    const uploadData = new FormData();
+    uploadData.append('file', file);
+
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: uploadData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to upload photo');
+
+      setImageUrl(data.url);
+      setUploadSuccess(file.name);
+    } catch (err: any) {
+      setError(err.message || 'Photo upload failed.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const loadGallery = async () => {
     setIsLoading(true);
@@ -70,6 +101,7 @@ export default function AdminGalleryManager() {
         setImageUrl('');
         setCaption('');
         setContent('');
+        setUploadSuccess('');
         loadGallery();
       } else {
         throw new Error(data.error || 'Failed to add gallery item.');
@@ -117,15 +149,57 @@ export default function AdminGalleryManager() {
           
           <form onSubmit={handleAddPhoto} className={styles.form}>
             <div className={styles.formGroup}>
-              <label className={styles.label}>Image URL</label>
-              <input
-                type="url"
-                className={styles.input}
-                placeholder="e.g. https://images.unsplash.com/..."
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                required
-              />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <label className={styles.label}>Image URL</label>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>— OR —</span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '12px', alignItems: 'center' }}>
+                <input
+                  type="text"
+                  className={styles.input}
+                  placeholder="e.g. https://images.unsplash.com/... or uploaded path"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  required
+                />
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    id="gallery-photo-upload"
+                    style={{ display: 'none' }}
+                    onChange={handleFileUpload}
+                    disabled={isUploading}
+                  />
+                  <label
+                    htmlFor="gallery-photo-upload"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '11px 16px',
+                      borderRadius: '8px',
+                      backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      color: '#ffffff',
+                      cursor: 'pointer',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      transition: 'background-color 0.2s',
+                      whiteSpace: 'nowrap'
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.04)'; }}
+                  >
+                    {isUploading ? 'Uploading...' : 'Upload File'}
+                  </label>
+                </div>
+              </div>
+              {uploadSuccess && (
+                <span style={{ fontSize: '12px', color: '#10b981', display: 'block', marginTop: '2px' }}>
+                  ✓ Successfully uploaded: <strong>{uploadSuccess}</strong>
+                </span>
+              )}
             </div>
 
             <div className={styles.formGroup}>

@@ -2,6 +2,8 @@ import React from 'react';
 import { query } from '@/lib/db';
 import CouncilPageClient from './CouncilPageClient';
 
+export const dynamic = 'force-dynamic';
+
 export default async function CouncilPage() {
   let members: any[] = [];
   try {

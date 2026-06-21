@@ -48,15 +48,28 @@ export default function ReportsPageClient({ initialReports }: ReportsPageClientP
   const [reportsList] = useState<any[]>(initialReports);
   const { download } = useToast();
 
-  const filteredReports = reportsList.filter((report) => {
-    const matchesTab = activeTab === 'All' || report.category.toLowerCase() === activeTab.toLowerCase();
-    const matchesSearch =
-      report.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      report.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (report.disaster_type && report.disaster_type.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (report.region && report.region.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchesTab && matchesSearch;
-  });
+  const sortedReports = React.useMemo(() => {
+    return [...reportsList].sort((a, b) => {
+      const yearA = parseInt(a.year, 10) || 0;
+      const yearB = parseInt(b.year, 10) || 0;
+      if (yearB !== yearA) {
+        return yearB - yearA;
+      }
+      return (b.id || 0) - (a.id || 0);
+    });
+  }, [reportsList]);
+
+  const filteredReports = React.useMemo(() => {
+    return sortedReports.filter((report) => {
+      const matchesTab = activeTab === 'All' || report.category.toLowerCase() === activeTab.toLowerCase();
+      const matchesSearch =
+        report.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        report.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (report.disaster_type && report.disaster_type.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (report.region && report.region.toLowerCase().includes(searchQuery.toLowerCase()));
+      return matchesTab && matchesSearch;
+    });
+  }, [sortedReports, activeTab, searchQuery]);
 
   return (
     <div className={styles.page}>

@@ -2,6 +2,8 @@ import React from 'react';
 import { query } from '@/lib/db';
 import ReportsPageClient from './ReportsPageClient';
 
+export const dynamic = 'force-dynamic';
+
 export default async function ReportsPage() {
   let reports: any[] = [];
   try {

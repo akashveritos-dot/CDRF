@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation';
 import { query } from '@/lib/db';
 import EventVideosClient, { PageData } from './EventVideosClient';
 
+export const dynamic = 'force-dynamic';
+
 export default async function EventVideosPage() {
   try {
     const rows = await query<any[]>(

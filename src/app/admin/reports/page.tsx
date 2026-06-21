@@ -43,6 +43,68 @@ export default function AdminReports() {
   });
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
+  const [isUploadingPdf, setIsUploadingPdf] = useState(false);
+  const [pdfUploadSuccess, setPdfUploadSuccess] = useState('');
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [imageUploadSuccess, setImageUploadSuccess] = useState('');
+
+  const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingPdf(true);
+    setPdfUploadSuccess('');
+    setError('');
+
+    const uploadData = new FormData();
+    uploadData.append('file', file);
+
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: uploadData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to upload PDF');
+
+      setFormData(prev => ({ ...prev, download_url: data.url }));
+      setPdfUploadSuccess(file.name);
+    } catch (err: any) {
+      setError(err.message || 'PDF upload failed.');
+    } finally {
+      setIsUploadingPdf(false);
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingImage(true);
+    setImageUploadSuccess('');
+    setError('');
+
+    const uploadData = new FormData();
+    uploadData.append('file', file);
+
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: uploadData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to upload image');
+
+      setFormData(prev => ({ ...prev, image_url: data.url }));
+      setImageUploadSuccess(file.name);
+    } catch (err: any) {
+      setError(err.message || 'Image upload failed.');
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
 
   const fetchReports = async () => {
     setLoading(true);
@@ -85,6 +147,8 @@ export default function AdminReports() {
       image_url: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80'
     });
     setError('');
+    setPdfUploadSuccess('');
+    setImageUploadSuccess('');
     setIsFormOpen(true);
   };
 
@@ -102,6 +166,8 @@ export default function AdminReports() {
       image_url: report.image_url || ''
     });
     setError('');
+    setPdfUploadSuccess('');
+    setImageUploadSuccess('');
     setIsFormOpen(true);
   };
 
@@ -357,39 +423,123 @@ export default function AdminReports() {
                   />
                 </div>
 
-                {/* Download URL */}
+                {/* Download URL / Local Upload */}
                 <div className={`${styles.inputGroup} ${styles.colSpan2}`}>
-                  <label htmlFor="download_url">PDF Download URL (S3 / Static / External)</label>
-                  <div className={styles.iconInputWrap}>
-                    <Download size={16} className={styles.inputIcon} />
-                    <input
-                      id="download_url"
-                      type="text"
-                      name="download_url"
-                      required
-                      value={formData.download_url}
-                      onChange={handleInputChange}
-                      placeholder="https://dcrf.org/publications/risk-index-2026.pdf"
-                      className={styles.inputFieldWithIcon}
-                    />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <label htmlFor="download_url">PDF Download URL (S3 / Static / External)</label>
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>— OR —</span>
                   </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '12px', alignItems: 'center' }}>
+                    <div className={styles.iconInputWrap} style={{ width: '100%' }}>
+                      <Download size={16} className={styles.inputIcon} />
+                      <input
+                        id="download_url"
+                        type="text"
+                        name="download_url"
+                        required
+                        value={formData.download_url}
+                        onChange={handleInputChange}
+                        placeholder="https://dcrf.org/publications/risk-index-2026.pdf or uploaded path"
+                        className={styles.inputFieldWithIcon}
+                      />
+                    </div>
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        type="file"
+                        accept="application/pdf"
+                        id="reports-pdf-upload"
+                        style={{ display: 'none' }}
+                        onChange={handlePdfUpload}
+                        disabled={isUploadingPdf}
+                      />
+                      <label
+                        htmlFor="reports-pdf-upload"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '11px 16px',
+                          borderRadius: '8px',
+                          backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                          border: '1px solid rgba(255, 255, 255, 0.08)',
+                          color: '#ffffff',
+                          cursor: 'pointer',
+                          fontSize: '13px',
+                          fontWeight: 600,
+                          transition: 'background-color 0.2s',
+                          whiteSpace: 'nowrap'
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.04)'; }}
+                      >
+                        {isUploadingPdf ? 'Uploading...' : 'Upload PDF'}
+                      </label>
+                    </div>
+                  </div>
+                  {pdfUploadSuccess && (
+                    <span style={{ fontSize: '12px', color: '#10b981', display: 'block', marginTop: '2px' }}>
+                      ✓ Successfully uploaded: <strong>{pdfUploadSuccess}</strong>
+                    </span>
+                  )}
                 </div>
 
-                {/* Cover Image URL */}
+                {/* Cover Image URL / Local Upload */}
                 <div className={`${styles.inputGroup} ${styles.colSpan2}`}>
-                  <label htmlFor="image_url">Visual Cover Image URL</label>
-                  <div className={styles.iconInputWrap}>
-                    <ImageIcon size={16} className={styles.inputIcon} />
-                    <input
-                      id="image_url"
-                      type="text"
-                      name="image_url"
-                      value={formData.image_url}
-                      onChange={handleInputChange}
-                      placeholder="https://images.unsplash.com/photo-..."
-                      className={styles.inputFieldWithIcon}
-                    />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <label htmlFor="image_url">Visual Cover Image URL</label>
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>— OR —</span>
                   </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '12px', alignItems: 'center' }}>
+                    <div className={styles.iconInputWrap} style={{ width: '100%' }}>
+                      <ImageIcon size={16} className={styles.inputIcon} />
+                      <input
+                        id="image_url"
+                        type="text"
+                        name="image_url"
+                        value={formData.image_url}
+                        onChange={handleInputChange}
+                        placeholder="https://images.unsplash.com/photo-... or uploaded path"
+                        className={styles.inputFieldWithIcon}
+                      />
+                    </div>
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        id="reports-image-upload"
+                        style={{ display: 'none' }}
+                        onChange={handleImageUpload}
+                        disabled={isUploadingImage}
+                      />
+                      <label
+                        htmlFor="reports-image-upload"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '11px 16px',
+                          borderRadius: '8px',
+                          backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                          border: '1px solid rgba(255, 255, 255, 0.08)',
+                          color: '#ffffff',
+                          cursor: 'pointer',
+                          fontSize: '13px',
+                          fontWeight: 600,
+                          transition: 'background-color 0.2s',
+                          whiteSpace: 'nowrap'
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.04)'; }}
+                      >
+                        {isUploadingImage ? 'Uploading...' : 'Upload Image'}
+                      </label>
+                    </div>
+                  </div>
+                  {imageUploadSuccess && (
+                    <span style={{ fontSize: '12px', color: '#10b981', display: 'block', marginTop: '2px' }}>
+                      ✓ Successfully uploaded: <strong>{imageUploadSuccess}</strong>
+                    </span>
+                  )}
                 </div>
 
                 {/* Accent Color & Background parameters */}

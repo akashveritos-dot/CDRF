@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation';
 import { query } from '@/lib/db';
 import EventPageClient, { PageData } from './EventPageClient';
 
+export const dynamic = 'force-dynamic';
+
 // Render the page fully server-side with direct database queries to eliminate client-side loading states.
 export default async function EventSubpage(props: { params: Promise<{ slug: string }> }) {
   const params = await props.params;
