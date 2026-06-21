@@ -37,27 +37,10 @@ export default function NewsPageClient({ initialStories }: NewsPageClientProps) 
   const [stories] = useState<any[]>(initialStories);
 
   const renderReadButton = (story: any, label: string = 'Read story') => {
-    const hasFullContent = story.full_content && story.full_content.trim().length > 0;
-    const hasExternalLink = story.external_link && story.external_link.trim().length > 0 && story.external_link !== '#';
-
-    if (hasFullContent || !hasExternalLink) {
-      return (
-        <Link href={`/news/${story.id}`} className={styles.readBtn}>
-          {label}
-        </Link>
-      );
-    }
-
     return (
-      <a
-        href={story.external_link}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={styles.readBtn}
-      >
+      <Link href={`/news/${story.id}`} className={styles.readBtn}>
         {label}
-        <ExternalLink size={12} />
-      </a>
+      </Link>
     );
   };
 

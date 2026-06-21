@@ -34,12 +34,12 @@ export default function AdminNews() {
   // Form State
   const [formData, setFormData] = useState({
     tag: 'Breaking',
-    source: 'disastersnews.com',
+    source: 'dcrf.world',
     headline: '',
     excerpt: '',
     full_content: '',
     published_date: '',
-    author: 'disastersnews.com',
+    author: 'Editor Desk, DCRF',
     external_link: '',
     thumbnail_emoji: '📰',
     image_url: '',
@@ -142,7 +142,7 @@ export default function AdminNews() {
     setEditingId(null);
     setFormData({
       tag: 'Alert',
-      source: 'dcrf.org',
+      source: 'dcrf.world',
       headline: '',
       excerpt: '',
       full_content: '',

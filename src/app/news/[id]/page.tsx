@@ -136,10 +136,24 @@ export default async function NewsDetailsPage(props: { params: Promise<{ id: str
         />
       </div>
 
-      <div 
+      <div
         className={styles.content}
         dangerouslySetInnerHTML={{ __html: formattedHtmlContent }}
       />
+
+      {story.external_link && story.external_link !== '#' && story.external_link.trim() !== '' && (
+        <div style={{ marginTop: '48px', paddingTop: '24px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-start' }}>
+          <a
+            href={story.external_link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.backBtn}
+            style={{ marginBottom: 0 }}
+          >
+            Read Original Article on {story.source || 'External Source'} ↗
+          </a>
+        </div>
+      )}
     </div>
   );
 }

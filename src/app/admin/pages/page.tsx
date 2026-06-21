@@ -297,7 +297,18 @@ export default function AdminPagesManager() {
                   className={styles.input}
                   placeholder="e.g. Mission & Vision"
                   value={title}
-                  onChange={(e) => setTitle(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setTitle(val);
+                    if (!selectedPage) {
+                      setSlug(
+                        val
+                          .toLowerCase()
+                          .replace(/[^a-z0-9]+/g, '-')
+                          .replace(/(^-|-$)/g, '')
+                      );
+                    }
+                  }}
                   required
                 />
               </div>
