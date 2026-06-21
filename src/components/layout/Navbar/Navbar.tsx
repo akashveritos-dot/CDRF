@@ -447,59 +447,61 @@ export default function Navbar() {
           Subscribe
         </button>
 
-        {/* Mobile Social Media Floating Dropdown */}
-        <div className={styles.mobileSocialDropdownContainer}>
-          <button
-            onClick={() => setIsSocialOpen(!isSocialOpen)}
-            className={`${styles.mobileSocialToggle} ${isSocialOpen ? styles.activeToggle : ''}`}
-            aria-label="Toggle social links"
-          >
-            <ChevronDown size={16} className={`${styles.mobileSocialCaret} ${isSocialOpen ? styles.mobileSocialCaretRotated : ''}`} />
-          </button>
+        {/* Mobile Social Media Floating Dropdown — home page only */}
+        {pathname === '/' && (
+          <div className={styles.mobileSocialDropdownContainer}>
+            <button
+              onClick={() => setIsSocialOpen(!isSocialOpen)}
+              className={`${styles.mobileSocialToggle} ${isSocialOpen ? styles.activeToggle : ''}`}
+              aria-label="Toggle social links"
+            >
+              <ChevronDown size={16} className={`${styles.mobileSocialCaret} ${isSocialOpen ? styles.mobileSocialCaretRotated : ''}`} />
+            </button>
 
-          <AnimatePresence>
-            {isSocialOpen && (
-              <motion.div
-                className={styles.mobileSocialMenu}
-                initial={{ opacity: 0, y: -8, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -8, scale: 0.95 }}
-                transition={{ duration: 0.15, ease: 'easeOut' }}
-              >
-                <a
-                  href="https://www.linkedin.com/company/disaster-and-climate-resilience-federation/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.mobileSocialIconLink}
-                  style={{ color: '#0A66C2' }}
-                  onClick={() => setIsSocialOpen(false)}
+            <AnimatePresence>
+              {isSocialOpen && (
+                <motion.div
+                  className={styles.mobileSocialMenu}
+                  initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                  transition={{ duration: 0.15, ease: 'easeOut' }}
                 >
-                  <Linkedin size={18} />
-                </a>
-                <a
-                  href="https://www.facebook.com/thecsruniverse.official/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.mobileSocialIconLink}
-                  style={{ color: '#1877F2' }}
-                  onClick={() => setIsSocialOpen(false)}
-                >
-                  <Facebook size={18} />
-                </a>
-                <a
-                  href="https://www.youtube.com/@thecsruniverse"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.mobileSocialIconLink}
-                  style={{ color: '#FF0000' }}
-                  onClick={() => setIsSocialOpen(false)}
-                >
-                  <Youtube size={18} />
-                </a>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+                  <a
+                    href="https://www.linkedin.com/company/disaster-and-climate-resilience-federation/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.mobileSocialIconLink}
+                    style={{ color: '#0A66C2' }}
+                    onClick={() => setIsSocialOpen(false)}
+                  >
+                    <Linkedin size={18} />
+                  </a>
+                  <a
+                    href="https://www.facebook.com/thecsruniverse.official/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.mobileSocialIconLink}
+                    style={{ color: '#1877F2' }}
+                    onClick={() => setIsSocialOpen(false)}
+                  >
+                    <Facebook size={18} />
+                  </a>
+                  <a
+                    href="https://www.youtube.com/@thecsruniverse"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.mobileSocialIconLink}
+                    style={{ color: '#FF0000' }}
+                    onClick={() => setIsSocialOpen(false)}
+                  >
+                    <Youtube size={18} />
+                  </a>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
 
         {/* Mobile Side Drawer */}
         <div className={`${styles.drawer} ${isOpen ? styles.drawerOpen : ''}`}>
