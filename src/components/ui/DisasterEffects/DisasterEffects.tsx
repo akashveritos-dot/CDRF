@@ -261,10 +261,16 @@ const DisasterEffects: React.FC<DisasterEffectsProps> = ({
       }
     };
 
-    resolveLocationAndWeather();
+    // Defer the initial execution by 1 second to optimize initial page paint speed (especially on mobile)
+    const delayTimer = setTimeout(() => {
+      resolveLocationAndWeather();
+    }, 1000);
     // Relaxed 5-minute interval check
     const interval = setInterval(resolveLocationAndWeather, 5 * 60 * 1000);
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(delayTimer);
+      clearInterval(interval);
+    };
   }, [mounted, selectedStateId]);
 
   if (!mounted) return null;

@@ -101,10 +101,17 @@ export function TelemetryProvider({ children }: { children: ReactNode }) {
        /bot|crawl|spider|google|baidu|bing|yandex|speed|slurp/i.test(navigator.userAgent));
 
     if (!isBot) {
-      fetchTelemetry();
+      // Defer the initial fetch by 800ms to allow the browser to prioritize rendering the main hero/structure
+      const delayTimer = setTimeout(() => {
+        fetchTelemetry();
+      }, 800);
+
       // Set up a background polling interval (every 5 minutes, 300,000ms instead of 15 seconds) to ensure fresh metrics without overloading the database
       const interval = setInterval(fetchTelemetry, 300000);
-      return () => clearInterval(interval);
+      return () => {
+        clearTimeout(delayTimer);
+        clearInterval(interval);
+      };
     } else {
       // Complete loading instantly with default data for crawlers
       setLoading(false);

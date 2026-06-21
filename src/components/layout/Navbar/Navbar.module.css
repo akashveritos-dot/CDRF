@@ -114,6 +114,12 @@
   align-items: center;
 }
 
+@media (max-width: 1350px) {
+  .navLinks {
+    gap: 16px;
+  }
+}
+
 .navLinks a:not(.cta) {
   color: var(--text-muted);
   font-size: 14px;
@@ -1354,5 +1360,319 @@
   .mobileSocialIconLink:active {
     background: var(--wine-red-pale);
     transform: scale(0.9);
+  }
+}
+
+/* ── Weather Alert Trigger & Popup Styles ───────────────────────────── */
+
+.weatherCircleBtn {
+  background: rgba(15, 23, 42, 0.04);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all var(--transition-base);
+  flex-shrink: 0;
+}
+
+.weatherCircleBtnAlert {
+  background: var(--wine-red-pale);
+  color: var(--wine-red-primary);
+  border-color: rgba(185, 28, 28, 0.15);
+}
+
+.weatherCircleBtn:hover {
+  background: var(--wine-red-pale);
+  color: var(--wine-red-primary);
+  border-color: rgba(185, 28, 28, 0.25);
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 12px rgba(185, 28, 28, 0.08);
+}
+
+.bellIcon {
+  animation: bellRinging 3s ease-in-out infinite;
+  transform-origin: top center;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+@keyframes bellRinging {
+  0%, 100% { transform: rotate(0deg); }
+  5%, 15%, 25% { transform: rotate(12deg); }
+  10%, 20%, 30% { transform: rotate(-12deg); }
+  35% { transform: rotate(0deg); }
+}
+
+.submenuAlertBtn {
+  background: var(--wine-red-pale);
+  color: var(--wine-red-primary);
+  border: 1px solid rgba(185, 28, 28, 0.15);
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  text-align: center;
+  margin-top: 6px;
+  width: 100%;
+}
+
+.submenuAlertBtn:hover,
+.submenuAlertBtn:active {
+  background: rgba(185, 28, 28, 0.1);
+}
+
+/* Glassmorphic Rotator Alert Popup */
+.weatherPopupAlert {
+  position: fixed;
+  top: 105px;
+  right: 5%;
+  width: 380px;
+  max-width: 90vw;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1.5px solid rgba(185, 28, 28, 0.15);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(185, 28, 28, 0.03);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+  font-family: var(--font-body);
+  transition: border-color var(--transition-base), background var(--transition-base);
+}
+
+.weatherPopupStorm {
+  background: rgba(15, 23, 42, 0.88);
+  border-color: rgba(239, 68, 68, 0.25);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25), 0 0 20px rgba(239, 68, 68, 0.05);
+}
+
+.weatherPopupHeat {
+  background: rgba(255, 251, 235, 0.9);
+  border-color: rgba(217, 119, 6, 0.25);
+  box-shadow: 0 20px 40px rgba(217, 119, 6, 0.05), 0 1px 3px rgba(217, 119, 6, 0.02);
+}
+
+.alertHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.05);
+  padding-bottom: 8px;
+}
+
+.weatherPopupStorm .alertHeader {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.weatherPopupHeat .alertHeader {
+  border-bottom-color: rgba(217, 119, 6, 0.08);
+}
+
+.alertTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.alertPulseDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--wine-red-primary);
+  position: relative;
+  display: inline-block;
+}
+
+.weatherPopupStorm .alertPulseDot {
+  background-color: #ef4444;
+}
+
+.weatherPopupHeat .alertPulseDot {
+  background-color: #d97706;
+}
+
+.alertPulseDot::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  animation: weatherPulse 2s infinite;
+}
+
+.alertHeaderLabel {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--wine-red-primary);
+}
+
+.weatherPopupStorm .alertHeaderLabel {
+  color: #ef4444;
+}
+
+.weatherPopupHeat .alertHeaderLabel {
+  color: #d97706;
+}
+
+.alertCloseBtn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.weatherPopupStorm .alertCloseBtn {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.alertCloseBtn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--text-default);
+}
+
+.weatherPopupStorm .alertCloseBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.alertContent {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.alertContentEmoji {
+  font-size: 24px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.alertTextGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.alertCityRow {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-default);
+  line-height: 1.2;
+}
+
+.weatherPopupStorm .alertCityRow {
+  color: #ffffff;
+}
+
+.weatherPopupHeat .alertCityRow {
+  color: #78350f;
+}
+
+.alertStateName {
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+.alertTemp {
+  font-weight: 800;
+  color: var(--wine-red-primary);
+}
+
+.weatherPopupStorm .alertTemp {
+  color: #f87171;
+}
+
+.weatherPopupHeat .alertTemp {
+  color: #b45309;
+}
+
+.alertMsgText {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.weatherPopupStorm .alertMsgText {
+  color: #d1d5db;
+}
+
+.weatherPopupHeat .alertMsgText {
+  color: #92400e;
+}
+
+/* Linear Progress Bar (Moving Line) */
+.alertProgressContainer {
+  width: 100%;
+  height: 3px;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  position: relative;
+  margin-top: 4px;
+}
+
+.weatherPopupStorm .alertProgressContainer {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.alertProgressBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  background: var(--wine-red-primary);
+  animation: shrinkProgress 6s linear forwards;
+}
+
+.progressBarStorm {
+  background: #ef4444;
+}
+
+.progressBarHeat {
+  background: #d97706;
+}
+
+@keyframes shrinkProgress {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+@media (max-width: 768px) {
+  .weatherPopupAlert {
+    top: 85px;
+    right: 4vw;
+    left: 4vw;
+    width: auto;
+    max-width: none;
+    box-shadow: 0 15px 30px rgba(15, 23, 42, 0.1);
   }
 }

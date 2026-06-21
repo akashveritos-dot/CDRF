@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { Menu, X, ChevronDown, Mail, User, Bell, CheckCircle2, Home, Info, Calendar, BookOpen, Facebook, Linkedin, Youtube, Newspaper, MessageSquare } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from './Navbar.module.css';
+import { useTelemetry } from '@/context/TelemetryContext';
 
 interface Submenu {
   name: string;
@@ -71,6 +72,11 @@ export default function Navbar() {
     setIsSocialOpen(false);
   }, [pathname]);
 
+  const { data: telemetryData } = useTelemetry();
+  const [showAlertPopup, setShowAlertPopup] = useState(false);
+  const [activeAlerts, setActiveAlerts] = useState<any[]>([]);
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+
   const [weatherAlert, setWeatherAlert] = useState<{
     liveTheme: 'flood' | 'storm' | null;
     temperature: number | null;
@@ -100,6 +106,140 @@ export default function Navbar() {
     window.addEventListener('dcrs-weather-update', handleWeatherUpdate);
     return () => window.removeEventListener('dcrs-weather-update', handleWeatherUpdate);
   }, []);
+
+  // Dynamically compile weather alerts list from local geolocation and regional telemetry
+  useEffect(() => {
+    const baseAlerts = [
+      {
+        city: 'Mumbai',
+        state: 'Maharashtra',
+        temp: 31,
+        type: 'storm',
+        alert: 'Severe Thunderstorm Warning: Storm systems tracking inland. Heavy rainfall and high winds predicted.',
+        emoji: '⛈️'
+      },
+      {
+        city: 'Chennai',
+        state: 'Tamil Nadu',
+        temp: 28,
+        type: 'flood',
+        alert: 'Rainfall Alert: High intensity monsoon showers active. Avoid waterlogged areas.',
+        emoji: '☔'
+      },
+      {
+        city: 'Delhi',
+        state: 'Delhi',
+        temp: 39,
+        type: 'heat',
+        alert: 'Heatwave Advisory: Peak temperature warning in effect. High UV index.',
+        emoji: '☀️'
+      },
+      {
+        city: 'Kolkata',
+        state: 'West Bengal',
+        temp: 29,
+        type: 'storm',
+        alert: 'Thunderstorm Alert: Active convection cells with frequent lightning activity.',
+        emoji: '⛈️'
+      }
+    ];
+
+    const compiled: any[] = [];
+
+    // 1. Prioritize geolocated city if a warning is active
+    if (weatherAlert && weatherAlert.liveTheme) {
+      compiled.push({
+        city: weatherAlert.locationName.city,
+        state: weatherAlert.locationName.state || '',
+        temp: weatherAlert.temperature,
+        type: weatherAlert.liveTheme,
+        alert: weatherAlert.liveTheme === 'storm'
+          ? `Severe Storm Alert: High convection cell active in ${weatherAlert.locationName.city}.`
+          : `Heavy Rainfall Warning: Active precipitation registered in ${weatherAlert.locationName.city}.`,
+        emoji: weatherAlert.liveTheme === 'storm' ? '⛈️' : '☔'
+      });
+    } else if (weatherAlert) {
+      // Show local weather as a normal status if no severe alert
+      compiled.push({
+        city: weatherAlert.locationName.city,
+        state: weatherAlert.locationName.state || '',
+        temp: weatherAlert.temperature,
+        type: 'general',
+        alert: `Local Weather: Ambient temperature is normal in ${weatherAlert.locationName.city}.`,
+        emoji: '🌤️'
+      });
+    }
+
+    // 2. Add other cities from database/telemetry
+    const telemetryTemps = telemetryData.cityTemps || [];
+    telemetryTemps.forEach((t: any) => {
+      // Avoid duplicates
+      if (weatherAlert && weatherAlert.locationName.city.toLowerCase() === t.city.toLowerCase()) {
+        return;
+      }
+
+      let type = 'general';
+      let emoji = '🌤️';
+      let msg = `Normal seasonal temperature recorded in ${t.city}.`;
+
+      if (t.temp >= 35) {
+        type = 'heat';
+        emoji = '☀️';
+        msg = `Heatwave Warning: Extreme temperature of ${t.temp}°C registered in ${t.city}.`;
+      } else if (t.city === 'Mumbai') {
+        type = 'storm';
+        emoji = '⛈️';
+        msg = `Severe Thunderstorm Warning: Local weather warning active for ${t.city}.`;
+      } else if (t.city === 'Chennai') {
+        type = 'flood';
+        emoji = '☔';
+        msg = `Rainfall Warning: Coastal weather advisory issued for ${t.city}.`;
+      }
+
+      compiled.push({
+        city: t.city,
+        state: '',
+        temp: t.temp,
+        type,
+        alert: msg,
+        emoji
+      });
+    });
+
+    if (compiled.length === 0) {
+      setActiveAlerts(baseAlerts);
+    } else {
+      setActiveAlerts(compiled);
+    }
+  }, [weatherAlert, telemetryData.cityTemps]);
+
+  // Handle auto-showing on mount (unless dismissed)
+  useEffect(() => {
+    if (activeAlerts.length > 0) {
+      const dismissed = sessionStorage.getItem('dcrs_alert_dismissed');
+      // Only auto-open if there is an active warning (storm, flood, heatwave)
+      const hasActiveWarning = activeAlerts.some(a => a.type === 'storm' || a.type === 'flood' || a.type === 'heat');
+      if (!dismissed && hasActiveWarning) {
+        setShowAlertPopup(true);
+      }
+    }
+  }, [activeAlerts]);
+
+  // Rotate through alerts sequentially
+  useEffect(() => {
+    if (activeAlerts.length <= 1 || !showAlertPopup) return;
+
+    const timer = setInterval(() => {
+      setCurrentSlideIndex((prev) => (prev + 1) % activeAlerts.length);
+    }, 6000); // 6 seconds slide duration
+
+    return () => clearInterval(timer);
+  }, [activeAlerts.length, showAlertPopup]);
+
+  const dismissAlertPopup = () => {
+    setShowAlertPopup(false);
+    sessionStorage.setItem('dcrs_alert_dismissed', 'true');
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -241,14 +381,6 @@ export default function Navbar() {
             width="150"
             height="45"
           />
-          {weatherAlert?.liveTheme && (
-            <span className={`${styles.weatherNavTag} ${weatherAlert.liveTheme === 'storm' ? styles.weatherNavTagStorm : ''}`}>
-              <span className={styles.weatherNavDot} />
-              <span className={styles.weatherNavText}>
-                {weatherAlert.liveTheme === 'storm' ? '⛈️' : '☔'} {weatherAlert.locationName.city} {weatherAlert.temperature}°C
-              </span>
-            </span>
-          )}
         </Link>
 
         {/* Desktop Links */}
@@ -288,6 +420,16 @@ export default function Navbar() {
               </Link>
             );
           })}
+          {/* Weather Alert Trigger Button (Circle Icon) */}
+          <button 
+            onClick={() => setShowAlertPopup(true)} 
+            className={`${styles.weatherCircleBtn} ${activeAlerts.some(a => a.type === 'storm' || a.type === 'flood') ? styles.weatherCircleBtnAlert : ''}`}
+            title="Open active weather alerts"
+            aria-label="Open weather alerts"
+          >
+            <Bell size={16} className={styles.bellIcon} />
+          </button>
+
           <button onClick={() => setIsSubscribeOpen(true)} className={styles.subscribeBtn}>
             Subscribe
           </button>
@@ -651,6 +793,19 @@ export default function Navbar() {
                         </a>
                       </div>
 
+                      <div className={styles.popupSocialDivider} />
+                      <div className={styles.popupSocialHeader}>Telemetry</div>
+                      <button
+                        onClick={() => {
+                          setShowAlertPopup(true);
+                          setActiveSubmenu(null);
+                        }}
+                        className={styles.submenuAlertBtn}
+                      >
+                        <Bell size={12} style={{ display: 'inline', marginRight: '6px' }} />
+                        Active Weather Alerts
+                      </button>
+
                       <button
                         onClick={() => {
                           setIsSubscribeOpen(true);
@@ -668,6 +823,85 @@ export default function Navbar() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* Dynamic Weather Alert Rotator Popup */}
+      <AnimatePresence>
+        {showAlertPopup && activeAlerts.length > 0 && (
+          <motion.div
+            className={`${styles.weatherPopupAlert} ${
+              activeAlerts[currentSlideIndex].type === 'storm' 
+                ? styles.weatherPopupStorm 
+                : activeAlerts[currentSlideIndex].type === 'heat' 
+                  ? styles.weatherPopupHeat 
+                  : ''
+            }`}
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -15, scale: 0.95 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 280 }}
+          >
+            <div className={styles.alertHeader}>
+              <div className={styles.alertTitleRow}>
+                <span className={styles.alertPulseDot} />
+                <span className={styles.alertHeaderLabel}>
+                  {activeAlerts[currentSlideIndex].type === 'storm' 
+                    ? '⚠️ Severe Alert' 
+                    : activeAlerts[currentSlideIndex].type === 'flood' 
+                      ? '⚠️ Weather Alert' 
+                      : activeAlerts[currentSlideIndex].type === 'heat' 
+                        ? '⚠️ Heat Advisory' 
+                        : 'ℹ️ Info'}
+                </span>
+              </div>
+              <button 
+                onClick={dismissAlertPopup}
+                className={styles.alertCloseBtn}
+                aria-label="Close weather alert"
+              >
+                <X size={14} />
+              </button>
+            </div>
+
+            <div className={styles.alertContent}>
+              <span className={styles.alertContentEmoji}>
+                {activeAlerts[currentSlideIndex].emoji}
+              </span>
+              <div className={styles.alertTextGroup}>
+                <div className={styles.alertCityRow}>
+                  <span className={styles.alertCityName}>
+                    {activeAlerts[currentSlideIndex].city}
+                  </span>
+                  {activeAlerts[currentSlideIndex].state && (
+                    <span className={styles.alertStateName}>
+                      , {activeAlerts[currentSlideIndex].state}
+                    </span>
+                  )}
+                  <span className={styles.alertTemp}>
+                    • {activeAlerts[currentSlideIndex].temp}°C
+                  </span>
+                </div>
+                <p className={styles.alertMsgText}>
+                  {activeAlerts[currentSlideIndex].alert}
+                </p>
+              </div>
+            </div>
+
+            {/* Linear Progress Bar Timer (Moving Line) */}
+            <div className={styles.alertProgressContainer}>
+              <div 
+                key={currentSlideIndex}
+                className={`${styles.alertProgressBar} ${
+                  activeAlerts[currentSlideIndex].type === 'storm' 
+                    ? styles.progressBarStorm 
+                    : activeAlerts[currentSlideIndex].type === 'heat' 
+                      ? styles.progressBarHeat 
+                      : ''
+                }`}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
