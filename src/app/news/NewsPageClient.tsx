@@ -57,11 +57,30 @@ export default function NewsPageClient({ initialStories }: NewsPageClientProps) 
     }
   };
 
-  const filteredStories = activeTab === 'All'
-    ? stories
-    : stories.filter(story => story.tag?.toLowerCase() === activeTab.toLowerCase() || story.category?.toLowerCase() === activeTab.toLowerCase());
+  const sortedStories = React.useMemo(() => {
+    return [...stories].sort((a, b) => {
+      const dateA = new Date(a.published_date || a.date).getTime();
+      const dateB = new Date(b.published_date || b.date).getTime();
+      if (dateB !== dateA) {
+        return dateB - dateA;
+      }
+      return (b.id || 0) - (a.id || 0);
+    });
+  }, [stories]);
 
-  const featuredStory = stories[0] || null;
+  const filteredStories = React.useMemo(() => {
+    if (activeTab === 'All') return sortedStories;
+    return sortedStories.filter(story => {
+      const tag = story.tag?.toLowerCase();
+      const cat = story.category?.toLowerCase();
+      const active = activeTab.toLowerCase();
+      if (tag === active || cat === active) return true;
+      if (active === 'health crisis' && (cat === 'health' || tag === 'health')) return true;
+      return false;
+    });
+  }, [sortedStories, activeTab]);
+
+  const featuredStory = sortedStories[0] || null;
   const gridStories = featuredStory
     ? filteredStories.filter(story => story.id !== featuredStory.id || activeTab !== 'All')
     : filteredStories;

@@ -2,6 +2,8 @@ import React from 'react';
 import { query } from '@/lib/db';
 import NewsPageClient from './NewsPageClient';
 
+export const dynamic = 'force-dynamic';
+
 export default async function NewsPage() {
   let stories: any[] = [];
   try {

@@ -168,7 +168,7 @@ export default function AdminNews() {
     }
   };
 
-  const categories = ['breaking', 'environment', 'health', 'climate', 'disasters', 'sustainability', 'policy'];
+  const categories = ['breaking', 'environment', 'health crisis', 'climate', 'disasters', 'sustainability'];
 
   return (
     <div className={styles.page}>
@@ -223,7 +223,7 @@ export default function AdminNews() {
                     </div>
                   </td>
                   <td>
-                    <span className={`${styles.categoryBadge} ${styles['cat' + story.category]}`}>
+                    <span className={`${styles.categoryBadge} ${styles['cat' + (story.category || '').replace(/\s+/g, '')]}`}>
                       {story.category}
                     </span>
                   </td>
