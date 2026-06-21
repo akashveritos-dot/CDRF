@@ -16,6 +16,7 @@ export default function ContactPage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [mapMode, setMapMode] = useState<'road' | 'satellite'>('road');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,13 +109,56 @@ export default function ContactPage() {
               </div>
 
               {/* Map embed */}
-              <div className={styles.mapWrapper}>
-                <iframe
-                  title="DCRF India Habitat Centre HQ Map"
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3503.2086973305417!2d77.22220131508174!3d28.593531382434522!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d04ed283b8b17%3A0xd64d0bcfa053229b!2sIndia%20Habitat%20Centre!5e0!3m2!1sen!2sin!4v1655000000000!5m2!1sen!2sin"
-                  loading="lazy"
-                  allowFullScreen
-                />
+              <div className={styles.mapContainer}>
+                <div className={styles.mapHeader}>
+                  <div className={styles.mapStatus}>
+                    <span className="pulse-dot" style={{ width: '8px', height: '8px' }} />
+                    <span className="monospaced-tel" style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-default)' }}>
+                      OPERATIONS ROOM GPS // ONLINE
+                    </span>
+                  </div>
+                  <div className={styles.mapModes}>
+                    <button
+                      type="button"
+                      onClick={() => setMapMode('road')}
+                      className={`${styles.modeBtn} ${mapMode === 'road' ? styles.modeBtnActive : ''}`}
+                    >
+                      ROAD
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMapMode('satellite')}
+                      className={`${styles.modeBtn} ${mapMode === 'satellite' ? styles.modeBtnActive : ''}`}
+                    >
+                      SATELLITE
+                    </button>
+                  </div>
+                </div>
+
+                <div className={`${styles.mapWrapper} radar-sweep-container`}>
+                  {mapMode === 'satellite' && <div className="radar-sweep-line" />}
+                  
+                  <iframe
+                    key={mapMode}
+                    title="DCRF India Habitat Centre HQ Map"
+                    src={
+                      mapMode === 'road'
+                        ? "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3503.2086973305417!2d77.22220131508174!3d28.593531382434522!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d04ed283b8b17%3A0xd64d0bcfa053229b!2sIndia%20Habitat%20Centre!5e0!3m2!1sen!2sin!4v1655000000000!5m2!1sen!2sin"
+                        : "https://maps.google.com/maps?q=India%20Habitat%20Centre,%20New%20Delhi&t=k&z=17&output=embed"
+                    }
+                    loading="lazy"
+                    allowFullScreen
+                  />
+
+                  {/* Telemetry overlay inside map */}
+                  <div className={styles.mapTelemetry}>
+                    <div className="monospaced-tel" style={{ fontSize: '10px', color: 'rgba(255, 255, 255, 0.95)', lineHeight: '1.4' }}>
+                      LOC: India Habitat Centre, IHC, New Delhi<br />
+                      LAT: 28.5935° N | LON: 77.2222° E<br />
+                      ALT: 216m • SCAN: ACTIVE
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </ScrollReveal>
