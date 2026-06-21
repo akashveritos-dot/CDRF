@@ -33,6 +33,37 @@ export default function AdminPagesManager() {
   const [videoUrl, setVideoUrl] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [content, setContent] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState('');
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    setUploadSuccess('');
+    setStatus(null);
+
+    const uploadData = new FormData();
+    uploadData.append('file', file);
+
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: uploadData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to upload photo');
+
+      setImageUrl(data.url);
+      setUploadSuccess(file.name);
+    } catch (err: any) {
+      setStatus({ type: 'error', message: err.message || 'Photo upload failed.' });
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const loadPages = async (selectSlug?: string) => {
     setIsLoading(true);
@@ -69,6 +100,7 @@ export default function AdminPagesManager() {
     setImageUrl(page.imageUrl || '');
     setContent(page.content || '');
     setStatus(null);
+    setUploadSuccess('');
   };
 
   const handleCreateNew = () => {
@@ -81,6 +113,7 @@ export default function AdminPagesManager() {
     setImageUrl('');
     setContent('');
     setStatus(null);
+    setUploadSuccess('');
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -242,14 +275,56 @@ export default function AdminPagesManager() {
               </div>
 
               <div className={styles.formGroup}>
-                <label className={styles.label}>Header Image URL (Optional)</label>
-                <input
-                  type="url"
-                  className={styles.input}
-                  placeholder="e.g. https://images.unsplash.com/photo-XXXX"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <label className={styles.label}>Header Image URL (Optional)</label>
+                  <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>— OR —</span>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px', alignItems: 'center' }}>
+                  <input
+                    type="text"
+                    className={styles.input}
+                    placeholder="e.g. https://images.unsplash.com/... or uploaded path"
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                  />
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      id="pages-image-upload"
+                      style={{ display: 'none' }}
+                      onChange={handleFileUpload}
+                      disabled={isUploading}
+                    />
+                    <label
+                      htmlFor="pages-image-upload"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '11px 16px',
+                        borderRadius: '8px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                        color: '#ffffff',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        transition: 'background-color 0.2s',
+                        whiteSpace: 'nowrap'
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.04)'; }}
+                    >
+                      {isUploading ? '...' : 'Upload'}
+                    </label>
+                  </div>
+                </div>
+                {uploadSuccess && (
+                  <span style={{ fontSize: '11px', color: '#10b981', display: 'block', marginTop: '2px' }}>
+                    ✓ Uploaded: {uploadSuccess}
+                  </span>
+                )}
               </div>
             </div>
 

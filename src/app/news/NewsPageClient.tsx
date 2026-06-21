@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import styles from './page.module.css';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
 import { ExternalLink } from 'lucide-react';
@@ -34,6 +35,31 @@ interface NewsPageClientProps {
 export default function NewsPageClient({ initialStories }: NewsPageClientProps) {
   const [activeTab, setActiveTab] = useState('All');
   const [stories] = useState<any[]>(initialStories);
+
+  const renderReadButton = (story: any, label: string = 'Read story') => {
+    const hasFullContent = story.full_content && story.full_content.trim().length > 0;
+    const hasExternalLink = story.external_link && story.external_link.trim().length > 0 && story.external_link !== '#';
+
+    if (hasFullContent || !hasExternalLink) {
+      return (
+        <Link href={`/news/${story.id}`} className={styles.readBtn}>
+          {label}
+        </Link>
+      );
+    }
+
+    return (
+      <a
+        href={story.external_link}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={styles.readBtn}
+      >
+        {label}
+        <ExternalLink size={12} />
+      </a>
+    );
+  };
 
   const getTagClass = (tag: string) => {
     switch (tag.toLowerCase()) {
@@ -135,15 +161,7 @@ export default function NewsPageClient({ initialStories }: NewsPageClientProps) 
               </div>
               <h2 className={styles.featTitle}>{featuredStory.headline}</h2>
               <p className={styles.excerpt}>{featuredStory.excerpt}</p>
-              <a
-                href={featuredStory.externalLink || featuredStory.external_link || '#'}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.readBtn}
-              >
-                Read full story
-                <ExternalLink size={12} />
-              </a>
+              {renderReadButton(featuredStory, 'Read full story')}
             </div>
           </div>
         </ScrollReveal>
@@ -179,16 +197,9 @@ export default function NewsPageClient({ initialStories }: NewsPageClientProps) 
                 </div>
                 <h3 className={styles.cardTitle}>{story.headline}</h3>
                 <p className={styles.cardExcerpt}>{story.excerpt}</p>
-                <a
-                  href={story.externalLink || story.external_link || '#'}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.readBtn}
-                  style={{ marginTop: 'auto' }}
-                >
-                  Read story
-                  <ExternalLink size={12} />
-                </a>
+                <div style={{ marginTop: 'auto', width: '100%' }}>
+                  {renderReadButton(story, 'Read story')}
+                </div>
               </div>
             </div>
           </ScrollReveal>

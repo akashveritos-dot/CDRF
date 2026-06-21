@@ -46,6 +46,37 @@ export default function AdminCouncils() {
   });
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [imageUploadSuccess, setImageUploadSuccess] = useState('');
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingImage(true);
+    setImageUploadSuccess('');
+    setError('');
+
+    const uploadData = new FormData();
+    uploadData.append('file', file);
+
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: uploadData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to upload image');
+
+      setFormData(prev => ({ ...prev, profile_image: data.url }));
+      setImageUploadSuccess(file.name);
+    } catch (err: any) {
+      setError(err.message || 'Image upload failed.');
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
 
   const fetchMembers = async () => {
     setLoading(true);
@@ -80,6 +111,7 @@ export default function AdminCouncils() {
       is_active: true
     });
     setError('');
+    setImageUploadSuccess('');
     setIsFormOpen(true);
   };
 
@@ -99,6 +131,7 @@ export default function AdminCouncils() {
       is_active: member.isActive !== false
     });
     setError('');
+    setImageUploadSuccess('');
     setIsFormOpen(true);
   };
 
@@ -392,16 +425,58 @@ export default function AdminCouncils() {
                 </div>
 
                 <div className={styles.inputGroup}>
-                  <label htmlFor="profile_image">Profile Image URL (Local or Remote)</label>
-                  <input
-                    id="profile_image"
-                    type="text"
-                    name="profile_image"
-                    value={formData.profile_image}
-                    onChange={handleInputChange}
-                    placeholder="e.g. /councils/brijendra-kumar-mishra.jpg"
-                    className={styles.inputField}
-                  />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <label htmlFor="profile_image">Profile Image URL</label>
+                    <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>— OR —</span>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px', alignItems: 'center' }}>
+                    <input
+                      id="profile_image"
+                      type="text"
+                      name="profile_image"
+                      value={formData.profile_image}
+                      onChange={handleInputChange}
+                      placeholder="e.g. /councils/name.jpg or uploaded path"
+                      className={styles.inputField}
+                    />
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        id="councils-profile-upload"
+                        style={{ display: 'none' }}
+                        onChange={handleImageUpload}
+                        disabled={isUploadingImage}
+                      />
+                      <label
+                        htmlFor="councils-profile-upload"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '11px 16px',
+                          borderRadius: '8px',
+                          backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                          border: '1px solid rgba(255, 255, 255, 0.08)',
+                          color: '#ffffff',
+                          cursor: 'pointer',
+                          fontSize: '13px',
+                          fontWeight: 600,
+                          transition: 'background-color 0.2s',
+                          whiteSpace: 'nowrap'
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.04)'; }}
+                      >
+                        {isUploadingImage ? '...' : 'Upload'}
+                      </label>
+                    </div>
+                  </div>
+                  {imageUploadSuccess && (
+                    <span style={{ fontSize: '11px', color: '#10b981', display: 'block', marginTop: '2px' }}>
+                      ✓ Uploaded: {imageUploadSuccess}
+                    </span>
+                  )}
                 </div>
 
                 {/* Organization & LinkedIn URL */}
