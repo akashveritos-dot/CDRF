@@ -172,13 +172,15 @@ export default function NewsPageClient({ initialStories }: NewsPageClientProps) 
                   <span className={`${styles.tag} ${getTagClass(story.tag)}`}>
                     {story.tag}
                   </span>
-                  <span className={styles.cardDate}>{story.date || story.published_date}</span>
-                  {story.source && (
-                    <>
-                      <span style={{ color: 'var(--text-muted)', fontSize: '10px' }}>•</span>
-                      <span style={{ color: 'var(--gold-primary)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{story.source}</span>
-                    </>
-                  )}
+                  <div className={styles.cardMetaRight}>
+                    <span className={styles.cardDate}>{story.date || story.published_date}</span>
+                    {story.source && (
+                      <>
+                        <span className={styles.cardMetaDot}>•</span>
+                        <span className={styles.cardSource}>{story.source}</span>
+                      </>
+                    )}
+                  </div>
                 </div>
                 <h3 className={styles.cardTitle}>{story.headline}</h3>
                 <p className={styles.cardExcerpt}>{story.excerpt}</p>

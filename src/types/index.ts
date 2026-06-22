@@ -34,6 +34,7 @@ export interface PodcastEpisode {
   speaker: string;
   speakerTitle?: string;
   audioUrl?: string;
+  imageUrl?: string;
   isFeatured?: boolean;
 }
 

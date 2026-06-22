@@ -64,6 +64,10 @@
   font-weight: 900;
   color: #1a1a2e;
   font-family: 'Playfair Display', Georgia, serif;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding: 0 8px;
 }
 
 .affix {
@@ -71,6 +75,7 @@
   font-weight: 800;
   color: var(--color, #b91c1c);
   vertical-align: super;
+  flex-shrink: 0;
 }
 
 .label {

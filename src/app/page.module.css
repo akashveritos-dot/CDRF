@@ -951,7 +951,7 @@
 
 .feedCardImgWrapper {
   position: relative;
-  height: 180px;
+  height: 230px;
   width: 100%;
   overflow: hidden;
 }
@@ -993,9 +993,14 @@
 .feedCardMeta {
   display: flex;
   align-items: center;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 6px 8px;
   font-size: 11px;
   color: var(--text-muted);
+}
+
+.feedCardMeta span {
+  white-space: nowrap;
 }
 
 .feedCardSource {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
 import { query } from '@/lib/db';
-import AboutPageClient, { PageData, CouncilMember } from './AboutPageClient';
+import AboutPageClient, { PageData, CouncilMember, SectionData } from './AboutPageClient';
 
 // Render the page fully server-side with direct database queries to eliminate client-side loading states.
 export default async function AboutSubpage(props: { params: Promise<{ slug: string }> }) {
@@ -10,7 +10,10 @@ export default async function AboutSubpage(props: { params: Promise<{ slug: stri
 
   try {
     const rows = await query<any[]>(
-      'SELECT slug, title, category, description, video_url as videoUrl, image_url as imageUrl, content FROM cms_pages WHERE slug = ?',
+      `SELECT slug, title, category, description, 
+              video_url as videoUrl, image_url as imageUrl, 
+              main_image_url as mainImageUrl, content 
+       FROM cms_pages WHERE slug = ?`,
       [slug]
     );
 
@@ -40,7 +43,44 @@ export default async function AboutSubpage(props: { params: Promise<{ slug: stri
       );
     }
 
-    return <AboutPageClient slug={slug} pageData={pageData} councilMembers={councilMembers} />;
+    // Fetch sections and cards for this page
+    let sections: SectionData[] = [];
+    const sectionRows = await query<any[]>(
+      `SELECT id, display_order as displayOrder, title, description,
+              image_url as imageUrl, video_url as videoUrl, content,
+              button_text as buttonText, button_url as buttonUrl
+       FROM cms_page_sections WHERE page_slug = ? ORDER BY display_order ASC`,
+      [slug]
+    );
+
+    if (sectionRows.length > 0) {
+      const sectionIds = sectionRows.map((s: any) => s.id);
+      const placeholders = sectionIds.map(() => '?').join(',');
+      const cardRows = await query<any[]>(
+        `SELECT id, section_id as sectionId, display_order as displayOrder,
+                title, description, image_url as imageUrl,
+                link_text as linkText, link_url as linkUrl,
+                extra_data as extraData
+         FROM cms_page_cards WHERE section_id IN (${placeholders}) ORDER BY display_order ASC`,
+        sectionIds
+      );
+
+      const cardMap: Record<number, any[]> = {};
+      for (const card of cardRows) {
+        if (card.extraData && typeof card.extraData === 'string') {
+          try { card.extraData = JSON.parse(card.extraData); } catch { card.extraData = {}; }
+        }
+        if (!cardMap[card.sectionId]) cardMap[card.sectionId] = [];
+        cardMap[card.sectionId].push(card);
+      }
+
+      sections = sectionRows.map((s: any) => ({
+        ...s,
+        cards: cardMap[s.id] || []
+      }));
+    }
+
+    return <AboutPageClient slug={slug} pageData={pageData} councilMembers={councilMembers} sections={sections} />;
   } catch (error) {
     console.error(`Error loading about page server-side:`, error);
     notFound();

@@ -103,7 +103,7 @@ const nextConfig: NextConfig = {
               "img-src 'self' data: https: blob:",
               "font-src 'self' data:",
               "connect-src 'self' https://api.open-meteo.com https:",
-              "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com",
+              "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://www.google.com https://maps.google.com https://www.youtube.com https://youtube.com",
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'"

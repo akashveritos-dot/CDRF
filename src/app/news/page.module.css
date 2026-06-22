@@ -114,7 +114,7 @@
 
 .cardImg {
   width: 100%;
-  height: 170px;
+  height: 230px;
   object-fit: cover;
   border-bottom: none;
 }
@@ -145,6 +145,7 @@
   border-radius: var(--radius-full);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  flex-shrink: 0;
 }
 
 .tagBreaking { background: var(--red-pale); color: var(--red-primary); }
@@ -236,6 +237,7 @@
 .cardHeaderRow {
   display: flex;
   align-items: center;
+  flex-wrap: nowrap;
   gap: 8px;
 }
 
@@ -249,8 +251,28 @@
   flex-shrink: 0;
 }
 
-.cardDate {
+.cardMetaRight {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin-left: auto;
+  white-space: nowrap;
+}
+
+.cardMetaDot {
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.cardSource {
+  color: var(--gold-primary);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cardDate {
   font-size: 11px;
   color: var(--text-muted);
   font-weight: 500;

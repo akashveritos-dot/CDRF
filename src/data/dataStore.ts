@@ -235,7 +235,8 @@ export const podcastEpisodes: PodcastEpisode[] = [
     duration: '42 min',
     speaker: 'Dr. Brijender Mishra',
     speakerTitle: 'Associate Director, KPMG India',
-    audioUrl: '#',
+    audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+    imageUrl: 'https://images.unsplash.com/photo-1554475901-4538ddfb1a55?auto=format&fit=crop&w=400&q=80',
     isFeatured: true
   },
   {
@@ -246,7 +247,9 @@ export const podcastEpisodes: PodcastEpisode[] = [
     date: 'May 20, 2026',
     duration: '38 min',
     speaker: 'Prof. Anuradha Sharma',
-    speakerTitle: 'IIT Delhi'
+    speakerTitle: 'IIT Delhi',
+    audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
+    imageUrl: 'https://images.unsplash.com/photo-1525490822463-b459eb6c2948?auto=format&fit=crop&w=400&q=80'
   },
   {
     id: 'pod-12',
@@ -256,7 +259,9 @@ export const podcastEpisodes: PodcastEpisode[] = [
     date: 'May 6, 2026',
     duration: '51 min',
     speaker: 'Dr. Arup Sarma',
-    speakerTitle: 'IIT Guwahati'
+    speakerTitle: 'IIT Guwahati',
+    audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
+    imageUrl: 'https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?auto=format&fit=crop&w=400&q=80'
   },
   {
     id: 'pod-11',
@@ -266,7 +271,9 @@ export const podcastEpisodes: PodcastEpisode[] = [
     date: 'Apr 22, 2026',
     duration: '44 min',
     speaker: 'Ms. Priya Menon',
-    speakerTitle: 'ISRO'
+    speakerTitle: 'ISRO',
+    audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3',
+    imageUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=400&q=80'
   },
   {
     id: 'pod-10',
@@ -276,7 +283,9 @@ export const podcastEpisodes: PodcastEpisode[] = [
     date: 'Apr 8, 2026',
     duration: '56 min',
     speaker: 'Former Secretary',
-    speakerTitle: 'NDMA'
+    speakerTitle: 'NDMA',
+    audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3',
+    imageUrl: 'https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=400&q=80'
   },
   {
     id: 'pod-9',
@@ -286,7 +295,9 @@ export const podcastEpisodes: PodcastEpisode[] = [
     date: 'Mar 25, 2026',
     duration: '47 min',
     speaker: 'Dr. Syed Iqbal Hasnain',
-    speakerTitle: 'Climate Scientist'
+    speakerTitle: 'Climate Scientist',
+    audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3',
+    imageUrl: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=400&q=80'
   }
 ];
 

@@ -10,6 +10,31 @@ import AnimatedStats from '@/components/ui/AnimatedStats/AnimatedStats';
 import KanbanColumns from '@/components/ui/KanbanColumns/KanbanColumns';
 import { Shield, Zap, Users, MapPin, BookOpen, AlertTriangle } from 'lucide-react';
 
+export interface CardData {
+  id: number;
+  sectionId: number;
+  displayOrder: number;
+  title: string;
+  description: string;
+  imageUrl?: string;
+  linkText?: string;
+  linkUrl?: string;
+  extraData?: Record<string, any>;
+}
+
+export interface SectionData {
+  id: number;
+  displayOrder: number;
+  title: string;
+  description: string;
+  imageUrl?: string;
+  videoUrl?: string;
+  content?: string;
+  buttonText?: string;
+  buttonUrl?: string;
+  cards: CardData[];
+}
+
 export interface PageData {
   slug: string;
   title: string;
@@ -17,6 +42,7 @@ export interface PageData {
   description: string;
   videoUrl?: string;
   imageUrl?: string;
+  mainImageUrl?: string;
   content: string;
 }
 
@@ -37,6 +63,7 @@ interface AboutPageClientProps {
   slug: string;
   pageData: PageData;
   councilMembers: CouncilMember[];
+  sections?: SectionData[];
 }
 
 const getFallbackImage = (slug: string) => {
@@ -114,8 +141,9 @@ const workingColumns = [
   },
 ];
 
-export default function AboutPageClient({ slug, pageData, councilMembers }: AboutPageClientProps) {
+export default function AboutPageClient({ slug, pageData, councilMembers, sections = [] }: AboutPageClientProps) {
   const displayImage = pageData.imageUrl || (!pageData.videoUrl ? getFallbackImage(slug) : undefined);
+  const hasSections = sections.length > 0;
 
   // ── GOVERNING / ADVISORY COUNCIL ────────────────────────────────
   if (slug === 'governing-council' || slug === 'advisory-council') {
@@ -173,24 +201,86 @@ export default function AboutPageClient({ slug, pageData, councilMembers }: Abou
           />
         </ScrollReveal>
 
-        {/* Animated stat counters */}
+        {/* Animated stat counters — from DB or fallback */}
         <ScrollReveal direction="up" delay={0.1}>
-          <AnimatedStats stats={missionStats} />
+          <AnimatedStats stats={
+            (() => {
+              if (!hasSections) return missionStats;
+              const statsSection = sections.find(s => s.title === 'Key Statistics');
+              if (!statsSection) return missionStats;
+              return statsSection.cards.map(c => {
+                // Detect format: new format has extra_data.value as a number
+                const hasNewFormat = c.extraData?.value !== undefined;
+                if (hasNewFormat) {
+                  return {
+                    value: Number(c.extraData?.value) || 0,
+                    suffix: c.extraData?.suffix || '',
+                    prefix: c.extraData?.prefix || '',
+                    label: c.title,
+                    description: c.description,
+                    color: c.extraData?.color || '#b91c1c',
+                  };
+                }
+                // Old format: title = "₹3L+", description = "Annual Climate Cost", suffix = long text
+                const raw = c.title || '';
+                const numMatch = raw.match(/[\d,]+/);
+                const num = numMatch ? parseInt(numMatch[0].replace(/,/g, '')) : 0;
+                const prefix = raw.startsWith('₹') ? '₹' : '';
+                const suffix = raw.replace(/^[₹\s]*/, '').replace(/[\d,]+/, '').trim();
+                return {
+                  value: num,
+                  suffix: suffix || '',
+                  prefix,
+                  label: c.description || c.title,
+                  description: c.extraData?.suffix || '',
+                  color: c.extraData?.color || '#b91c1c',
+                };
+              });
+            })()
+          } />
         </ScrollReveal>
 
-        {/* Content + image */}
-        <div className={styles.grid}>
-          <ScrollReveal direction="right" delay={0.15}>
-            <div className={styles.bodyText} dangerouslySetInnerHTML={{ __html: pageData.content }} />
-          </ScrollReveal>
-          {displayImage && (
-            <ScrollReveal direction="left" delay={0.2}>
-              <div className={styles.imageWrapper}>
-                <img src={displayImage} alt={pageData.title} className={styles.image} />
+        {/* Structured content sections — from DB */}
+        {hasSections && sections.filter(s => s.title !== 'Key Statistics').length > 0 ? (
+          sections.filter(s => s.title !== 'Key Statistics').map((section, si) => (
+            <ScrollReveal key={section.id || si} direction="up" delay={0.1 + si * 0.08}>
+              <div className={styles.contentSection}>
+                <div className={styles.grid}>
+                  <div>
+                    <h2 className={styles.sectionTitle}>{section.title}</h2>
+                    {section.cards.map((card, ci) => (
+                      <div key={card.id || ci} className={styles.contentBlock}>
+                        {card.title !== section.title && (
+                          <h3 className={styles.contentBlockTitle}>{card.title}</h3>
+                        )}
+                        <p className={styles.contentBlockText}>{card.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                  {section.imageUrl && (
+                    <div className={styles.imageWrapper}>
+                      <img src={section.imageUrl} alt={section.title} className={styles.image} />
+                    </div>
+                  )}
+                </div>
               </div>
             </ScrollReveal>
-          )}
-        </div>
+          ))
+        ) : (
+          /* Fallback: raw HTML content */
+          <div className={styles.grid}>
+            <ScrollReveal direction="right" delay={0.15}>
+              <div className={styles.bodyText} dangerouslySetInnerHTML={{ __html: pageData.content }} />
+            </ScrollReveal>
+            {displayImage && (
+              <ScrollReveal direction="left" delay={0.2}>
+                <div className={styles.imageWrapper}>
+                  <img src={displayImage} alt={pageData.title} className={styles.image} />
+                </div>
+              </ScrollReveal>
+            )}
+          </div>
+        )}
       </div>
     );
   }
@@ -210,8 +300,16 @@ export default function AboutPageClient({ slug, pageData, councilMembers }: Abou
         </ScrollReveal>
 
         <ScrollReveal direction="up" delay={0.1}>
-          {/* ★ Numbered accordion ★ */}
-          <NumberedAccordion items={charterItems} />
+          {/* ★ Numbered accordion — from DB or fallback ★ */}
+          <NumberedAccordion items={
+            hasSections
+              ? sections.flatMap(s => s.cards.map((c, i) => ({
+                number: c.extraData?.number || i + 1,
+                title: c.title,
+                body: c.description,
+              })))
+              : charterItems
+          } />
         </ScrollReveal>
       </div>
     );
@@ -243,8 +341,21 @@ export default function AboutPageClient({ slug, pageData, councilMembers }: Abou
           <h2 className={styles.sectionTitle}>Active Working Committees</h2>
         </ScrollReveal>
 
-        {/* ★ Kanban columns ★ */}
-        <KanbanColumns columns={workingColumns} />
+        {/* ★ Kanban columns — from DB or fallback ★ */}
+        <KanbanColumns columns={
+          hasSections
+            ? sections.map(s => ({
+              heading: s.title,
+              accent: s.cards?.[0]?.extraData?.tagColor || '#b91c1c',
+              cards: s.cards.map(c => ({
+                title: c.title,
+                description: c.description,
+                tag: c.extraData?.tag || '',
+                tagColor: c.extraData?.tagColor || '#b91c1c',
+              })),
+            }))
+            : workingColumns
+        } />
       </div>
     );
   }
@@ -262,32 +373,128 @@ export default function AboutPageClient({ slug, pageData, councilMembers }: Abou
         />
       </ScrollReveal>
 
-      <div className={styles.grid}>
-        <ScrollReveal direction="right" delay={0.1}>
-          <div className={styles.bodyText} dangerouslySetInnerHTML={{ __html: pageData.content }} />
-        </ScrollReveal>
-        {(displayImage || pageData.videoUrl) && (
-          <ScrollReveal direction="left" delay={0.2}>
-            <div className={styles.mediaSection}>
-              {pageData.videoUrl && (
-                <div className={styles.videoWrapper}>
-                  <iframe
-                    src={pageData.videoUrl}
-                    title={`${pageData.title} Video Presentation`}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                </div>
-              )}
-              {displayImage && !pageData.videoUrl && (
-                <div className={styles.imageWrapper}>
-                  <img src={displayImage} alt={pageData.title} className={styles.image} />
-                </div>
-              )}
-            </div>
+      {/* Legacy HTML content fallback — only shown when no sections exist */}
+      {!hasSections && pageData.content && (
+        <div className={styles.grid}>
+          <ScrollReveal direction="right" delay={0.1}>
+            <div className={styles.bodyText} dangerouslySetInnerHTML={{ __html: pageData.content }} />
           </ScrollReveal>
-        )}
-      </div>
+          {(displayImage || pageData.videoUrl) && (
+            <ScrollReveal direction="left" delay={0.2}>
+              <div className={styles.mediaSection}>
+                {pageData.videoUrl && (
+                  <div className={styles.videoWrapper}>
+                    <iframe
+                      src={pageData.videoUrl}
+                      title={`${pageData.title} Video Presentation`}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                )}
+                {displayImage && !pageData.videoUrl && (
+                  <div className={styles.imageWrapper}>
+                    <img src={displayImage} alt={pageData.title} className={styles.image} />
+                  </div>
+                )}
+              </div>
+            </ScrollReveal>
+          )}
+        </div>
+      )}
+
+      {/* ── Structured Sections Renderer ─── */}
+      {hasSections && sections.map((section, si) => {
+        const sectionAnchor = section.title
+          ? section.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+          : `section-${si}`;
+
+        return (
+          <section key={section.id || si} id={sectionAnchor} className={styles.dynamicSection}>
+            <ScrollReveal direction="up" delay={0.1 * si}>
+              {/* Section Header */}
+              {section.title && (
+                <h2 className={styles.sectionTitle}>{section.title}</h2>
+              )}
+              {section.description && (
+                <p className={styles.sectionDescription}>{section.description}</p>
+              )}
+
+              {/* Section Content + Media Grid */}
+              <div className={styles.sectionGrid}>
+                {/* Text content — auto-formatted from plain text */}
+                {section.content && (
+                  <div className={styles.bodyText}>
+                    {section.content.split('\n').filter(Boolean).map((para, pi) => (
+                      <p key={pi}>{para}</p>
+                    ))}
+                  </div>
+                )}
+
+                {/* Section media */}
+                {(section.imageUrl || section.videoUrl) && (
+                  <div className={styles.sectionMedia}>
+                    {section.videoUrl && (
+                      section.videoUrl.includes('youtube') || section.videoUrl.includes('embed') ? (
+                        <div className={styles.videoWrapper}>
+                          <iframe
+                            src={section.videoUrl}
+                            title={section.title || 'Video'}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        </div>
+                      ) : (
+                        <video controls className={styles.sectionVideo}>
+                          <source src={section.videoUrl} />
+                        </video>
+                      )
+                    )}
+                    {section.imageUrl && !section.videoUrl && (
+                      <div className={styles.imageWrapper}>
+                        <img src={section.imageUrl} alt={section.title || 'Section image'} className={styles.image} />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Cards Grid */}
+              {section.cards && section.cards.length > 0 && (
+                <div className={styles.cardsGrid}>
+                  {section.cards.map((card, ci) => (
+                    <div key={card.id || ci} className={styles.dynamicCard}>
+                      {card.imageUrl && (
+                        <div className={styles.cardImage}>
+                          <img src={card.imageUrl} alt={card.title || 'Card'} />
+                        </div>
+                      )}
+                      <div className={styles.cardBody}>
+                        {card.title && <h4 className={styles.cardTitle}>{card.title}</h4>}
+                        {card.description && <p className={styles.cardDesc}>{card.description}</p>}
+                        {card.linkText && card.linkUrl && (
+                          <a href={card.linkUrl} className={styles.cardLink}>
+                            {card.linkText} →
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Section Button */}
+              {section.buttonText && section.buttonUrl && (
+                <div className={styles.sectionBtnWrap}>
+                  <a href={section.buttonUrl} className={styles.sectionBtn}>
+                    {section.buttonText}
+                  </a>
+                </div>
+              )}
+            </ScrollReveal>
+          </section>
+        );
+      })}
     </div>
   );
 }

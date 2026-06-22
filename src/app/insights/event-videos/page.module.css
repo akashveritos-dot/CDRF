@@ -436,6 +436,11 @@
   transition: transform 0.4s ease;
 }
 .posterContainer:hover .posterImage { transform: scale(1.05); }
+.posterPlaceholder {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: rgba(255,255,255,0.3); font-size: 32px;
+}
 .playOverlay {
   position: absolute;
   inset: 0;
