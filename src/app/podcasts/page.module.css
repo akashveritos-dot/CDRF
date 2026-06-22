@@ -1190,3 +1190,25 @@
     height: 30px;
   }
 }
+
+/* ─── Unified Media Player Additions ─── */
+.playerVideo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 2;
+  background: #000;
+  cursor: pointer;
+}
+
+.artworkImg {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  margin-bottom: 8px;
+}

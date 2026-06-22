@@ -48,7 +48,8 @@ export default async function PodcastsPage() {
             duration: c.extraData?.duration || '',
             speaker: c.extraData?.speaker || '',
             speakerTitle: c.extraData?.speakerTitle || '',
-            audioUrl: c.extraData?.audioUrl || '#',
+            audioUrl: c.extraData?.audioUrl || '',
+            videoUrl: c.extraData?.videoUrl || '',
             imageUrl: c.imageUrl || c.extraData?.imageUrl || '',
             isFeatured: c.extraData?.isFeatured || false,
           }));

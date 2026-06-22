@@ -226,6 +226,19 @@ export const reports: ReportItem[] = [
 
 export const podcastEpisodes: PodcastEpisode[] = [
   {
+    id: 'pod-15',
+    episodeNumber: 15,
+    tag: 'Early Warning',
+    title: 'Himalayan Glacial Sensors & Flood Telemetry Calibrations',
+    description: 'A visual guide and discussion on sensor deployment protocols and satellite warning triggers in flash-flood zones.',
+    date: 'Jun 10, 2026',
+    duration: '0:10',
+    speaker: 'Dr. Kavita Sharma',
+    speakerTitle: 'IIT Delhi',
+    videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
+    imageUrl: 'https://images.unsplash.com/photo-1486915309851-b0cc1f8a0084?auto=format&fit=crop&w=400&q=80'
+  },
+  {
     id: 'pod-14',
     episodeNumber: 14,
     tag: 'Climate Finance',
@@ -236,6 +249,7 @@ export const podcastEpisodes: PodcastEpisode[] = [
     speaker: 'Dr. Brijender Mishra',
     speakerTitle: 'Associate Director, KPMG India',
     audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+    videoUrl: '',
     imageUrl: 'https://images.unsplash.com/photo-1554475901-4538ddfb1a55?auto=format&fit=crop&w=400&q=80',
     isFeatured: true
   },
@@ -249,6 +263,7 @@ export const podcastEpisodes: PodcastEpisode[] = [
     speaker: 'Prof. Anuradha Sharma',
     speakerTitle: 'IIT Delhi',
     audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
+    videoUrl: '',
     imageUrl: 'https://images.unsplash.com/photo-1525490822463-b459eb6c2948?auto=format&fit=crop&w=400&q=80'
   },
   {
@@ -261,6 +276,7 @@ export const podcastEpisodes: PodcastEpisode[] = [
     speaker: 'Dr. Arup Sarma',
     speakerTitle: 'IIT Guwahati',
     audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
+    videoUrl: '',
     imageUrl: 'https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?auto=format&fit=crop&w=400&q=80'
   },
   {
@@ -273,6 +289,7 @@ export const podcastEpisodes: PodcastEpisode[] = [
     speaker: 'Ms. Priya Menon',
     speakerTitle: 'ISRO',
     audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3',
+    videoUrl: '',
     imageUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=400&q=80'
   },
   {
@@ -285,6 +302,7 @@ export const podcastEpisodes: PodcastEpisode[] = [
     speaker: 'Former Secretary',
     speakerTitle: 'NDMA',
     audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3',
+    videoUrl: '',
     imageUrl: 'https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=400&q=80'
   },
   {
@@ -297,6 +315,7 @@ export const podcastEpisodes: PodcastEpisode[] = [
     speaker: 'Dr. Syed Iqbal Hasnain',
     speakerTitle: 'Climate Scientist',
     audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3',
+    videoUrl: '',
     imageUrl: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=400&q=80'
   }
 ];

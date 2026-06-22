@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import styles from './page.module.css';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
 import { useToast } from '@/components/ui/Toast/ToastContext';
@@ -34,42 +34,168 @@ export default function PodcastsClient({ initialEpisodes, initialVideos }: Podca
 
   const [activeEpisodeId, setActiveEpisodeId] = useState(podcastEpisodes[0]?.id || '');
   const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState(38);
-  const [currentTime, setCurrentTime] = useState('16:12');
+  const [progress, setProgress] = useState(0);
+  const [currentTime, setCurrentTime] = useState('0:00');
   const [volume, setVolume] = useState(80);
   const [isShuffle, setIsShuffle] = useState(false);
   const [isRepeat, setIsRepeat] = useState(false);
   const [activeCategory, setActiveCategory] = useState('All Episodes');
   const [playingVideoUrl, setPlayingVideoUrl] = useState<string | null>(null);
 
+  // Unified audio/video elements refs and states
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
 
+  const [duration, setDuration] = useState(0);
+  const [curTimeSec, setCurTimeSec] = useState(0);
+
   const currentEp = podcastEpisodes.find((e: any) => e.id === activeEpisodeId) ?? podcastEpisodes[0];
+  const [totalTimeString, setTotalTimeString] = useState(currentEp?.duration || '0:00');
+
+  const isVideo = !!currentEp?.videoUrl;
   const tagColor = TAG_COLORS[currentEp?.tag] ?? 'var(--gold-primary)';
 
   const filteredEps = activeCategory === 'All Episodes'
     ? podcastEpisodes
     : podcastEpisodes.filter((ep: any) => ep.tag === activeCategory);
 
-  const togglePlay = useCallback(() => { setIsPlaying(p => !p); }, []);
+  const formatTime = (secs: number) => {
+    if (isNaN(secs) || !isFinite(secs)) return '0:00';
+    const m = Math.floor(secs / 60);
+    const s = Math.floor(secs % 60);
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  };
+
+  const handleTimeUpdate = (e: React.SyntheticEvent<HTMLMediaElement>) => {
+    const media = e.currentTarget;
+    const cur = media.currentTime;
+    const dur = media.duration || 0;
+    setCurTimeSec(cur);
+    if (dur > 0) {
+      setProgress((cur / dur) * 100);
+    }
+    setCurrentTime(formatTime(cur));
+  };
+
+  const handleLoadedMetadata = useCallback((e: React.SyntheticEvent<HTMLMediaElement>) => {
+    const media = e.currentTarget;
+    media.volume = volume / 100;
+    const dur = media.duration;
+    if (dur && isFinite(dur)) {
+      setDuration(dur);
+      setTotalTimeString(formatTime(dur));
+    }
+  }, [volume]);
 
   const loadEpisode = useCallback((id: string) => {
     setActiveEpisodeId(id);
     setIsPlaying(true);
     setProgress(0);
     setCurrentTime('0:00');
+    setCurTimeSec(0);
+    setDuration(0);
+  }, []);
+
+  const handleNext = useCallback(() => {
+    if (podcastEpisodes.length === 0) return;
+    let nextIdx = 0;
+    if (isShuffle) {
+      nextIdx = Math.floor(Math.random() * podcastEpisodes.length);
+    } else {
+      const curIdx = podcastEpisodes.findIndex((e: any) => e.id === activeEpisodeId);
+      nextIdx = (curIdx + 1) % podcastEpisodes.length;
+    }
+    const nextEp = podcastEpisodes[nextIdx];
+    if (nextEp) {
+      loadEpisode(nextEp.id);
+    }
+  }, [activeEpisodeId, isShuffle, podcastEpisodes, loadEpisode]);
+
+  const handlePrev = useCallback(() => {
+    if (podcastEpisodes.length === 0) return;
+    const curIdx = podcastEpisodes.findIndex((e: any) => e.id === activeEpisodeId);
+    let prevIdx = curIdx - 1;
+    if (prevIdx < 0) prevIdx = podcastEpisodes.length - 1;
+    const prevEp = podcastEpisodes[prevIdx];
+    if (prevEp) {
+      loadEpisode(prevEp.id);
+    }
+  }, [activeEpisodeId, podcastEpisodes, loadEpisode]);
+
+  const handleEnded = useCallback(() => {
+    if (isRepeat) {
+      const activeMedia = isVideo ? videoRef.current : audioRef.current;
+      if (activeMedia) {
+        activeMedia.currentTime = 0;
+        activeMedia.play().catch(err => console.error(err));
+      }
+    } else {
+      handleNext();
+    }
+  }, [isRepeat, isVideo, handleNext]);
+
+  const togglePlay = useCallback(() => {
+    setIsPlaying(p => !p);
   }, []);
 
   const seekProgress = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    const pct = Math.round(((e.clientX - rect.left) / rect.width) * 100);
-    setProgress(pct);
-    const totalSec = 42 * 60 + 8;
-    const cur = Math.round((pct / 100) * totalSec);
-    setCurrentTime(`${Math.floor(cur / 60)}:${String(cur % 60).padStart(2, '0')}`);
+    const pct = (e.clientX - rect.left) / rect.width;
+    const activeMedia = isVideo ? videoRef.current : audioRef.current;
+    if (activeMedia && activeMedia.duration) {
+      activeMedia.currentTime = pct * activeMedia.duration;
+      setProgress(pct * 100);
+      setCurTimeSec(pct * activeMedia.duration);
+      setCurrentTime(formatTime(pct * activeMedia.duration));
+    }
+  }, [isVideo]);
+
+  const handleVideoPlay = useCallback((url: string) => {
+    setIsPlaying(false);
+    setPlayingVideoUrl(url);
   }, []);
 
-  const handleVideoPlay = useCallback((url: string) => { setPlayingVideoUrl(url); }, []);
+  // Effects to synchronize play state and volume
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.pause();
+    if (videoRef.current) videoRef.current.pause();
+
+    const activeMedia = isVideo ? videoRef.current : audioRef.current;
+    if (activeMedia) {
+      activeMedia.load();
+      if (isPlaying) {
+        activeMedia.play().catch(err => {
+          console.warn("Autoplay failed:", err);
+          setIsPlaying(false);
+        });
+      }
+    }
+  }, [activeEpisodeId, isVideo]);
+
+  useEffect(() => {
+    const activeMedia = isVideo ? videoRef.current : audioRef.current;
+    if (activeMedia) {
+      if (isPlaying) {
+        activeMedia.play().catch(err => {
+          console.warn("Play failed:", err);
+          setIsPlaying(false);
+        });
+      } else {
+        activeMedia.pause();
+      }
+    }
+  }, [isPlaying, isVideo]);
+
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.volume = volume / 100;
+    if (videoRef.current) videoRef.current.volume = volume / 100;
+  }, [volume]);
+
+  // Sync initial string display fallback
+  useEffect(() => {
+    setTotalTimeString(currentEp?.duration || '0:00');
+  }, [currentEp]);
 
   return (
     <div className={styles.page}>
@@ -115,15 +241,34 @@ export default function PodcastsClient({ initialEpisodes, initialVideos }: Podca
           <div className={styles.playerCard}>
             <div className={styles.artworkWrap} style={{ '--tag-color': tagColor } as React.CSSProperties}>
               <div className={styles.artworkGlow} />
-              <div className={styles.artworkInner}>
-                <span className={styles.artworkEmoji}>🎙️</span>
-                <div className={styles.equaliser}>
-                  {[1,2,3,4,5,6,7,8].map(b => (
-                    <div key={b} className={`${styles.eqBar} ${isPlaying ? styles.eqActive : ''}`}
-                      style={{ animationDelay: `${b * 0.12}s` }} />
-                  ))}
+              
+              {isVideo && currentEp?.videoUrl ? (
+                <video
+                  ref={videoRef}
+                  src={currentEp.videoUrl}
+                  className={styles.playerVideo}
+                  onTimeUpdate={handleTimeUpdate}
+                  onLoadedMetadata={handleLoadedMetadata}
+                  onEnded={handleEnded}
+                  playsInline
+                  onClick={togglePlay}
+                />
+              ) : (
+                <div className={styles.artworkInner}>
+                  {currentEp?.imageUrl ? (
+                    <img src={currentEp.imageUrl} alt={currentEp.title} className={styles.artworkImg} />
+                  ) : (
+                    <span className={styles.artworkEmoji}>🎙️</span>
+                  )}
+                  <div className={styles.equaliser}>
+                    {[1,2,3,4,5,6,7,8].map(b => (
+                      <div key={b} className={`${styles.eqBar} ${isPlaying ? styles.eqActive : ''}`}
+                        style={{ animationDelay: `${b * 0.12}s` }} />
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
+
               <div className={`${styles.playingBadge} ${isPlaying ? styles.playingBadgeVisible : ''}`}>
                 <span className={styles.dot} /> Now Playing
               </div>
@@ -149,6 +294,17 @@ export default function PodcastsClient({ initialEpisodes, initialVideos }: Podca
             </div>
 
             <div className={styles.controlsDeck}>
+              {/* Hidden audio element */}
+              {!isVideo && (
+                <audio
+                  ref={audioRef}
+                  src={currentEp?.audioUrl}
+                  onTimeUpdate={handleTimeUpdate}
+                  onLoadedMetadata={handleLoadedMetadata}
+                  onEnded={handleEnded}
+                />
+              )}
+
               <div className={styles.progressTrack} onClick={seekProgress} ref={progressRef}
                 role="slider" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress} aria-label="Episode progress">
                 <div className={styles.progressFill} style={{ width: `${progress}%` }}>
@@ -157,16 +313,16 @@ export default function PodcastsClient({ initialEpisodes, initialVideos }: Podca
               </div>
               <div className={styles.timeRow}>
                 <span>{currentTime}</span>
-                <span>{currentEp?.duration}</span>
+                <span>{totalTimeString}</span>
               </div>
               <div className={styles.controlBtns}>
                 <button className={`${styles.ctrlBtn} ${isShuffle ? styles.ctrlActive : ''}`}
                   onClick={() => setIsShuffle(s => !s)} aria-label="Shuffle"><Shuffle size={16} /></button>
-                <button className={styles.ctrlBtn} aria-label="Previous"><SkipBack size={20} /></button>
+                <button className={styles.ctrlBtn} onClick={handlePrev} aria-label="Previous"><SkipBack size={20} /></button>
                 <button className={styles.playBtn} onClick={togglePlay} aria-label={isPlaying ? 'Pause' : 'Play'}>
                   {isPlaying ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" style={{ marginLeft: '2px' }} />}
                 </button>
-                <button className={styles.ctrlBtn} aria-label="Next"><SkipForward size={20} /></button>
+                <button className={styles.ctrlBtn} onClick={handleNext} aria-label="Next"><SkipForward size={20} /></button>
                 <button className={`${styles.ctrlBtn} ${isRepeat ? styles.ctrlActive : ''}`}
                   onClick={() => setIsRepeat(r => !r)} aria-label="Repeat"><Repeat size={16} /></button>
               </div>
@@ -182,7 +338,7 @@ export default function PodcastsClient({ initialEpisodes, initialVideos }: Podca
 
             <div className={styles.playerMeta}>
               <span><Calendar size={12} /> {currentEp?.date}</span>
-              <span><Clock size={12} /> {currentEp?.duration}</span>
+              <span><Clock size={12} /> {totalTimeString}</span>
               <a href="#" className={styles.shareLink}
                 onClick={e => { e.preventDefault(); info('Share link copied!', 'Episode link has been copied to clipboard.'); }}>
                 <ExternalLink size={12} /> Share

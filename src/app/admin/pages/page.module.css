@@ -246,3 +246,152 @@
 .vcVolume::-moz-range-thumb {
   width: 10px; height: 10px; border-radius: 50%; background: #fff; border: none; cursor: pointer;
 }
+
+/* ─── Custom Episode Form Additions ─── */
+.customEpisodeForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: rgba(136, 19, 55, 0.02);
+  border: 1px solid rgba(136, 19, 55, 0.1);
+  padding: 16px;
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
+}
+
+.formRowGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 600px) {
+  .formRowGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mediaTypeSelectorRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.mediaTypeButtons {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.mediaTypeBtn {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--text-default);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s;
+}
+.mediaTypeBtn:hover {
+  border-color: var(--wine-red-primary);
+  color: var(--wine-red-primary);
+}
+.mediaTypeBtnActive {
+  background: var(--wine-red-pale);
+  border-color: var(--wine-red-primary);
+  color: var(--wine-red-primary);
+}
+
+.checkboxLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text-default);
+  margin-top: 6px;
+  font-weight: 600;
+  user-select: none;
+}
+.checkboxLabel input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--wine-red-primary);
+}
+
+/* ─── Episode Custom View Additions ─── */
+.episodeThumbLarge {
+  width: 100px;
+  height: 100px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+.episodeThumbLarge img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.episodeNumBadge {
+  display: inline-flex;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  background: var(--wine-red-primary);
+  color: #fff;
+  white-space: nowrap;
+}
+
+.featuredBadge {
+  display: inline-flex;
+  padding: 1px 7px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  white-space: nowrap;
+}
+
+.episodeMetaGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: var(--text-default);
+  background: var(--bg-default);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+}
+@media (max-width: 600px) {
+  .episodeMetaGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mediaTypeSpan {
+  font-weight: 600;
+  color: var(--wine-red-primary);
+}
+
+.adminPlayerContainer {
+  margin-top: 14px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 10px;
+}

@@ -77,9 +77,9 @@ function UploadField({
   );
 }
 
-/* ─── Video Player with auto-duration ─── */
-function VideoPlayer({ url, onDuration }: { url: string; onDuration?: (d: string) => void }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
+/* ─── Media Element Player with auto-duration ─── */
+function MediaElementPlayer({ url, onDuration }: { url: string; onDuration?: (d: string) => void }) {
+  const mediaRef = useRef<HTMLMediaElement>(null);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurTime] = useState('0:00');
@@ -99,6 +99,8 @@ function VideoPlayer({ url, onDuration }: { url: string; onDuration?: (d: string
     );
   }
 
+  const isAudio = url.match(/\.(mp3|wav|ogg|m4a|aac|mp4a)(\?|$)/i) || url.includes('soundhelix') || url.includes('audio');
+
   const fmtTime = (s: number) => {
     const m = Math.floor(s / 60);
     const sec = Math.floor(s % 60);
@@ -106,9 +108,9 @@ function VideoPlayer({ url, onDuration }: { url: string; onDuration?: (d: string
   };
 
   const handleLoaded = () => {
-    const v = videoRef.current;
-    if (!v) return;
-    const dur = v.duration;
+    const media = mediaRef.current;
+    if (!media) return;
+    const dur = media.duration;
     if (dur && isFinite(dur)) {
       const formatted = fmtTime(dur);
       setTotalTime(formatted);
@@ -117,49 +119,68 @@ function VideoPlayer({ url, onDuration }: { url: string; onDuration?: (d: string
   };
 
   const handleTimeUpdate = () => {
-    const v = videoRef.current;
-    if (!v || !v.duration) return;
-    setProgress((v.currentTime / v.duration) * 100);
-    setCurTime(fmtTime(v.currentTime));
+    const media = mediaRef.current;
+    if (!media || !media.duration) return;
+    setProgress((media.currentTime / media.duration) * 100);
+    setCurTime(fmtTime(media.currentTime));
   };
 
   const togglePlay = () => {
-    const v = videoRef.current;
-    if (!v) return;
-    if (v.paused) { v.play(); setPlaying(true); }
-    else { v.pause(); setPlaying(false); }
+    const media = mediaRef.current;
+    if (!media) return;
+    if (media.paused) {
+      media.play().catch(() => {});
+      setPlaying(true);
+    } else {
+      media.pause();
+      setPlaying(false);
+    }
   };
 
   const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
-    const v = videoRef.current;
-    if (!v) return;
+    const media = mediaRef.current;
+    if (!media) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const pct = (e.clientX - rect.left) / rect.width;
-    v.currentTime = pct * v.duration;
+    media.currentTime = pct * media.duration;
   };
 
   const handleVol = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = Number(e.target.value);
     setVol(val);
-    if (videoRef.current) videoRef.current.volume = val / 100;
+    if (mediaRef.current) mediaRef.current.volume = val / 100;
   };
 
   const handleFullscreen = () => {
-    const v = videoRef.current;
-    if (v?.requestFullscreen) v.requestFullscreen();
+    const media = mediaRef.current;
+    if (media instanceof HTMLVideoElement && media.requestFullscreen) {
+      media.requestFullscreen();
+    }
   };
 
   return (
     <div className={styles.videoPlayerWrap}>
-      <video
-        ref={videoRef}
-        src={url}
-        onLoadedMetadata={handleLoaded}
-        onTimeUpdate={handleTimeUpdate}
-        onEnded={() => setPlaying(false)}
-        onClick={togglePlay}
-        className={styles.videoElement}
-      />
+      {isAudio ? (
+        <audio
+          ref={mediaRef as React.RefObject<HTMLAudioElement>}
+          src={url}
+          onLoadedMetadata={handleLoaded}
+          onTimeUpdate={handleTimeUpdate}
+          onEnded={() => setPlaying(false)}
+          className={styles.audioElement}
+          style={{ width: '100%', display: 'block', outline: 'none', padding: '10px 0' }}
+        />
+      ) : (
+        <video
+          ref={mediaRef as React.RefObject<HTMLVideoElement>}
+          src={url}
+          onLoadedMetadata={handleLoaded}
+          onTimeUpdate={handleTimeUpdate}
+          onEnded={() => setPlaying(false)}
+          onClick={togglePlay}
+          className={styles.videoElement}
+        />
+      )}
       <div className={styles.videoControls}>
         <button type="button" className={styles.vcBtn} onClick={togglePlay}>
           {playing ? <span>⏸</span> : <Play size={14} />}
@@ -170,7 +191,7 @@ function VideoPlayer({ url, onDuration }: { url: string; onDuration?: (d: string
         </div>
         <span className={styles.vcTime}>{totalTime}</span>
         <input type="range" min={0} max={100} value={vol} onChange={handleVol} className={styles.vcVolume} />
-        <button type="button" className={styles.vcBtn} onClick={handleFullscreen}>⛶</button>
+        {!isAudio && <button type="button" className={styles.vcBtn} onClick={handleFullscreen}>⛶</button>}
       </div>
     </div>
   );
@@ -197,6 +218,8 @@ export default function AdminPagesManager() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editFields, setEditFields] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [addMediaType, setAddMediaType] = useState<'audio' | 'video'>('audio');
+  const [editMediaType, setEditMediaType] = useState<'audio' | 'video'>('audio');
 
   // Filter
   const [filterSection, setFilterSection] = useState<string>('all');
@@ -500,8 +523,8 @@ export default function AdminPagesManager() {
     onDuration?: (d: string) => void
   ) => {
     const displayLabel = label || key.replace('extra_', '').replace(/([A-Z])/g, ' $1').replace(/_/g, ' ');
-    const isUrl = key.includes('Url') || key.includes('url') || key.includes('image') || key.includes('video') || key.includes('embed') || key.includes('poster');
     const isVideo = key.includes('video') || key.includes('Video') || key.includes('embed') || key.includes('Embed');
+    const isAudio = key.includes('audio') || key.includes('Audio');
     const isImage = key.includes('image') || key.includes('Image') || key.includes('poster') || key.includes('Poster');
     const isLong = key === 'description' || key === 'content' || key === 'bio';
 
@@ -520,7 +543,12 @@ export default function AdminPagesManager() {
           ) : isVideo ? (
             <>
               <UploadField accept="video/*" value={value} onChange={onChange} placeholder="YouTube URL or upload video" />
-              {value && <VideoPlayer url={value} onDuration={onDuration} />}
+              {value && <MediaElementPlayer url={value} onDuration={onDuration} />}
+            </>
+          ) : isAudio ? (
+            <>
+              <UploadField accept="audio/*" value={value} onChange={onChange} placeholder="Audio URL or upload audio" />
+              {value && <MediaElementPlayer url={value} onDuration={onDuration} />}
             </>
           ) : (
             <input type="text" className={styles.input} value={value} onChange={(e) => onChange(e.target.value)} />
@@ -540,6 +568,9 @@ export default function AdminPagesManager() {
     );
   }
 
+  const episodesSection = sections.find(s => s.title === 'Episodes');
+  const isAddEpisode = selectedSlug === 'podcasts' && addSectionId === episodesSection?.id;
+  const isEditEpisode = selectedSlug === 'podcasts' && editingId && items.find(i => i.id === editingId)?.sectionId === episodesSection?.id;
   const extraKeys = getExtraKeys();
 
   /* ── Main Render ────────── */
@@ -631,19 +662,96 @@ export default function AdminPagesManager() {
                     </div>
                   )}
 
-                  {renderFieldInput('title', addFields.title || '', v => setAddFields(f => ({ ...f, title: v })), 'Title')}
-                  {renderFieldInput('description', addFields.description || '', v => setAddFields(f => ({ ...f, description: v })), 'Description')}
-                  {renderFieldInput('imageUrl', addFields.imageUrl || '', v => setAddFields(f => ({ ...f, imageUrl: v })), 'Image')}
+                  {isAddEpisode ? (
+                    <div className={styles.customEpisodeForm}>
+                      {renderFieldInput('title', addFields.title || '', v => setAddFields(f => ({ ...f, title: v })), 'Episode Title')}
+                      {renderFieldInput('description', addFields.description || '', v => setAddFields(f => ({ ...f, description: v })), 'Description')}
+                      {renderFieldInput('imageUrl', addFields.imageUrl || '', v => setAddFields(f => ({ ...f, imageUrl: v })), 'Cover Image URL')}
+                      
+                      <div className={styles.formRowGrid}>
+                        {renderFieldInput('extra_episodeNumber', addFields.extra_episodeNumber || '', v => setAddFields(f => ({ ...f, extra_episodeNumber: v })), 'Episode Number')}
+                        
+                        <div className={styles.fieldRow}>
+                          <label className={styles.fieldLabel}>Category Tag</label>
+                          <select className={styles.input} value={addFields.extra_tag || 'Policy'} onChange={e => setAddFields(f => ({ ...f, extra_tag: e.target.value }))}>
+                            {['Climate Finance', 'Heatwaves', 'Floods', 'Policy', 'Early Warning', 'Glaciers'].map(t => (
+                              <option key={t} value={t}>{t}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
 
-                  {/* Show extra fields based on existing items */}
-                  {extraKeys.map(k => {
-                    const isVideoKey = k.includes('video') || k.includes('Video') || k.includes('embed') || k.includes('Embed');
-                    return renderFieldInput(`extra_${k}`, addFields[`extra_${k}`] || '',
-                      v => setAddFields(f => ({ ...f, [`extra_${k}`]: v })),
-                      undefined,
-                      isVideoKey ? (dur: string) => setAddFields(f => ({ ...f, extra_duration: dur })) : undefined
-                    );
-                  })}
+                      <div className={styles.formRowGrid}>
+                        {renderFieldInput('extra_speaker', addFields.extra_speaker || '', v => setAddFields(f => ({ ...f, extra_speaker: v })), 'Guest Speaker')}
+                        {renderFieldInput('extra_speakerTitle', addFields.extra_speakerTitle || '', v => setAddFields(f => ({ ...f, extra_speakerTitle: v })), 'Speaker Title/Org')}
+                      </div>
+
+                      <div className={styles.formRowGrid}>
+                        {renderFieldInput('extra_date', addFields.extra_date || '', v => setAddFields(f => ({ ...f, extra_date: v })), 'Publish Date')}
+                        {renderFieldInput('extra_duration', addFields.extra_duration || '', v => setAddFields(f => ({ ...f, extra_duration: v })), 'Duration (e.g. 42 min)')}
+                      </div>
+
+                      {/* Media Type Selector */}
+                      <div className={styles.mediaTypeSelectorRow}>
+                        <label className={styles.fieldLabel}>Media Type</label>
+                        <div className={styles.mediaTypeButtons}>
+                          <button
+                            type="button"
+                            className={`${styles.mediaTypeBtn} ${addMediaType === 'audio' ? styles.mediaTypeBtnActive : ''}`}
+                            onClick={() => {
+                              setAddMediaType('audio');
+                              setAddFields(f => ({ ...f, extra_videoUrl: '' }));
+                            }}
+                          >
+                            🎙️ Audio Episode
+                          </button>
+                          <button
+                            type="button"
+                            className={`${styles.mediaTypeBtn} ${addMediaType === 'video' ? styles.mediaTypeBtnActive : ''}`}
+                            onClick={() => {
+                              setAddMediaType('video');
+                              setAddFields(f => ({ ...f, extra_audioUrl: '' }));
+                            }}
+                          >
+                            🎥 Video Episode
+                          </button>
+                        </div>
+                      </div>
+
+                      {addMediaType === 'audio' ? (
+                        renderFieldInput('extra_audioUrl', addFields.extra_audioUrl || '', v => setAddFields(f => ({ ...f, extra_audioUrl: v, extra_videoUrl: '' })), 'Audio URL (MP3)', (dur) => setAddFields(f => ({ ...f, extra_duration: dur })))
+                      ) : (
+                        renderFieldInput('extra_videoUrl', addFields.extra_videoUrl || '', v => setAddFields(f => ({ ...f, extra_videoUrl: v, extra_audioUrl: '' })), 'Video URL (MP4 / YouTube)', (dur) => setAddFields(f => ({ ...f, extra_duration: dur })))
+                      )}
+
+                      <div className={styles.fieldRow}>
+                        <label className={styles.checkboxLabel}>
+                          <input
+                            type="checkbox"
+                            checked={addFields.extra_isFeatured === 'true'}
+                            onChange={e => setAddFields(f => ({ ...f, extra_isFeatured: e.target.checked ? 'true' : 'false' }))}
+                          />
+                          <span>Featured Episode (displays at top of the player)</span>
+                        </label>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      {renderFieldInput('title', addFields.title || '', v => setAddFields(f => ({ ...f, title: v })), 'Title')}
+                      {renderFieldInput('description', addFields.description || '', v => setAddFields(f => ({ ...f, description: v })), 'Description')}
+                      {renderFieldInput('imageUrl', addFields.imageUrl || '', v => setAddFields(f => ({ ...f, imageUrl: v })), 'Image')}
+
+                      {/* Show extra fields based on existing items */}
+                      {extraKeys.map(k => {
+                        const isMediaKey = k.includes('video') || k.includes('Video') || k.includes('embed') || k.includes('Embed') || k.includes('audio') || k.includes('Audio');
+                        return renderFieldInput(`extra_${k}`, addFields[`extra_${k}`] || '',
+                          v => setAddFields(f => ({ ...f, [`extra_${k}`]: v })),
+                          undefined,
+                          isMediaKey ? (dur: string) => setAddFields(f => ({ ...f, extra_duration: dur })) : undefined
+                        );
+                      })}
+                    </>
+                  )}
 
                   {/* Add custom property */}
                   <button type="button" className={styles.addPropBtn}
@@ -669,8 +777,10 @@ export default function AdminPagesManager() {
                 </div>
               ) : (
                 <div className={styles.itemsList}>
-                  {filteredItems.map((item) => (
-                    <div key={item.id} className={styles.itemCard}>
+                  {filteredItems.map((item) => {
+                    const isEpisodeCard = selectedSlug === 'podcasts' && item.sectionTitle === 'Episodes';
+                    return (
+                      <div key={item.id} className={styles.itemCard}>
                       {editingId === item.id ? (
                         /* ── EDITING MODE ── */
                         <div className={styles.editForm}>
@@ -686,18 +796,149 @@ export default function AdminPagesManager() {
                               </button>
                             </div>
                           </div>
-                          {Object.entries(editFields).map(([key, val]) => {
-                            const isVideoKey = key.includes('video') || key.includes('Video') || key.includes('embed') || key.includes('Embed');
-                            return renderFieldInput(
-                              key, val,
-                              v => setEditFields(f => ({ ...f, [key]: v })),
-                              undefined,
-                              isVideoKey ? (dur: string) => setEditFields(f => ({ ...f, extra_duration: dur })) : undefined
-                            );
-                          })}
+                          {isEditEpisode ? (
+                            <div className={styles.customEpisodeForm}>
+                              {renderFieldInput('title', editFields.title || '', v => setEditFields(f => ({ ...f, title: v })), 'Episode Title')}
+                              {renderFieldInput('description', editFields.description || '', v => setEditFields(f => ({ ...f, description: v })), 'Description')}
+                              {renderFieldInput('imageUrl', editFields.imageUrl || '', v => setEditFields(f => ({ ...f, imageUrl: v })), 'Cover Image URL')}
+                              
+                              <div className={styles.formRowGrid}>
+                                {renderFieldInput('extra_episodeNumber', editFields.extra_episodeNumber || '', v => setEditFields(f => ({ ...f, extra_episodeNumber: v })), 'Episode Number')}
+                                
+                                <div className={styles.fieldRow}>
+                                  <label className={styles.fieldLabel}>Category Tag</label>
+                                  <select className={styles.input} value={editFields.extra_tag || 'Policy'} onChange={e => setEditFields(f => ({ ...f, extra_tag: e.target.value }))}>
+                                    {['Climate Finance', 'Heatwaves', 'Floods', 'Policy', 'Early Warning', 'Glaciers'].map(t => (
+                                      <option key={t} value={t}>{t}</option>
+                                    ))}
+                                  </select>
+                                </div>
+                              </div>
+
+                              <div className={styles.formRowGrid}>
+                                {renderFieldInput('extra_speaker', editFields.extra_speaker || '', v => setEditFields(f => ({ ...f, extra_speaker: v })), 'Guest Speaker')}
+                                {renderFieldInput('extra_speakerTitle', editFields.extra_speakerTitle || '', v => setEditFields(f => ({ ...f, extra_speakerTitle: v })), 'Speaker Title/Org')}
+                              </div>
+
+                              <div className={styles.formRowGrid}>
+                                {renderFieldInput('extra_date', editFields.extra_date || '', v => setEditFields(f => ({ ...f, extra_date: v })), 'Publish Date')}
+                                {renderFieldInput('extra_duration', editFields.extra_duration || '', v => setEditFields(f => ({ ...f, extra_duration: v })), 'Duration (e.g. 42 min)')}
+                              </div>
+
+                              {/* Media Type Selector */}
+                              <div className={styles.mediaTypeSelectorRow}>
+                                <label className={styles.fieldLabel}>Media Type</label>
+                                <div className={styles.mediaTypeButtons}>
+                                  <button
+                                    type="button"
+                                    className={`${styles.mediaTypeBtn} ${editMediaType === 'audio' ? styles.mediaTypeBtnActive : ''}`}
+                                    onClick={() => {
+                                      setEditMediaType('audio');
+                                      setEditFields(f => ({ ...f, extra_videoUrl: '' }));
+                                    }}
+                                  >
+                                    🎙️ Audio Episode
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className={`${styles.mediaTypeBtn} ${editMediaType === 'video' ? styles.mediaTypeBtnActive : ''}`}
+                                    onClick={() => {
+                                      setEditMediaType('video');
+                                      setEditFields(f => ({ ...f, extra_audioUrl: '' }));
+                                    }}
+                                  >
+                                    🎥 Video Episode
+                                  </button>
+                                </div>
+                              </div>
+
+                              {editMediaType === 'audio' ? (
+                                renderFieldInput('extra_audioUrl', editFields.extra_audioUrl || '', v => setEditFields(f => ({ ...f, extra_audioUrl: v, extra_videoUrl: '' })), 'Audio URL (MP3)', (dur) => setEditFields(f => ({ ...f, extra_duration: dur })))
+                              ) : (
+                                renderFieldInput('extra_videoUrl', editFields.extra_videoUrl || '', v => setEditFields(f => ({ ...f, extra_videoUrl: v, extra_audioUrl: '' })), 'Video URL (MP4 / YouTube)', (dur) => setEditFields(f => ({ ...f, extra_duration: dur })))
+                              )}
+
+                              <div className={styles.fieldRow}>
+                                <label className={styles.checkboxLabel}>
+                                  <input
+                                    type="checkbox"
+                                    checked={editFields.extra_isFeatured === 'true'}
+                                    onChange={e => setEditFields(f => ({ ...f, extra_isFeatured: e.target.checked ? 'true' : 'false' }))}
+                                  />
+                                  <span>Featured Episode (displays at top of the player)</span>
+                                </label>
+                              </div>
+                            </div>
+                          ) : (
+                            Object.entries(editFields).map(([key, val]) => {
+                              const isMediaKey = key.includes('video') || key.includes('Video') || key.includes('embed') || key.includes('Embed') || key.includes('audio') || key.includes('Audio');
+                              return renderFieldInput(
+                                key, val,
+                                v => setEditFields(f => ({ ...f, [key]: v })),
+                                undefined,
+                                isMediaKey ? (dur: string) => setEditFields(f => ({ ...f, extra_duration: dur })) : undefined
+                              );
+                            })
+                          )}
+                        </div>
+                      ) : isEpisodeCard ? (
+                        /* ── EPISODE CUSTOM VIEW MODE ── */
+                        <div className={styles.itemView}>
+                          {/* Episode Cover Image */}
+                          {item.imageUrl && (
+                            <div className={styles.episodeThumbLarge}>
+                              <img src={item.imageUrl} alt={item.title} />
+                            </div>
+                          )}
+
+                          <div className={styles.itemBody}>
+                            <div className={styles.itemTopRow}>
+                              <span className={styles.episodeNumBadge}>Ep. {item.extraData?.episodeNumber}</span>
+                              <span className={styles.sectionBadge}>{item.extraData?.tag || 'Podcast'}</span>
+                              {item.extraData?.isFeatured && <span className={styles.featuredBadge}>★ Featured</span>}
+                              <h4 className={styles.itemTitle}>{item.title || '(untitled)'}</h4>
+                            </div>
+
+                            {item.description && <p className={styles.itemDesc}>{item.description}</p>}
+
+                            {/* Beautiful structured meta details grid */}
+                            <div className={styles.episodeMetaGrid}>
+                              <div><strong>Guest Speaker:</strong> {item.extraData?.speaker || 'N/A'} {item.extraData?.speakerTitle ? `(${item.extraData.speakerTitle})` : ''}</div>
+                              <div><strong>Publish Date:</strong> {item.extraData?.date || 'N/A'}</div>
+                              <div><strong>Duration:</strong> {item.extraData?.duration || 'N/A'}</div>
+                              <div>
+                                <strong>Media:</strong> {item.extraData?.videoUrl ? (
+                                  <span className={styles.mediaTypeSpan}>🎥 Video</span>
+                                ) : (
+                                  <span className={styles.mediaTypeSpan}>🎙️ Audio</span>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Render Player cleanly with spacing */}
+                            <div className={styles.adminPlayerContainer}>
+                              <MediaElementPlayer url={item.extraData?.videoUrl || item.extraData?.audioUrl || ''} />
+                            </div>
+                          </div>
+
+                          {/* Actions */}
+                          <div className={styles.itemActions}>
+                            <button className={styles.editBtn} onClick={() => {
+                              setEditingId(item.id!);
+                              setEditFields(cardToFields(item));
+                              setShowAddForm(false);
+                              const hasVideo = !!item.extraData?.videoUrl;
+                              setEditMediaType(hasVideo ? 'video' : 'audio');
+                            }}>
+                              <Edit3 size={13} /> Edit
+                            </button>
+                            <button className={styles.deleteBtn} onClick={() => handleDeleteCard(item.id!)}>
+                              <Trash2 size={13} /> Delete
+                            </button>
+                          </div>
                         </div>
                       ) : (
-                        /* ── VIEW MODE ── */
+                        /* ── GENERAL VIEW MODE ── */
                         <div className={styles.itemView}>
                           {/* Image thumbnail */}
                           {item.imageUrl && (
@@ -742,9 +983,9 @@ export default function AdminPagesManager() {
                               </div>
                             )}
 
-                            {/* Video inline preview */}
-                            {(item.extraData?.embedUrl || item.extraData?.videoUrl) && (
-                              <VideoPlayer url={item.extraData.embedUrl || item.extraData.videoUrl} />
+                            {/* Media inline preview */}
+                            {(item.extraData?.audioUrl || item.extraData?.embedUrl || item.extraData?.videoUrl) && (
+                              <MediaElementPlayer url={item.extraData.audioUrl || item.extraData.embedUrl || item.extraData.videoUrl} />
                             )}
                           </div>
 
@@ -754,6 +995,8 @@ export default function AdminPagesManager() {
                               setEditingId(item.id!);
                               setEditFields(cardToFields(item));
                               setShowAddForm(false);
+                              const hasVideo = !!item.extraData?.videoUrl;
+                              setEditMediaType(hasVideo ? 'video' : 'audio');
                             }}>
                               <Edit3 size={13} /> Edit
                             </button>
@@ -764,7 +1007,8 @@ export default function AdminPagesManager() {
                         </div>
                       )}
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </>

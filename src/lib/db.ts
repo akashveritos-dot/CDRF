@@ -188,12 +188,6 @@ async function runMigration(pool: mysql.Pool) {
 // ═══════════════════════════════════════════════════════════════
 async function seedPageData(pool: mysql.Pool) {
   const sectionHelper = async (pageSlug: string, sections: any[], pageTitle?: string) => {
-    // Check if any sections already exist for this page
-    const [existing]: any = await pool.execute(
-      'SELECT COUNT(*) as count FROM cms_page_sections WHERE page_slug = ?', [pageSlug]
-    );
-    if (existing[0]?.count > 0) return;
-
     // Ensure cms_pages record exists so it appears in admin sidebar
     const titleFromSlug = pageTitle || pageSlug.split('-').map(w =>
       w.length <= 3 ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1)
@@ -203,6 +197,12 @@ async function seedPageData(pool: mysql.Pool) {
       `INSERT IGNORE INTO cms_pages (slug, title, category) VALUES (?, ?, ?)`,
       [pageSlug, titleFromSlug, category]
     );
+
+    // Check if any sections already exist for this page
+    const [existing]: any = await pool.execute(
+      'SELECT COUNT(*) as count FROM cms_page_sections WHERE page_slug = ?', [pageSlug]
+    );
+    if (existing[0]?.count > 0) return;
 
     for (let si = 0; si < sections.length; si++) {
       const s = sections[si];
@@ -261,12 +261,13 @@ async function seedPageData(pool: mysql.Pool) {
       {
         title: 'Episodes', description: 'DCRF Podcast Series — Intelligence from the Field',
         cards: [
-          { title: "Can India's CSR Ecosystem Fund Climate Adaptation at Scale?", description: 'Dr. Brijender Mishra speaks with climate finance experts on redirecting corporate giving from post-disaster relief to long-term resilience infrastructure.', imageUrl: 'https://images.unsplash.com/photo-1554475901-4538ddfb1a55?auto=format&fit=crop&w=400&q=80', extraData: { episodeNumber: 14, tag: 'Climate Finance', date: 'Jun 3, 2026', duration: '42 min', speaker: 'Dr. Brijender Mishra', speakerTitle: 'Associate Director, KPMG India', isFeatured: true, audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', imageUrl: 'https://images.unsplash.com/photo-1554475901-4538ddfb1a55?auto=format&fit=crop&w=400&q=80' } },
-          { title: 'Urban Heat Islands: How Indian Cities Are Baking Themselves', description: '', imageUrl: 'https://images.unsplash.com/photo-1525490822463-b459eb6c2948?auto=format&fit=crop&w=400&q=80', extraData: { episodeNumber: 13, tag: 'Heatwaves', date: 'May 20, 2026', duration: '38 min', speaker: 'Prof. Anuradha Sharma', speakerTitle: 'IIT Delhi', audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3', imageUrl: 'https://images.unsplash.com/photo-1525490822463-b459eb6c2948?auto=format&fit=crop&w=400&q=80' } },
-          { title: 'The Brahmaputra Crisis: Floods, Erosion and Climate Migration', description: '', imageUrl: 'https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?auto=format&fit=crop&w=400&q=80', extraData: { episodeNumber: 12, tag: 'Floods', date: 'May 6, 2026', duration: '51 min', speaker: 'Dr. Arup Sarma', speakerTitle: 'IIT Guwahati', audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3', imageUrl: 'https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?auto=format&fit=crop&w=400&q=80' } },
-          { title: 'AI & Satellite Technology in Disaster Early Warning Systems', description: '', imageUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=400&q=80', extraData: { episodeNumber: 11, tag: 'Early Warning', date: 'Apr 22, 2026', duration: '44 min', speaker: 'Ms. Priya Menon', speakerTitle: 'ISRO', audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3', imageUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=400&q=80' } },
-          { title: "Sendai Framework at 10: India's Progress & Gaps", description: '', imageUrl: 'https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=400&q=80', extraData: { episodeNumber: 10, tag: 'Policy', date: 'Apr 8, 2026', duration: '56 min', speaker: 'Former Secretary', speakerTitle: 'NDMA', audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3', imageUrl: 'https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=400&q=80' } },
-          { title: 'Glacial Lake Outburst Floods: The Himalayan Time Bomb', description: '', imageUrl: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=400&q=80', extraData: { episodeNumber: 9, tag: 'Glaciers', date: 'Mar 25, 2026', duration: '47 min', speaker: 'Dr. Syed Iqbal Hasnain', speakerTitle: 'Climate Scientist', audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3', imageUrl: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=400&q=80' } },
+          { title: 'Himalayan Glacial Sensors & Flood Telemetry Calibrations', description: 'A visual guide and discussion on sensor deployment protocols and satellite warning triggers in flash-flood zones.', imageUrl: 'https://images.unsplash.com/photo-1486915309851-b0cc1f8a0084?auto=format&fit=crop&w=400&q=80', extraData: { episodeNumber: 15, tag: 'Early Warning', date: 'Jun 10, 2026', duration: '0:10', speaker: 'Dr. Kavita Sharma', speakerTitle: 'IIT Delhi', audioUrl: '', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4', imageUrl: 'https://images.unsplash.com/photo-1486915309851-b0cc1f8a0084?auto=format&fit=crop&w=400&q=80' } },
+          { title: "Can India's CSR Ecosystem Fund Climate Adaptation at Scale?", description: 'Dr. Brijender Mishra speaks with climate finance experts on redirecting corporate giving from post-disaster relief to long-term resilience infrastructure.', imageUrl: 'https://images.unsplash.com/photo-1554475901-4538ddfb1a55?auto=format&fit=crop&w=400&q=80', extraData: { episodeNumber: 14, tag: 'Climate Finance', date: 'Jun 3, 2026', duration: '42 min', speaker: 'Dr. Brijender Mishra', speakerTitle: 'Associate Director, KPMG India', isFeatured: true, audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', videoUrl: '', imageUrl: 'https://images.unsplash.com/photo-1554475901-4538ddfb1a55?auto=format&fit=crop&w=400&q=80' } },
+          { title: 'Urban Heat Islands: How Indian Cities Are Baking Themselves', description: '', imageUrl: 'https://images.unsplash.com/photo-1525490822463-b459eb6c2948?auto=format&fit=crop&w=400&q=80', extraData: { episodeNumber: 13, tag: 'Heatwaves', date: 'May 20, 2026', duration: '38 min', speaker: 'Prof. Anuradha Sharma', speakerTitle: 'IIT Delhi', audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3', videoUrl: '', imageUrl: 'https://images.unsplash.com/photo-1525490822463-b459eb6c2948?auto=format&fit=crop&w=400&q=80' } },
+          { title: 'The Brahmaputra Crisis: Floods, Erosion and Climate Migration', description: '', imageUrl: 'https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?auto=format&fit=crop&w=400&q=80', extraData: { episodeNumber: 12, tag: 'Floods', date: 'May 6, 2026', duration: '51 min', speaker: 'Dr. Arup Sarma', speakerTitle: 'IIT Guwahati', audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3', videoUrl: '', imageUrl: 'https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?auto=format&fit=crop&w=400&q=80' } },
+          { title: 'AI & Satellite Technology in Disaster Early Warning Systems', description: '', imageUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=400&q=80', extraData: { episodeNumber: 11, tag: 'Early Warning', date: 'Apr 22, 2026', duration: '44 min', speaker: 'Ms. Priya Menon', speakerTitle: 'ISRO', audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3', videoUrl: '', imageUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=400&q=80' } },
+          { title: "Sendai Framework at 10: India's Progress & Gaps", description: '', imageUrl: 'https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=400&q=80', extraData: { episodeNumber: 10, tag: 'Policy', date: 'Apr 8, 2026', duration: '56 min', speaker: 'Former Secretary', speakerTitle: 'NDMA', audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3', videoUrl: '', imageUrl: 'https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=400&q=80' } },
+          { title: 'Glacial Lake Outburst Floods: The Himalayan Time Bomb', description: '', imageUrl: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=400&q=80', extraData: { episodeNumber: 9, tag: 'Glaciers', date: 'Mar 25, 2026', duration: '47 min', speaker: 'Dr. Syed Iqbal Hasnain', speakerTitle: 'Climate Scientist', audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3', videoUrl: '', imageUrl: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=400&q=80' } },
         ]
       },
       {
@@ -507,38 +508,49 @@ async function upgradePodcastData(pool: mysql.Pool) {
       for (const card of cards) {
         let extra: any = {};
         try { extra = JSON.parse(card.extra_data || '{}'); } catch {}
-        if (!extra.audioUrl) {
+        if (!extra.audioUrl || extra.videoUrl === undefined) {
           needsUpgrade = true;
           break;
         }
       }
 
       if (needsUpgrade) {
-        console.log("[DB UPGRADE] Podcasts cards lack audioUrl, updating metadata...");
-        const oldToNew: Record<number, {audioUrl: string, imageUrl: string}> = {
+        console.log("[DB UPGRADE] Podcasts cards lack audioUrl/videoUrl, updating metadata...");
+        const oldToNew: Record<number, {audioUrl: string, imageUrl: string, videoUrl?: string}> = {
+          15: {
+            audioUrl: '',
+            imageUrl: 'https://images.unsplash.com/photo-1486915309851-b0cc1f8a0084?auto=format&fit=crop&w=400&q=80',
+            videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4'
+          },
           14: {
             audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-            imageUrl: 'https://images.unsplash.com/photo-1554475901-4538ddfb1a55?auto=format&fit=crop&w=400&q=80'
+            imageUrl: 'https://images.unsplash.com/photo-1554475901-4538ddfb1a55?auto=format&fit=crop&w=400&q=80',
+            videoUrl: ''
           },
           13: {
             audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
-            imageUrl: 'https://images.unsplash.com/photo-1525490822463-b459eb6c2948?auto=format&fit=crop&w=400&q=80'
+            imageUrl: 'https://images.unsplash.com/photo-1525490822463-b459eb6c2948?auto=format&fit=crop&w=400&q=80',
+            videoUrl: ''
           },
           12: {
             audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
-            imageUrl: 'https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?auto=format&fit=crop&w=400&q=80'
+            imageUrl: 'https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?auto=format&fit=crop&w=400&q=80',
+            videoUrl: ''
           },
           11: {
             audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3',
-            imageUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=400&q=80'
+            imageUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=400&q=80',
+            videoUrl: ''
           },
           10: {
             audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3',
-            imageUrl: 'https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=400&q=80'
+            imageUrl: 'https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=400&q=80',
+            videoUrl: ''
           },
           9: {
             audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3',
-            imageUrl: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=400&q=80'
+            imageUrl: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=400&q=80',
+            videoUrl: ''
           }
         };
 
@@ -549,14 +561,23 @@ async function upgradePodcastData(pool: mysql.Pool) {
           const upgradeInfo = oldToNew[epNum];
           if (upgradeInfo) {
             extra.audioUrl = upgradeInfo.audioUrl;
+            extra.videoUrl = upgradeInfo.videoUrl || '';
             extra.imageUrl = upgradeInfo.imageUrl;
             await pool.execute(
               "UPDATE cms_page_cards SET image_url = ?, extra_data = ? WHERE id = ?",
               [upgradeInfo.imageUrl, JSON.stringify(extra), card.id]
             );
+          } else {
+            // General fallback: ensure properties exist
+            extra.audioUrl = extra.audioUrl || '';
+            extra.videoUrl = extra.videoUrl || '';
+            await pool.execute(
+              "UPDATE cms_page_cards SET extra_data = ? WHERE id = ?",
+              [JSON.stringify(extra), card.id]
+            );
           }
         }
-        console.log("[DB UPGRADE] Podcasts cards updated with audioUrl and imageUrl.");
+        console.log("[DB UPGRADE] Podcasts cards updated with audioUrl, videoUrl and imageUrl.");
       }
     }
   } catch (err) {
