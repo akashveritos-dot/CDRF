@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
 
     // Verify password hash
     const isPasswordValid = verifyPassword(password, user.password_hash);
-    console.log('[DEBUG AUTH] Password validation result:', isPasswordValid);
+
     if (!isPasswordValid) {
       return NextResponse.json(
         { error: 'Invalid email or password' },
