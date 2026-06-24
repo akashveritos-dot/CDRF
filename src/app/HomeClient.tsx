@@ -499,10 +499,8 @@ export default function HomeClient({
                   <div className={styles.reportFooter}>
                     <span className={styles.reportPages}>{report.year} • {report.page_count} pages</span>
                     <a
-                      href={report.download_url || '#'}
+                      href="/reports"
                       className={styles.reportDownloadBtn}
-                      target="_blank"
-                      rel="noopener noreferrer"
                     >
                       <Download size={14} />
                       View Document

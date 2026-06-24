@@ -158,7 +158,21 @@ async function runMigration(pool: mysql.Pool) {
       }
     }
 
-    console.log('[DB MIGRATION] Ensured membership plans, discounts, and history tables exist.');
+    // Create report downloads tracking table
+    const createReportDownloadsTable = `
+      CREATE TABLE IF NOT EXISTS report_downloads (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        report_id INT NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        downloaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_report_downloads_report (report_id),
+        INDEX idx_report_downloads_email (email)
+      ) ENGINE=InnoDB;
+    `;
+    await pool.execute(createReportDownloadsTable);
+
+    console.log('[DB MIGRATION] Ensured membership plans, discounts, history, and report_downloads tables exist.');
 
     // Seed default plans if empty
     const [rows]: any = await pool.execute('SELECT COUNT(*) as count FROM membership_plans');

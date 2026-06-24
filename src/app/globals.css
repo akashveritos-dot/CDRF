@@ -353,3 +353,22 @@ a:focus, button:focus, [role="button"]:focus {
   outline: none !important;
 }
 
+/* ── Media Asset Protection ───────────────────────────────────────────────── */
+/* Prevents drag-to-save, right-click save-as, and iOS long-press save */
+img, video, source {
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+  -webkit-touch-callout: none;
+  pointer-events: auto;
+}
+
+/* Disable text selection on media elements */
+img, video {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}

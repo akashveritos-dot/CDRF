@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import path from 'path';
 import fs from 'fs';
+import { generateMediaUrl } from '@/lib/media-token';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,7 +33,8 @@ export async function POST(req: NextRequest) {
       path.join(process.cwd(), '.next', 'standalone', 'public', 'uploads')
     ];
 
-    let finalUrl = `/uploads/${safeFileName}`;
+    // Internal storage path for database (always /uploads/filename)
+    const internalPath = `/uploads/${safeFileName}`;
 
     for (const dir of uploadDirs) {
       try {
@@ -52,7 +54,15 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    return NextResponse.json({ success: true, url: finalUrl });
+    // Always store the internal /uploads/ path in the database.
+    // The URL rewriter will convert it to an opaque media token when serving API responses.
+    // For PDFs, the report serve route reads the internal path from DB directly.
+    return NextResponse.json({
+      success: true,
+      url: internalPath,
+      // Opaque preview URL for immediate display (if needed)
+      secureUrl: generateMediaUrl(safeFileName),
+    });
   } catch (error: any) {
     console.error('File upload error:', error);
     return NextResponse.json({ error: 'Failed to upload file' }, { status: 500 });

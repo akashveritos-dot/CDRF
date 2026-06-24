@@ -3,6 +3,7 @@ import { query } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
 import { logAction } from '@/lib/audit';
+import { rewriteUploadUrls } from '@/lib/url-rewriter';
 
 // GET /api/reports/[id] - Fetch single report details
 export async function GET(
@@ -18,7 +19,8 @@ export async function GET(
       return NextResponse.json({ error: 'Report not found' }, { status: 404 });
     }
 
-    return NextResponse.json(reportsList[0]);
+    // Rewrite /uploads/ URLs to secure /api/files/ URLs
+    return NextResponse.json(rewriteUploadUrls(reportsList[0]));
   } catch (error: any) {
     console.log(error);
     console.error('Fetch report details error:', error);

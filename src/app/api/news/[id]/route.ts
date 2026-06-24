@@ -3,6 +3,7 @@ import { query } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
 import { logAction } from '@/lib/audit';
+import { rewriteUploadUrls } from '@/lib/url-rewriter';
 
 // GET /api/news/[id] - Fetch single news story
 export async function GET(
@@ -28,7 +29,8 @@ export async function GET(
       })
     };
 
-    return NextResponse.json(formatted);
+    // Rewrite /uploads/ URLs to secure /api/files/ URLs
+    return NextResponse.json(rewriteUploadUrls(formatted));
   } catch (error: any) {
     console.error('Fetch news details error:', error);
     return NextResponse.json(

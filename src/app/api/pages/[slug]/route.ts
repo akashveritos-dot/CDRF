@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+import { rewriteUploadUrls } from '@/lib/url-rewriter';
 
 export async function GET(
   req: NextRequest,
@@ -60,7 +61,8 @@ export async function GET(
 
     page.sections = sections;
 
-    return NextResponse.json(page);
+    // Rewrite /uploads/ URLs to secure /api/files/ URLs in all page data
+    return NextResponse.json(rewriteUploadUrls(page));
   } catch (error: any) {
     console.error('Error fetching dynamic page data:', error);
     return NextResponse.json(

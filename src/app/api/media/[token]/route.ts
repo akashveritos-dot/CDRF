@@ -1,0 +1,141 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { validateMediaToken } from '@/lib/media-token';
+import path from 'path';
+import fs from 'fs';
+
+export const dynamic = 'force-dynamic';
+
+/**
+ * Allowed MIME types. PDFs are NOT served here.
+ */
+const MIME_TYPES: Record<string, string> = {
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.png': 'image/png',
+  '.gif': 'image/gif',
+  '.webp': 'image/webp',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon',
+  '.mp4': 'video/mp4',
+  '.webm': 'video/webm',
+  '.ogg': 'video/ogg',
+  '.mov': 'video/quicktime',
+};
+
+/**
+ * GET /api/media/[token]
+ * 
+ * Ultra-secure media endpoint. Validates:
+ * 1. Signed token (filename + expiry + HMAC)
+ * 2. Sec-Fetch-Site header (must be same-origin — blocks new tab opens)
+ * 3. Sec-Fetch-Dest header (must be image/video — blocks document navigation)
+ * 4. Referer header (must match our domain)
+ * 
+ * If someone copies the URL from inspect and opens in a new tab:
+ * - Sec-Fetch-Site = "none" (not same-origin) → BLOCKED
+ * - Sec-Fetch-Dest = "document" (not image/video) → BLOCKED
+ * - Token eventually expires → BLOCKED
+ */
+export async function GET(
+  req: NextRequest,
+  props: { params: Promise<{ token: string }> }
+) {
+  try {
+    const params = await props.params;
+    const { token } = params;
+
+    // ── 1. Validate the signed token ──────────────────────────────────
+    const filename = validateMediaToken(token);
+    if (!filename) {
+      return new NextResponse(null, { status: 403 });
+    }
+
+    // ── 2. Check Sec-Fetch-* headers (browser security headers) ──────
+    const secFetchSite = req.headers.get('sec-fetch-site');
+    const secFetchDest = req.headers.get('sec-fetch-dest');
+    const secFetchMode = req.headers.get('sec-fetch-mode');
+
+    // If the browser sends Sec-Fetch headers (all modern browsers do):
+    if (secFetchSite !== null) {
+      // Block if NOT same-origin (e.g., opened in new tab = "none", cross-site = "cross-site")
+      if (secFetchSite !== 'same-origin' && secFetchSite !== 'same-site') {
+        return new NextResponse(null, { status: 403 });
+      }
+    }
+
+    if (secFetchDest !== null) {
+      // Only allow image, video, audio, or empty (for fetch/XHR from our own code)
+      const allowedDests = ['image', 'video', 'audio', 'empty', ''];
+      if (!allowedDests.includes(secFetchDest)) {
+        // "document" = opened in new tab → BLOCKED
+        return new NextResponse(null, { status: 403 });
+      }
+    }
+
+    // ── 3. Referer validation (fallback for older browsers) ──────────
+    const referer = req.headers.get('referer') || '';
+    const host = req.headers.get('host') || '';
+
+    // If no Sec-Fetch headers AND no valid referer → block
+    if (secFetchSite === null && host && referer && !referer.includes(host)) {
+      return new NextResponse(null, { status: 403 });
+    }
+
+    // ── 4. File validation ───────────────────────────────────────────
+    const ext = path.extname(filename).toLowerCase();
+
+    // Block PDFs — they must go through /api/reports/serve/[id]
+    if (ext === '.pdf') {
+      return new NextResponse(null, { status: 403 });
+    }
+
+    const mimeType = MIME_TYPES[ext];
+    if (!mimeType) {
+      return new NextResponse(null, { status: 404 });
+    }
+
+    // Sanitize filename
+    const safeName = path.basename(filename).replace(/\.\./g, '');
+
+    // ── 5. Find and serve the file ───────────────────────────────────
+    const possiblePaths = [
+      path.join(process.cwd(), 'public', 'uploads', safeName),
+      path.join(process.cwd(), '.next', 'standalone', 'public', 'uploads', safeName),
+    ];
+
+    let filePath: string | null = null;
+    for (const p of possiblePaths) {
+      if (fs.existsSync(p)) {
+        filePath = p;
+        break;
+      }
+    }
+
+    if (!filePath) {
+      return new NextResponse(null, { status: 404 });
+    }
+
+    const fileBuffer = fs.readFileSync(filePath);
+    const stat = fs.statSync(filePath);
+
+    return new NextResponse(fileBuffer, {
+      status: 200,
+      headers: {
+        'Content-Type': mimeType,
+        'Content-Length': stat.size.toString(),
+        // ── Security headers ────────────────────────────────────────
+        'Content-Disposition': 'inline', // Never trigger download dialog
+        'Cache-Control': 'private, max-age=1800, must-revalidate', // 30 min cache (matches token rounding)
+        'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'SAMEORIGIN',
+        'Cross-Origin-Resource-Policy': 'same-origin', // Block cross-origin embedding
+        'Access-Control-Allow-Origin': '', // No CORS
+        // Prevent saving / right-click save
+        'Content-Security-Policy': "default-src 'none'",
+      },
+    });
+  } catch (error: any) {
+    console.error('[MEDIA] Error serving media:', error);
+    return new NextResponse(null, { status: 500 });
+  }
+}

@@ -22,7 +22,8 @@ import {
   BookOpen,
   Image,
   MessageSquare,
-  FileText
+  FileText,
+  Download
 } from 'lucide-react';
 import styles from './layout.module.css';
 import './admin-theme.css';
@@ -121,6 +122,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: 'Query Messages', path: '/admin/contacts', icon: <MessageSquare size={18} />, countKey: 'queries' },
     { name: 'Manage News', path: '/admin/news', icon: <Newspaper size={18} /> },
     { name: 'Manage Reports', path: '/admin/reports', icon: <FileArchive size={18} /> },
+    { name: 'Report Downloads', path: '/admin/report-downloads', icon: <Download size={18} /> },
     { name: 'Manage Councils', path: '/admin/councils', icon: <Award size={18} /> },
     { name: 'Conclave Registrations', path: '/admin/events', icon: <Calendar size={18} />, countKey: 'registrations' },
     { name: 'Live Alert Ticker', path: '/admin/alerts', icon: <Megaphone size={18} /> },
@@ -133,9 +135,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   // Add Users, Launch Registrations, and Pricing menu items only for SUPERADMIN
   if (adminUser?.role === 'SUPERADMIN') {
     // Keep 'Launch Registrations', 'Users', and 'Membership Pricing' next to Audit Logs
-    menuItems.splice(12, 0, { name: 'Launch Registrations', path: '/admin/soon', icon: <Globe size={18} /> });
-    menuItems.splice(13, 0, { name: 'Users', path: '/admin/users', icon: <UserCog size={18} /> });
-    menuItems.splice(14, 0, { name: 'Membership Pricing', path: '/admin/pricing', icon: <Award size={18} /> });
+    menuItems.splice(13, 0, { name: 'Launch Registrations', path: '/admin/soon', icon: <Globe size={18} /> });
+    menuItems.splice(14, 0, { name: 'Users', path: '/admin/users', icon: <UserCog size={18} /> });
+    menuItems.splice(15, 0, { name: 'Membership Pricing', path: '/admin/pricing', icon: <Award size={18} /> });
   }
 
   return (

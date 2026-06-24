@@ -3,6 +3,7 @@ import { query } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
 import { logAction } from '@/lib/audit';
+import { rewriteUploadUrls } from '@/lib/url-rewriter';
 
 // GET /api/reports - Fetch all research reports
 export async function GET(req: NextRequest) {
@@ -19,7 +20,9 @@ export async function GET(req: NextRequest) {
     }
 
     const reportsList = await query<any[]>(sql, params);
-    return new NextResponse(JSON.stringify(reportsList), {
+    // Rewrite /uploads/ URLs to secure /api/files/ URLs
+    const secureReports = rewriteUploadUrls(reportsList);
+    return new NextResponse(JSON.stringify(secureReports), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',

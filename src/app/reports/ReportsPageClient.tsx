@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
-import { Search, Download, BookOpen, Thermometer, Waves, Compass, Mountain } from 'lucide-react';
-import { useToast } from '@/components/ui/Toast/ToastContext';
+import { Search, Download, BookOpen, Thermometer, Waves, Compass, Mountain, X, Loader2, AlertTriangle } from 'lucide-react';
+
 import PageHero from '@/components/ui/PageHero/PageHero';
 
 const tabs = ['All', 'Annual', 'Policy', 'CSR', 'Technical'];
@@ -44,10 +45,74 @@ interface ReportsPageClientProps {
 }
 
 export default function ReportsPageClient({ initialReports }: ReportsPageClientProps) {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [reportsList] = useState<any[]>(initialReports);
-  const { download } = useToast();
+
+  // ── Modal state ─────────────────────────────────────────────────────
+  const [modalReport, setModalReport] = useState<any>(null);
+  const [modalName, setModalName] = useState('');
+  const [modalEmail, setModalEmail] = useState('');
+  const [modalSubmitting, setModalSubmitting] = useState(false);
+  const [modalError, setModalError] = useState('');
+
+  // Close modal on Escape key
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setModalReport(null);
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, []);
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (modalReport) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [modalReport]);
+
+  const openModal = (report: any) => {
+    setModalReport(report);
+    setModalName('');
+    setModalEmail('');
+    setModalError('');
+  };
+
+  const handleModalSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!modalReport) return;
+    setModalError('');
+    setModalSubmitting(true);
+
+    try {
+      const res = await fetch('/api/reports/download', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reportId: modalReport.id,
+          name: modalName.trim(),
+          email: modalEmail.trim(),
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Something went wrong.');
+
+      // Close modal and navigate to the PDF viewer
+      setModalReport(null);
+      router.push(`/reports/view/${modalReport.id}?token=${encodeURIComponent(data.token)}`);
+    } catch (err: any) {
+      setModalError(err.message || 'Something went wrong. Please try again.');
+    } finally {
+      setModalSubmitting(false);
+    }
+  };
+
 
   const sortedReports = React.useMemo(() => {
     return [...reportsList].sort((a, b) => {
@@ -80,7 +145,7 @@ export default function ReportsPageClient({ initialReports }: ReportsPageClientP
           eyebrow="DCRF Research Library"
           line1="RESEARCH"
           line2="/ PUBLICATIONS"
-          subtitle="Explore DCRF’s comprehensive repository of disaster risk assessments, heat action briefs, climate finance reports, and geospatial audits."
+          subtitle="Explore DCRF's comprehensive repository of disaster risk assessments, heat action briefs, climate finance reports, and geospatial audits."
         />
       </ScrollReveal>
 
@@ -160,25 +225,13 @@ export default function ReportsPageClient({ initialReports }: ReportsPageClientP
                   <span className={styles.metaText}>
                     {report.year} • {report.page_count || report.pageCount} pages
                   </span>
-                  <a
-                    href={report.download_url || report.downloadUrl || '#'}
-                    target={(report.download_url && report.download_url !== '#') ? "_blank" : undefined}
-                    rel="noopener noreferrer"
+                  <button
+                    onClick={() => openModal(report)}
                     className={styles.downloadBtn}
-                    onClick={(e) => {
-                      const url = report.download_url || report.downloadUrl;
-                      if (!url || url === '#') {
-                        e.preventDefault();
-                        download(
-                          'Download started',
-                          `"${report.title}" PDF is being prepared…`
-                        );
-                      }
-                    }}
                   >
                     <Download size={14} />
-                    View Source
-                  </a>
+                    View Report
+                  </button>
                 </div>
               </div>
             </ScrollReveal>
@@ -191,6 +244,65 @@ export default function ReportsPageClient({ initialReports }: ReportsPageClientP
           </ScrollReveal>
         )}
       </div>
+
+      {/* ── Name & Email Popup Modal ────────────────────────────────────── */}
+      {modalReport && (
+        <div className={styles.modalOverlay} onClick={() => setModalReport(null)}>
+          <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
+            {/* Close button */}
+            <button className={styles.modalClose} onClick={() => setModalReport(null)}>
+              <X size={18} />
+            </button>
+
+            {/* Report title */}
+            <h3 className={styles.modalTitle}>{modalReport.title}</h3>
+            <p className={styles.modalSub}>
+              {modalReport.category} • {modalReport.year} • {modalReport.page_count || modalReport.pageCount} pages
+            </p>
+
+            {/* Error */}
+            {modalError && (
+              <div className={styles.modalError}>
+                <AlertTriangle size={14} />
+                {modalError}
+              </div>
+            )}
+
+            {/* Simple form */}
+            <form onSubmit={handleModalSubmit} className={styles.modalForm}>
+              <input
+                type="text"
+                required
+                value={modalName}
+                onChange={(e) => setModalName(e.target.value)}
+                placeholder="Your name"
+                className={styles.modalInput}
+                autoComplete="name"
+                autoFocus
+              />
+              <input
+                type="email"
+                required
+                value={modalEmail}
+                onChange={(e) => setModalEmail(e.target.value)}
+                placeholder="Email address"
+                className={styles.modalInput}
+                autoComplete="email"
+              />
+              <button type="submit" disabled={modalSubmitting} className={styles.modalSubmitBtn}>
+                {modalSubmitting ? (
+                  <>
+                    <Loader2 size={16} className={styles.spinner} />
+                    Opening...
+                  </>
+                ) : (
+                  'Proceed'
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
