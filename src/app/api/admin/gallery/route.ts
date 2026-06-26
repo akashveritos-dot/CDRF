@@ -20,15 +20,15 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { imageUrl, caption, content, displayOrder = 0 } = body;
+    const { imageUrl, caption, content, designation, personName, displayOrder = 0 } = body;
 
     if (!imageUrl || !caption) {
       return NextResponse.json({ error: 'Image URL and Caption are required' }, { status: 400 });
     }
 
     const result = await query<any>(
-      'INSERT INTO gallery_items (image_url, caption, content, display_order) VALUES (?, ?, ?, ?)',
-      [imageUrl, caption, content || null, displayOrder]
+      'INSERT INTO gallery_items (image_url, caption, content, designation, person_name, display_order) VALUES (?, ?, ?, ?, ?, ?)',
+      [imageUrl, caption, content || null, designation || null, personName || null, displayOrder]
     );
 
     await logAction(

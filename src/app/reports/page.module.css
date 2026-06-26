@@ -431,3 +431,27 @@
     padding: 24px 20px 20px;
   }
 }
+
+.entityToggleRow {
+  display: flex;
+  gap: 16px;
+  margin: 4px 0;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.toggleOption {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+  color: var(--text-default);
+  cursor: pointer;
+}
+
+.toggleOption input[type="radio"] {
+  accent-color: var(--red-primary);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}

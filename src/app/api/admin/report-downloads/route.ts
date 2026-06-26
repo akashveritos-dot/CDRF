@@ -33,6 +33,10 @@ export async function GET(req: NextRequest) {
         rd.report_id,
         rd.name,
         rd.email,
+        rd.designation,
+        rd.entity_type AS entityType,
+        rd.organization_name AS organizationName,
+        rd.mobile,
         rd.downloaded_at,
         r.title AS report_title,
         r.category AS report_category

@@ -11,12 +11,12 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { reportId, name, email } = body;
+    const { reportId, name, email, designation, entityType, organizationName, mobile } = body;
 
     // Validate input
-    if (!reportId || !name?.trim() || !email?.trim()) {
+    if (!reportId || !name?.trim() || !email?.trim() || !designation?.trim() || !mobile?.trim()) {
       return NextResponse.json(
-        { error: 'Name, email, and report ID are required.' },
+        { error: 'Name, email, designation, mobile number, and report ID are required.' },
         { status: 400 }
       );
     }
@@ -30,6 +30,22 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Validate 10-digit mobile
+    if (!/^\d{10}$/.test(mobile.trim())) {
+      return NextResponse.json(
+        { error: 'Mobile number must be a 10-digit number.' },
+        { status: 400 }
+      );
+    }
+
+    // Validate organization name if entityType is Organization
+    if (entityType === 'Organization' && !organizationName?.trim()) {
+      return NextResponse.json(
+        { error: 'Organization name is required when organization is selected.' },
+        { status: 400 }
+      );
+    }
+
     // Verify report exists
     const reports = await query<any[]>('SELECT id, title FROM reports WHERE id = ? LIMIT 1', [reportId]);
     if (reports.length === 0) {
@@ -38,8 +54,16 @@ export async function POST(req: NextRequest) {
 
     // Record download in database
     await query(
-      'INSERT INTO report_downloads (report_id, name, email) VALUES (?, ?, ?)',
-      [reportId, name.trim(), email.trim().toLowerCase()]
+      'INSERT INTO report_downloads (report_id, name, email, designation, entity_type, organization_name, mobile) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [
+        reportId,
+        name.trim(),
+        email.trim().toLowerCase(),
+        designation.trim(),
+        entityType || 'Individual',
+        entityType === 'Organization' ? organizationName.trim() : null,
+        mobile.trim()
+      ]
     );
 
     // Generate a signed download token (valid for 15 minutes)

@@ -54,7 +54,13 @@ async function runMigration(pool: mysql.Pool) {
       // Page builder enhancements
       'ALTER TABLE cms_pages ADD COLUMN main_image_url VARCHAR(512) NULL',
       // Flexible extra data for cards
-      'ALTER TABLE cms_page_cards ADD COLUMN extra_data TEXT NULL'
+      'ALTER TABLE cms_page_cards ADD COLUMN extra_data TEXT NULL',
+      'ALTER TABLE gallery_items ADD COLUMN designation VARCHAR(255) NULL',
+      'ALTER TABLE gallery_items ADD COLUMN person_name VARCHAR(255) NULL',
+      'ALTER TABLE report_downloads ADD COLUMN designation VARCHAR(255) NULL',
+      "ALTER TABLE report_downloads ADD COLUMN entity_type ENUM('Individual', 'Organization') DEFAULT 'Individual'",
+      'ALTER TABLE report_downloads ADD COLUMN organization_name VARCHAR(255) NULL',
+      'ALTER TABLE report_downloads ADD COLUMN mobile VARCHAR(20) NULL'
     ];
     for (const sql of alterQueries) {
       try {
@@ -165,6 +171,10 @@ async function runMigration(pool: mysql.Pool) {
         report_id INT NOT NULL,
         name VARCHAR(255) NOT NULL,
         email VARCHAR(255) NOT NULL,
+        designation VARCHAR(255) NULL,
+        entity_type ENUM('Individual', 'Organization') DEFAULT 'Individual',
+        organization_name VARCHAR(255) NULL,
+        mobile VARCHAR(20) NULL,
         downloaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         INDEX idx_report_downloads_report (report_id),
         INDEX idx_report_downloads_email (email)

@@ -31,6 +31,9 @@ export default function AdminMemberships() {
   const [filterStatus, setFilterStatus] = useState('All');
   const [filterPay, setFilterPay] = useState('All');
   const [filterMemberStatus, setFilterMemberStatus] = useState('All');
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [exportStartDate, setExportStartDate] = useState('');
+  const [exportEndDate, setExportEndDate] = useState('');
 
   // Modal State
   const [editingItem, setEditingItem] = useState<any>(null);
@@ -80,7 +83,79 @@ export default function AdminMemberships() {
 
   useEffect(() => {
     fetchStats();
+    
+    async function checkRole() {
+      try {
+        const res = await fetch('/api/auth/me');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.authenticated) {
+            setCurrentUser(data.user);
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    checkRole();
   }, [fetchStats]);
+
+  const handleExportCSV = () => {
+    const start = exportStartDate ? new Date(exportStartDate + 'T00:00:00') : null;
+    const end = exportEndDate ? new Date(exportEndDate + 'T23:59:59') : null;
+
+    const dataToExport = registrations.filter((item) => {
+      const dateVal = new Date(item.created_at);
+      if (start && dateVal < start) return false;
+      if (end && dateVal > end) return false;
+      return true;
+    });
+
+    if (dataToExport.length === 0) {
+      alert('No records found for the selected date range.');
+      return;
+    }
+
+    const escapeCSV = (val: any) => {
+      if (val === null || val === undefined) return '';
+      let str = String(val);
+      str = str.replace(/"/g, '""');
+      if (str.includes(',') || str.includes('\n') || str.includes('\r') || str.includes('"')) {
+        return `"${str}"`;
+      }
+      return str;
+    };
+
+    const headers = ['ID', 'User ID', 'Name', 'Email', 'Organization', 'Title', 'Tier', 'Message', 'Status', 'Pay Status', 'Payment Details', 'Starts At', 'Expires At', 'Membership Status', 'Created At'];
+    const rows = dataToExport.map((item) => [
+      item.id,
+      item.user_id || '',
+      item.name || '',
+      item.email || '',
+      item.organization || '',
+      item.title || '',
+      item.tier || '',
+      item.message || '',
+      item.status || '',
+      item.pay_status || '',
+      item.payment_details || '',
+      item.starts_at ? new Date(item.starts_at).toISOString() : '',
+      item.expires_at ? new Date(item.expires_at).toISOString() : '',
+      item.membership_status || 'Active',
+      item.created_at ? new Date(item.created_at).toISOString() : '',
+    ]);
+
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.map(escapeCSV).join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `memberships_export_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
@@ -258,6 +333,39 @@ export default function AdminMemberships() {
           </div>
         </div>
       </div>
+
+      {/* Superadmin Export panel */}
+      {currentUser?.role === 'SUPERADMIN' && (
+        <div className={styles.exportSection}>
+          <div className={styles.exportTitle}>
+            <Users size={16} />
+            <span>Superadmin Excel Export</span>
+          </div>
+          <div className={styles.exportControls}>
+            <div className={styles.exportField}>
+              <label>From Date</label>
+              <input
+                type="date"
+                value={exportStartDate}
+                onChange={(e) => setExportStartDate(e.target.value)}
+                className={styles.exportInput}
+              />
+            </div>
+            <div className={styles.exportField}>
+              <label>To Date</label>
+              <input
+                type="date"
+                value={exportEndDate}
+                onChange={(e) => setExportEndDate(e.target.value)}
+                className={styles.exportInput}
+              />
+            </div>
+            <button onClick={handleExportCSV} className={styles.exportBtn}>
+              Export to Excel
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Filter and Search Dashboard */}
       <div className={styles.controls}>

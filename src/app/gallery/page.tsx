@@ -11,6 +11,8 @@ interface GalleryItem {
   imageUrl: string;
   caption: string;
   content?: string;
+  designation?: string;
+  personName?: string;
   createdAt: string;
 }
 
@@ -171,11 +173,16 @@ export default function GalleryPage() {
           {/* Active item info — key forces remount for clean fade, no layout shift */}
           <div key={activeIdx} className={styles.carouselInfo}>
             <h2 className={styles.carouselTitle}>{items[activeIdx]?.caption}</h2>
+            {(items[activeIdx]?.designation || items[activeIdx]?.personName) && (
+              <div className={styles.carouselPersonRow}>
+                {items[activeIdx]?.designation && <span className={styles.carouselDesignation}>{items[activeIdx].designation}</span>}
+                {items[activeIdx]?.designation && items[activeIdx]?.personName && <span className={styles.carouselDividerDot}>·</span>}
+                {items[activeIdx]?.personName && <span className={styles.carouselPersonName}>{items[activeIdx].personName}</span>}
+              </div>
+            )}
             {items[activeIdx]?.content && (
               <p className={styles.carouselDesc}>
-                {items[activeIdx].content!.length > 100
-                  ? `${items[activeIdx].content!.substring(0, 100)}…`
-                  : items[activeIdx].content}
+                {items[activeIdx].content}
               </p>
             )}
             <div className={styles.carouselDivider} />
@@ -211,6 +218,13 @@ export default function GalleryPage() {
             <div className={styles.lightboxInfo}>
               <div className={styles.lightboxEyebrow}>DCRF Archive</div>
               <h3 className={styles.lightboxTitle}>{activeItem.caption}</h3>
+              {(activeItem.designation || activeItem.personName) && (
+                <div className={styles.lightboxPersonRow}>
+                  {activeItem.designation && <span className={styles.lightboxDesignation}>{activeItem.designation}</span>}
+                  {activeItem.designation && activeItem.personName && <span className={styles.lightboxDivider}>·</span>}
+                  {activeItem.personName && <span className={styles.lightboxPersonName}>{activeItem.personName}</span>}
+                </div>
+              )}
               {activeItem.content && <p className={styles.lightboxDesc}>{activeItem.content}</p>}
               <div className={styles.lightboxMeta}>
                 <Camera size={12} /> Recorded Deployment Node · DCRF

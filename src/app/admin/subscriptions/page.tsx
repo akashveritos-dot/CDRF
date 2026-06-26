@@ -16,6 +16,9 @@ export default function AdminSubscriptions() {
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [exportStartDate, setExportStartDate] = useState('');
+  const [exportEndDate, setExportEndDate] = useState('');
 
   const fetchSubscriptions = useCallback(async () => {
     setLoading(true);
@@ -34,7 +37,69 @@ export default function AdminSubscriptions() {
 
   useEffect(() => {
     fetchSubscriptions();
+
+    async function checkRole() {
+      try {
+        const res = await fetch('/api/auth/me');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.authenticated) {
+            setCurrentUser(data.user);
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    checkRole();
   }, [fetchSubscriptions]);
+
+  const handleExportCSV = () => {
+    const start = exportStartDate ? new Date(exportStartDate + 'T00:00:00') : null;
+    const end = exportEndDate ? new Date(exportEndDate + 'T23:59:59') : null;
+
+    const dataToExport = subscriptions.filter((item) => {
+      const dateVal = new Date(item.created_at);
+      if (start && dateVal < start) return false;
+      if (end && dateVal > end) return false;
+      return true;
+    });
+
+    if (dataToExport.length === 0) {
+      alert('No records found for the selected date range.');
+      return;
+    }
+
+    const escapeCSV = (val: any) => {
+      if (val === null || val === undefined) return '';
+      let str = String(val);
+      str = str.replace(/"/g, '""');
+      if (str.includes(',') || str.includes('\n') || str.includes('\r') || str.includes('"')) {
+        return `"${str}"`;
+      }
+      return str;
+    };
+
+    const headers = ['ID', 'Name', 'Email', 'Created At (Subscribed Date)', 'Updated At'];
+    const rows = dataToExport.map((item) => [
+      item.id,
+      item.name || '',
+      item.email || '',
+      item.created_at ? new Date(item.created_at).toISOString() : '',
+      item.updated_at ? new Date(item.updated_at).toISOString() : '',
+    ]);
+
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.map(escapeCSV).join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `subscriptions_export_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const handleDelete = async (id: number) => {
     // eslint-disable-next-line no-alert
@@ -73,6 +138,39 @@ export default function AdminSubscriptions() {
           </div>
         </div>
       </div>
+
+      {/* Superadmin Export panel */}
+      {currentUser?.role === 'SUPERADMIN' && (
+        <div className={styles.exportSection}>
+          <div className={styles.exportTitle}>
+            <Mail size={16} />
+            <span>Superadmin Excel Export</span>
+          </div>
+          <div className={styles.exportControls}>
+            <div className={styles.exportField}>
+              <label>From Date</label>
+              <input
+                type="date"
+                value={exportStartDate}
+                onChange={(e) => setExportStartDate(e.target.value)}
+                className={styles.exportInput}
+              />
+            </div>
+            <div className={styles.exportField}>
+              <label>To Date</label>
+              <input
+                type="date"
+                value={exportEndDate}
+                onChange={(e) => setExportEndDate(e.target.value)}
+                className={styles.exportInput}
+              />
+            </div>
+            <button onClick={handleExportCSV} className={styles.exportBtn}>
+              Export to Excel
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Filter and Search Dashboard */}
       <div className={styles.controls}>

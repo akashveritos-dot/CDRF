@@ -9,6 +9,8 @@ interface GalleryItem {
   imageUrl: string;
   caption: string;
   content?: string;
+  designation?: string;
+  personName?: string;
   createdAt: string;
 }
 
@@ -20,6 +22,8 @@ export default function AdminGalleryManager() {
   const [imageUrl, setImageUrl] = useState('');
   const [caption, setCaption] = useState('');
   const [content, setContent] = useState('');
+  const [designation, setDesignation] = useState('');
+  const [personName, setPersonName] = useState('');
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -133,7 +137,7 @@ export default function AdminGalleryManager() {
       const res = await fetch('/api/admin/gallery', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageUrl, caption, content })
+        body: JSON.stringify({ imageUrl, caption, content, designation, personName })
       });
 
       const data = await res.json();
@@ -143,6 +147,8 @@ export default function AdminGalleryManager() {
         setImageUrl('');
         setCaption('');
         setContent('');
+        setDesignation('');
+        setPersonName('');
         setUploadSuccess('');
         loadGallery();
       } else {
@@ -263,6 +269,28 @@ export default function AdminGalleryManager() {
             </div>
 
             <div className={styles.formGroup}>
+              <label className={styles.label}>Designation (Optional)</label>
+              <input
+                type="text"
+                className={styles.input}
+                placeholder="e.g. Lead Researcher, Coordinator"
+                value={designation}
+                onChange={(e) => setDesignation(e.target.value)}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Person Name (Optional)</label>
+              <input
+                type="text"
+                className={styles.input}
+                placeholder="e.g. Dr. Jane Smith"
+                value={personName}
+                onChange={(e) => setPersonName(e.target.value)}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
               <label className={styles.label}>Description Content (Optional)</label>
               <textarea
                 className={styles.textarea}
@@ -368,6 +396,13 @@ export default function AdminGalleryManager() {
                       <h4 className={styles.photoCaption} style={{ margin: 0 }}>{item.caption}</h4>
                       <GripVertical size={14} style={{ color: 'rgba(255, 255, 255, 0.3)', cursor: 'grab' }} />
                     </div>
+                    {(item.designation || item.personName) && (
+                      <p style={{ margin: '0 0 8px', fontSize: '11px', color: 'rgba(255,255,255,0.6)', textAlign: 'left' }}>
+                        {item.designation && <strong style={{ color: '#ef4444' }}>{item.designation}</strong>}
+                        {item.designation && item.personName && ' · '}
+                        {item.personName && <span>{item.personName}</span>}
+                      </p>
+                    )}
                     <button 
                       onClick={() => handleDelete(item.id)}
                       className={styles.deleteBtn}

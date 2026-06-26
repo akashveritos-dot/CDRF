@@ -20,6 +20,9 @@ export default function AdminReportDownloads() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterReport, setFilterReport] = useState('all');
   const [reports, setReports] = useState<any[]>([]);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [exportStartDate, setExportStartDate] = useState('');
+  const [exportEndDate, setExportEndDate] = useState('');
 
   const fetchDownloads = async () => {
     setLoading(true);
@@ -47,7 +50,75 @@ export default function AdminReportDownloads() {
 
   useEffect(() => {
     fetchDownloads();
+    
+    async function checkRole() {
+      try {
+        const res = await fetch('/api/auth/me');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.authenticated) {
+            setCurrentUser(data.user);
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    checkRole();
   }, []);
+
+  const handleExportCSV = () => {
+    const start = exportStartDate ? new Date(exportStartDate + 'T00:00:00') : null;
+    const end = exportEndDate ? new Date(exportEndDate + 'T23:59:59') : null;
+
+    const dataToExport = downloads.filter((d) => {
+      const dateVal = new Date(d.downloaded_at);
+      if (start && dateVal < start) return false;
+      if (end && dateVal > end) return false;
+      return true;
+    });
+
+    if (dataToExport.length === 0) {
+      alert('No records found for the selected date range.');
+      return;
+    }
+
+    const escapeCSV = (val: any) => {
+      if (val === null || val === undefined) return '';
+      let str = String(val);
+      str = str.replace(/"/g, '""');
+      if (str.includes(',') || str.includes('\n') || str.includes('\r') || str.includes('"')) {
+        return `"${str}"`;
+      }
+      return str;
+    };
+
+    const headers = ['ID', 'Report ID', 'Report Title', 'Report Category', 'Name', 'Email', 'Designation', 'Entity Type', 'Organization Name', 'Mobile', 'Downloaded At'];
+    const rows = dataToExport.map((d) => [
+      d.id,
+      d.report_id,
+      d.report_title || '',
+      d.report_category || '',
+      d.name || '',
+      d.email || '',
+      d.designation || '',
+      d.entityType || '',
+      d.organizationName || '',
+      d.mobile || '',
+      d.downloaded_at ? new Date(d.downloaded_at).toISOString() : '',
+    ]);
+
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.map(escapeCSV).join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `report_downloads_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const filteredDownloads = downloads.filter((d) => {
     const matchesSearch =
@@ -85,6 +156,39 @@ export default function AdminReportDownloads() {
           <span className={styles.statLabel}>Total Downloads</span>
         </div>
       </div>
+ 
+      {/* Superadmin Export panel */}
+      {currentUser?.role === 'SUPERADMIN' && (
+        <div className={styles.exportSection}>
+          <div className={styles.exportTitle}>
+            <Download size={16} />
+            <span>Superadmin Excel Export</span>
+          </div>
+          <div className={styles.exportControls}>
+            <div className={styles.exportField}>
+              <label>From Date</label>
+              <input
+                type="date"
+                value={exportStartDate}
+                onChange={(e) => setExportStartDate(e.target.value)}
+                className={styles.exportInput}
+              />
+            </div>
+            <div className={styles.exportField}>
+              <label>To Date</label>
+              <input
+                type="date"
+                value={exportEndDate}
+                onChange={(e) => setExportEndDate(e.target.value)}
+                className={styles.exportInput}
+              />
+            </div>
+            <button onClick={handleExportCSV} className={styles.exportBtn}>
+              Export to Excel
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Controls */}
       <div className={styles.controls}>
@@ -146,6 +250,10 @@ export default function AdminReportDownloads() {
                   </div>
                 </th>
                 <th>Category</th>
+                <th>Designation</th>
+                <th>Entity Type</th>
+                <th>Organization</th>
+                <th>Mobile</th>
                 <th>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Calendar size={12} />
@@ -178,6 +286,10 @@ export default function AdminReportDownloads() {
                       </span>
                     )}
                   </td>
+                  <td style={{ color: '#cbd5e1', fontSize: '13px' }}>{d.designation || '—'}</td>
+                  <td style={{ color: '#cbd5e1', fontSize: '13px' }}>{d.entityType || '—'}</td>
+                  <td style={{ color: '#cbd5e1', fontSize: '13px' }}>{d.organizationName || '—'}</td>
+                  <td style={{ color: '#cbd5e1', fontSize: '13px', whiteSpace: 'nowrap' }}>{d.mobile || '—'}</td>
                   <td className={styles.dateCell}>
                     {formatDate(d.downloaded_at)}
                   </td>

@@ -5,7 +5,7 @@ import { rewriteUploadUrls } from '@/lib/url-rewriter';
 export async function GET() {
   try {
     const rows = await query<any[]>(
-      'SELECT id, image_url as imageUrl, caption, content, created_at as createdAt FROM gallery_items ORDER BY display_order ASC, id DESC'
+      'SELECT id, image_url as imageUrl, caption, content, designation, person_name as personName, created_at as createdAt FROM gallery_items ORDER BY display_order ASC, id DESC'
     );
     // Rewrite /uploads/ URLs to secure /api/files/ URLs
     const secureRows = rewriteUploadUrls(rows);

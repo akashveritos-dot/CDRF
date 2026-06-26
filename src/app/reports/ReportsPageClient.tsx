@@ -54,6 +54,10 @@ export default function ReportsPageClient({ initialReports }: ReportsPageClientP
   const [modalReport, setModalReport] = useState<any>(null);
   const [modalName, setModalName] = useState('');
   const [modalEmail, setModalEmail] = useState('');
+  const [modalDesignation, setModalDesignation] = useState('');
+  const [modalEntityType, setModalEntityType] = useState('Individual');
+  const [modalOrganizationName, setModalOrganizationName] = useState('');
+  const [modalMobile, setModalMobile] = useState('');
   const [modalSubmitting, setModalSubmitting] = useState(false);
   const [modalError, setModalError] = useState('');
 
@@ -80,6 +84,10 @@ export default function ReportsPageClient({ initialReports }: ReportsPageClientP
     setModalReport(report);
     setModalName('');
     setModalEmail('');
+    setModalDesignation('');
+    setModalEntityType('Individual');
+    setModalOrganizationName('');
+    setModalMobile('');
     setModalError('');
   };
 
@@ -87,6 +95,18 @@ export default function ReportsPageClient({ initialReports }: ReportsPageClientP
     e.preventDefault();
     if (!modalReport) return;
     setModalError('');
+
+    const mobileTrimmed = modalMobile.trim();
+    if (!/^\d{10}$/.test(mobileTrimmed)) {
+      setModalError('Mobile number must be exactly 10 digits.');
+      return;
+    }
+
+    if (modalEntityType === 'Organization' && !modalOrganizationName.trim()) {
+      setModalError('Organization name is required.');
+      return;
+    }
+
     setModalSubmitting(true);
 
     try {
@@ -97,6 +117,10 @@ export default function ReportsPageClient({ initialReports }: ReportsPageClientP
           reportId: modalReport.id,
           name: modalName.trim(),
           email: modalEmail.trim(),
+          designation: modalDesignation.trim(),
+          entityType: modalEntityType,
+          organizationName: modalEntityType === 'Organization' ? modalOrganizationName.trim() : null,
+          mobile: mobileTrimmed,
         }),
       });
 
@@ -288,6 +312,55 @@ export default function ReportsPageClient({ initialReports }: ReportsPageClientP
                 placeholder="Email address"
                 className={styles.modalInput}
                 autoComplete="email"
+              />
+              <input
+                type="text"
+                required
+                value={modalDesignation}
+                onChange={(e) => setModalDesignation(e.target.value)}
+                placeholder="Designation"
+                className={styles.modalInput}
+              />
+              <div className={styles.entityToggleRow}>
+                <label className={styles.toggleOption}>
+                  <input
+                    type="radio"
+                    name="entityType"
+                    value="Individual"
+                    checked={modalEntityType === 'Individual'}
+                    onChange={() => setModalEntityType('Individual')}
+                  />
+                  <span>Individual</span>
+                </label>
+                <label className={styles.toggleOption}>
+                  <input
+                    type="radio"
+                    name="entityType"
+                    value="Organization"
+                    checked={modalEntityType === 'Organization'}
+                    onChange={() => setModalEntityType('Organization')}
+                  />
+                  <span>Organization</span>
+                </label>
+              </div>
+              {modalEntityType === 'Organization' && (
+                <input
+                  type="text"
+                  required
+                  value={modalOrganizationName}
+                  onChange={(e) => setModalOrganizationName(e.target.value)}
+                  placeholder="Organization Name"
+                  className={styles.modalInput}
+                />
+              )}
+              <input
+                type="tel"
+                required
+                maxLength={10}
+                value={modalMobile}
+                onChange={(e) => setModalMobile(e.target.value.replace(/\D/g, ''))}
+                placeholder="Mobile Number (10 digits)"
+                className={styles.modalInput}
               />
               <button type="submit" disabled={modalSubmitting} className={styles.modalSubmitBtn}>
                 {modalSubmitting ? (

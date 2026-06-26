@@ -332,6 +332,8 @@ CREATE TABLE IF NOT EXISTS gallery_items (
     image_url VARCHAR(512) NOT NULL,
     caption VARCHAR(255) NOT NULL,
     content TEXT DEFAULT NULL,
+    designation VARCHAR(255) DEFAULT NULL,
+    person_name VARCHAR(255) DEFAULT NULL,
     display_order INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
