@@ -30,9 +30,9 @@ export const metadata: Metadata = {
   keywords: 'Disaster Management, Climate Resilience, India Climate Index, India Disaster Dashboard, CSR Climate Adaptation, DCRC Conclave',
   authors: [{ name: 'DCRF Secretariat' }],
   icons: {
-    icon: '/dcrf_icon-Photoroom.png',
-    shortcut: '/dcrf_icon-Photoroom.png',
-    apple: '/dcrf_icon-Photoroom.png',
+    icon: '/dcrf-Photoroom.png',
+    shortcut: '/dcrf-Photoroom.png',
+    apple: '/dcrf-Photoroom.png',
   },
   openGraph: {
     title: 'Disaster & Climate Resilience Federation (DCRF)',

@@ -42,14 +42,15 @@ export default function Footer() {
       <div className={styles.grid}>
         <div className={styles.brandCol}>
           <div className={styles.footerLogoWrapper}>
-            <img 
-              src="/dcrf_icon-Photoroom.png" 
-              alt="DCRF Icon" 
-              className={styles.footerLogo}
-              width="48"
-              height="48"
-            />
-            <h3>Disaster & Climate Resilience Federation</h3>
+            <Link href="/" className={styles.footerLogoLink}>
+              <img 
+                src="/dcrf-Photoroom.png" 
+                alt="DCRF Logo" 
+                className={styles.footerLogo}
+                width="220"
+                height="60"
+              />
+            </Link>
           </div>
           <p>
             A joint initiative of TCU Impact Foundation (TCUIF) and DiCAF. Building resilience

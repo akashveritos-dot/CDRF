@@ -364,7 +364,7 @@ export default function Navbar() {
       <nav className={`${styles.navbar} ${scrolled ? styles.scrolled : ''} ${!visible ? styles.hidden : ''}`}>
         <Link href="/" className={styles.brand} onClick={closeMenu}>
           <img 
-            src="/dcrf_logo_primary-Photoroom.png" 
+            src="/dcrf-Photoroom.png" 
             alt="DCRF Logo" 
             className={styles.logoImage}
             width="150"

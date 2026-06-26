@@ -505,6 +505,7 @@
   transition: transform 0.35s cubic-bezier(0.34,1.4,0.64,1);
   display: grid;
   grid-template-columns: 1.3fr 0.7fr;
+  height: 520px;
   max-height: 85vh;
 }
 
@@ -576,6 +577,20 @@
   overflow-y: auto;
 }
 
+.lightboxInfo::-webkit-scrollbar {
+  width: 5px;
+}
+.lightboxInfo::-webkit-scrollbar-track {
+  background: transparent;
+}
+.lightboxInfo::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+}
+.lightboxInfo::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
 @media (max-width: 700px) {
   .lightboxInfo {
     padding: 20px;
@@ -631,19 +646,25 @@
   justify-content: center;
   gap: 8px;
   margin: 0 auto 12px;
-  font-size: 13px;
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-wrap: nowrap;
+  max-width: 100%;
 }
 
 .carouselDesignation {
   font-weight: 700;
   color: var(--wine-red-primary, #b91c1c);
   text-transform: uppercase;
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  background: rgba(185, 28, 28, 0.08);
-  padding: 3px 8px;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  background: rgba(185, 28, 28, 0.06);
+  padding: 2px 6px;
   border-radius: 4px;
-  border: 1px solid rgba(185, 28, 28, 0.15);
+  border: 1px solid rgba(185, 28, 28, 0.12);
+  flex-shrink: 0;
 }
 
 .carouselDividerDot {
@@ -652,29 +673,36 @@
 
 .carouselPersonName {
   font-weight: 600;
-  color: #334155;
+  color: #475569;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .lightboxPersonRow {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 16px;
-  font-size: 13px;
+  margin-bottom: 14px;
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-wrap: nowrap;
   flex-shrink: 0;
+  width: 100%;
 }
 
 .lightboxDesignation {
   font-weight: 700;
   color: #ef4444;
   text-transform: uppercase;
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  background: rgba(239, 68, 68, 0.12);
-  padding: 3px 8px;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  background: rgba(239, 68, 68, 0.1);
+  padding: 2px 6px;
   border-radius: 4px;
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.18);
+  flex-shrink: 0;
 }
 
 .lightboxDivider {
@@ -684,6 +712,8 @@
 .lightboxPersonName {
   font-weight: 600;
   color: #e2e8f0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .lightboxTitle, .lightboxEyebrow {

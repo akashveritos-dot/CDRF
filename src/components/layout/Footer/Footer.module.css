@@ -270,17 +270,19 @@
 
 .footerLogoWrapper {
   display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: -12px;
+  margin-top: -8px;
+}
+
+.footerLogoLink {
+  display: block;
+  text-decoration: none;
 }
 
 .footerLogo {
-  width: 95px;
-  height: 95px;
+  height: 60px;
+  width: auto;
   object-fit: contain;
   display: block;
-  margin-left: -22px;
 }
 
 .footerTextGroup {

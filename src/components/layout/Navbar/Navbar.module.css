@@ -895,21 +895,14 @@
 }
 
 .logoImage {
-  height: 190px;
+  height: 72px;
   width: auto;
   display: block;
-  margin-top: -50px;
-  margin-bottom: -50px;
-  transform: scale(1.35);
-  transform-origin: left center;
 }
 
 @media (max-width: 768px) {
   .logoImage {
-    height: 140px;
-    margin-top: -33px;
-    margin-bottom: -33px;
-    transform: scale(1.25);
+    height: 52px;
   }
 }
 
