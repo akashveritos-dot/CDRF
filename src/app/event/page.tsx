@@ -368,7 +368,7 @@ export default function EventPage() {
       <section id="agenda-gallery" className={styles.eventSection}>
         <ScrollReveal direction="up">
           <h2 className={styles.sectionTitle}>Conclave Agenda</h2>
-          <p className={styles.sectionSub}>Displaying the schedule agenda visually below. Manageable from the DCRF backend.</p>
+          <p className={styles.sectionSub}>Explore the planned roadmap, session timelines, and event schedules below.</p>
         </ScrollReveal>
         
         <div className={styles.agendaGallery}>

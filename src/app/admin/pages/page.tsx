@@ -228,6 +228,17 @@ export default function AdminPagesManager() {
   // Status
   const [status, setStatus] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
 
+  // Page level fields
+  const [showPageSettings, setShowPageSettings] = useState(false);
+  const [pageFields, setPageFields] = useState({
+    title: '',
+    category: '',
+    description: '',
+    videoUrl: '',
+    imageUrl: '',
+    content: ''
+  });
+
   /* ── Load page list ─────────── */
   useEffect(() => {
     (async () => {
@@ -297,6 +308,15 @@ export default function AdminPagesManager() {
       }
 
       if (!pageData) { setItems([]); setSections([]); return; }
+
+      setPageFields({
+        title: pageData.title || '',
+        category: pageData.category || '',
+        description: pageData.description || '',
+        videoUrl: pageData.videoUrl || '',
+        imageUrl: pageData.imageUrl || '',
+        content: pageData.content || ''
+      });
 
       const secs: SectionMeta[] = (pageData.sections || []).map((s: any) => ({
         id: s.id, title: s.title, description: s.description || '',
@@ -463,6 +483,47 @@ export default function AdminPagesManager() {
     }
   };
 
+  /* ── Save page settings ────── */
+  const handleSavePageSettings = async () => {
+    setIsSaving(true);
+    setStatus(null);
+    try {
+      const res = await fetch('/api/admin/pages');
+      if (!res.ok) throw new Error('Failed to load current data');
+      const allPages = await res.json();
+      const page = allPages.find((p: any) => p.slug === selectedSlug);
+      if (!page) throw new Error('Page not found');
+
+      const saveRes = await fetch('/api/admin/pages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          slug: selectedSlug,
+          title: pageFields.title || page.title,
+          category: pageFields.category || page.category,
+          description: pageFields.description,
+          videoUrl: pageFields.videoUrl,
+          imageUrl: pageFields.imageUrl,
+          content: pageFields.content,
+          sections: page.sections || []
+        })
+      });
+
+      if (!saveRes.ok) {
+        const d = await saveRes.json();
+        throw new Error(d.error || 'Save page details failed');
+      }
+
+      setStatus({ type: 'success', msg: 'Page details updated successfully.' });
+      setShowPageSettings(false);
+      await loadItems(selectedSlug!);
+    } catch (err: any) {
+      setStatus({ type: 'error', msg: err.message || 'Save page details failed.' });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   /* ── Save full page (helper) ── */
   const saveFullPage = async (
     slug: string,
@@ -621,11 +682,36 @@ export default function AdminPagesManager() {
                   <h2 className={styles.panelTitle}>{selectedPage.title}</h2>
                   {selectedPage.description && <p className={styles.panelDesc}>{selectedPage.description}</p>}
                 </div>
-                <button className={styles.addBtn} onClick={() => { setShowAddForm(!showAddForm); setEditingId(null); }}>
-                  <Plus size={15} />
-                  Add New Item
-                </button>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button className={styles.addBtn} style={{ backgroundColor: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-default)' }} onClick={() => { setShowPageSettings(!showPageSettings); setShowAddForm(false); setEditingId(null); }}>
+                    Settings
+                  </button>
+                  <button className={styles.addBtn} onClick={() => { setShowAddForm(!showAddForm); setShowPageSettings(false); setEditingId(null); }}>
+                    <Plus size={15} />
+                    Add New Item
+                  </button>
+                </div>
               </div>
+
+              {/* ── EDIT PAGE SETTINGS FORM ── */}
+              {showPageSettings && (
+                <div className={styles.addFormCard}>
+                  <div className={styles.addFormHeader}>
+                    <h3>Edit Page Settings</h3>
+                    <button className={styles.closeBtn} onClick={() => setShowPageSettings(false)}><X size={16} /></button>
+                  </div>
+
+                  {renderFieldInput('title', pageFields.title, v => setPageFields(f => ({ ...f, title: v })), 'Page Title')}
+                  {renderFieldInput('description', pageFields.description, v => setPageFields(f => ({ ...f, description: v })), 'Short Description')}
+                  {renderFieldInput('imageUrl', pageFields.imageUrl, v => setPageFields(f => ({ ...f, imageUrl: v })), 'Cover Image URL')}
+                  {renderFieldInput('videoUrl', pageFields.videoUrl, v => setPageFields(f => ({ ...f, videoUrl: v })), 'Video Embed URL')}
+                  {renderFieldInput('content', pageFields.content, v => setPageFields(f => ({ ...f, content: v })), 'Page Main Content')}
+
+                  <button className={styles.saveBtn} onClick={handleSavePageSettings} disabled={isSaving}>
+                    {isSaving ? <><Loader2 size={14} className={styles.spinner} /> Saving...</> : <><Save size={14} /> Save Page Settings</>}
+                  </button>
+                </div>
+              )}
 
               {/* Section filter tabs */}
               {sections.length > 1 && (
