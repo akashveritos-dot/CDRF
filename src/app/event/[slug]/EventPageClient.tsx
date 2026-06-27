@@ -235,13 +235,15 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                 };
               }
 
+              const isFileLink = btn.linkUrl?.match(/\.(pdf|png|jpe?g|gif|svg)$/i) || btn.linkUrl?.startsWith('/api/files/');
               return (
                 <a 
                   href={btn.linkUrl || '#'} 
                   key={btn.id || idx} 
                   className={styles.actionCard}
                   onClick={onClickHandler}
-                  download={extra.isDownload ? true : undefined}
+                  target={isFileLink ? '_blank' : undefined}
+                  rel={isFileLink ? 'noopener noreferrer' : undefined}
                 >
                   <div className={styles.actionCardContent}>
                     <div className={styles.actionCardIcon}>
@@ -387,7 +389,8 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
             <a 
               href={agendaSection?.cards?.[0]?.extraData?.downloadUrl || '/reports'} 
               className={styles.downloadBtn}
-              download
+              target="_blank"
+              rel="noopener noreferrer"
             >
               <Download size={16} />
               <span>Download Full Agenda (PDF)</span>
