@@ -1351,19 +1351,20 @@
 .stickyRegBtn {
   background: var(--wine-red-primary);
   color: var(--text-inverse);
-  padding: 14px 32px;
+  padding: 12px 24px;
   border-radius: var(--radius-full);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
   box-shadow: 0 10px 30px rgba(185, 28, 28, 0.35);
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   transition: all var(--transition-fast);
   backdrop-filter: blur(4px);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  white-space: nowrap;
 }
 
 .stickyRegBtn:hover {
@@ -1429,12 +1430,12 @@
 
   /* Form grid single column on mobile */
   .formGrid {
-    grid-template-columns: 1fr;
-    gap: 16px;
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
   }
 
   .fieldFull {
-    grid-column: span 1;
+    grid-column: span 1 !important;
   }
 
   .registerSec {

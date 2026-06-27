@@ -19,6 +19,7 @@
   gap: 10px;
   margin-bottom: 36px;
 }
+
 .metaChip {
   display: flex;
   align-items: center;
@@ -32,16 +33,19 @@
   color: var(--text-default);
   transition: border-color 0.2s ease, background 0.2s ease;
 }
+
 .metaChip:hover {
   border-color: #b91c1c;
-  background: rgba(185,28,28,0.04);
+  background: rgba(185, 28, 28, 0.04);
 }
+
 .metaChipIcon {
   color: #b91c1c;
   flex-shrink: 0;
 }
 
-.loadingState, .errorState {
+.loadingState,
+.errorState {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -58,8 +62,13 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .errorTitle {
@@ -95,6 +104,7 @@
     letter-spacing: -0.5px !important;
     line-height: 1.25 !important;
   }
+
   .subtitle {
     font-size: 13.5px !important;
     line-height: 1.55 !important;
@@ -103,13 +113,27 @@
 
 /* Animations */
 @keyframes fadeInDown {
-  0% { opacity: 0; transform: translateY(-20px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes fadeInUp {
-  0% { opacity: 0; transform: translateY(20px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .grid {
@@ -134,8 +158,15 @@
 }
 
 @keyframes fadeInRight {
-  0% { opacity: 0; transform: translateX(-20px); }
-  100% { opacity: 1; transform: translateX(0); }
+  0% {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .bodyText {
@@ -151,7 +182,8 @@
   font-weight: 700;
 }
 
-.bodyText ul, .bodyText ol {
+.bodyText ul,
+.bodyText ol {
   margin-bottom: 24px;
   padding-left: 20px;
 }
@@ -214,8 +246,15 @@
 }
 
 @keyframes fadeInLeft {
-  0% { opacity: 0; transform: translateX(20px); }
-  100% { opacity: 1; transform: translateX(0); }
+  0% {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .registrationCard {
@@ -269,7 +308,8 @@
   letter-spacing: 0.5px;
 }
 
-.input, .select {
+.input,
+.select {
   padding: 12px 16px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-color);
@@ -281,7 +321,8 @@
   width: 100%;
 }
 
-.input:focus, .select:focus {
+.input:focus,
+.select:focus {
   border-color: var(--wine-red-primary);
   background: var(--bg-surface);
 }
@@ -747,17 +788,17 @@
     border-radius: 16px;
     margin-bottom: 32px;
   }
-  
+
   .heroGlassCard {
     padding: 24px 0;
     margin: 0;
   }
-  
+
   .upcomingHighlight {
     padding: 24px;
     border-radius: 16px;
   }
-  
+
   .archiveCardBody {
     padding: 20px;
   }
@@ -776,7 +817,7 @@
 
 .conclaveContent:hover {
   border-color: rgba(136, 19, 55, 0.1);
-  box-shadow: 
+  box-shadow:
     0 16px 36px -8px rgba(136, 19, 55, 0.04),
     var(--shadow-lg);
 }
@@ -858,16 +899,16 @@
     padding: 24px;
     border-radius: 16px;
   }
-  
+
   .conclaveContent .event-details-box {
     padding: 18px !important;
     margin: 24px 0 !important;
   }
-  
+
   .conclaveContent ul li {
     padding: 14px 16px 14px 40px !important;
   }
-  
+
   .conclaveContent ul li::before {
     left: 16px !important;
     top: 13px !important;
@@ -963,14 +1004,14 @@
   font-size: 32px;
   font-weight: 700;
   margin-bottom: 12px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .slideContent p {
   font-size: 15px;
   line-height: 1.6;
   opacity: 0.95;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .carouselArrow {
@@ -997,8 +1038,13 @@
   transform: translateY(-50%) scale(1.05);
 }
 
-.arrowLeft { left: 24px; }
-.arrowRight { right: 24px; }
+.arrowLeft {
+  left: 24px;
+}
+
+.arrowRight {
+  right: 24px;
+}
 
 .carouselDots {
   position: absolute;
@@ -1261,7 +1307,8 @@
   margin-top: 32px;
 }
 
-.agendaImgContainer, .agendaImgContainerSingle {
+.agendaImgContainer,
+.agendaImgContainerSingle {
   position: relative;
   border-radius: var(--radius-lg);
   overflow: hidden;
@@ -1334,7 +1381,8 @@
 .youtubeSec {
   position: relative;
   width: 100%;
-  padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+  padding-bottom: 56.25%;
+  /* 16:9 Aspect Ratio */
   height: 0;
   border-radius: var(--radius-lg);
   overflow: hidden;
@@ -1380,19 +1428,21 @@
 .stickyRegBtn {
   background: var(--wine-red-primary);
   color: var(--text-inverse);
-  padding: 14px 32px;
+
+  padding: 12px 24px;
   border-radius: var(--radius-full);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
   box-shadow: 0 10px 30px rgba(185, 28, 28, 0.35);
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   transition: all var(--transition-fast);
   backdrop-filter: blur(4px);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  white-space: nowrap;
 }
 
 .stickyRegBtn:hover {
@@ -1406,12 +1456,15 @@
   .actionCardsGrid {
     grid-template-columns: repeat(2, 1fr);
   }
+
   .speakersGrid {
     grid-template-columns: repeat(2, 1fr);
   }
+
   .partnersGrid {
     grid-template-columns: repeat(3, 1fr);
   }
+
   .carouselContainer {
     height: 380px;
   }
@@ -1421,49 +1474,60 @@
   .brandVisibilityBadge .dcrfText {
     font-size: 30px;
   }
+
   .carouselContainer {
     height: 300px;
   }
+
   .slideContent h3 {
     font-size: 24px;
   }
+
   .slideContent p {
     font-size: 13px;
   }
+
   .slideOverlay {
     padding: 24px;
   }
+
   .actionCardsGrid {
     grid-template-columns: 1fr;
     gap: 12px;
   }
+
   .speakersGrid {
     grid-template-columns: 1fr;
   }
+
   .partnersGrid {
     grid-template-columns: repeat(2, 1fr);
   }
+
   .glimpseGrid {
     grid-template-columns: 1fr;
   }
+
   .agendaGallery {
     grid-template-columns: 1fr;
   }
+
   .descriptionBlock {
     padding: 24px;
   }
+
   .stickyRegistrationContainer {
     bottom: 80px;
   }
 
   /* Form grid single column on mobile */
   .formGrid {
-    grid-template-columns: 1fr;
-    gap: 16px;
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
   }
 
   .fieldFull {
-    grid-column: span 1;
+    grid-column: span 1 !important;
   }
 
   .registerSec {
@@ -1595,5 +1659,3 @@
   font-size: 14px;
   color: var(--text-muted);
 }
-
-

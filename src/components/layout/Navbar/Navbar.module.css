@@ -990,6 +990,35 @@
     transition: transform var(--transition-spring);
   }
 
+  /* Bell icon wrapper — needed so the badge is positioned relative to the icon */
+  .bellTabWrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Red badge dot on the Alerts bell icon */
+  .bellBadgeMobile {
+    position: absolute;
+    top: -5px;
+    right: -7px;
+    background: #dc2626;
+    color: #ffffff;
+    font-size: 8px;
+    font-weight: 700;
+    min-width: 14px;
+    height: 14px;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 2px;
+    line-height: 1;
+    border: 1.5px solid #ffffff;
+    pointer-events: none;
+  }
+
   .bottomTabActive {
     color: var(--wine-red-primary) !important;
   }
