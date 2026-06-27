@@ -1324,11 +1324,12 @@
 /* ── Bottom Sticky Registration Bar ── */
 .stickyRegistrationContainer {
   position: fixed;
-  bottom: 24px;
+  bottom: 90px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 1000;
   animation: slideUp 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  /* Stays above the chat widget which sits at bottom 24px */
 }
 
 @keyframes slideUp {
