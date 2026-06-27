@@ -26,6 +26,7 @@ function getFriendlyError(err: any, fallback: string): string {
 }
 
 export default function AdminNews() {
+  const [role, setRole] = useState<string>('ADMIN');
   const [stories, setStories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -182,6 +183,19 @@ export default function AdminNews() {
 
   useEffect(() => {
     fetchStories();
+    (async () => {
+      try {
+        const authRes = await fetch('/api/auth/me');
+        if (authRes.ok) {
+          const authData = await authRes.json();
+          if (authData.authenticated && authData.user) {
+            setRole(authData.user.role);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load user session role:', err);
+      }
+    })();
   }, []);
 
   const handleAddNew = () => {
@@ -422,8 +436,9 @@ export default function AdminNews() {
                       </button>
                       <button 
                         onClick={() => handleDelete(story.id)} 
-                        className={styles.deleteBtn}
-                        title="Delete Article"
+                        className={`${styles.deleteBtn} ${(role !== 'SUPERADMIN' && role !== 'ADMIN') ? styles.disabledBtn : ''}`}
+                        disabled={role !== 'SUPERADMIN' && role !== 'ADMIN'}
+                        title={role !== 'SUPERADMIN' && role !== 'ADMIN' ? 'Only administrators can delete articles' : 'Delete Article'}
                       >
                         <Trash2 size={14} />
                       </button>

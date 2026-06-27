@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/db';
+import { query, transactionalDelete } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
 import { logAction } from '@/lib/audit';
@@ -134,8 +134,8 @@ export async function DELETE(
     }
 
     const session = await verifyToken(token);
-    if (!session || (session.role !== 'ADMIN' && session.role !== 'SUPERADMIN')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    if (!session || (session.role !== 'SUPERADMIN' && session.role !== 'ADMIN')) {
+      return NextResponse.json({ error: 'Forbidden: Only administrators can delete reports.' }, { status: 403 });
     }
 
     // Verify item exists
@@ -147,7 +147,7 @@ export async function DELETE(
     const [report] = existing;
     const title = report.title || `ID ${id}`;
 
-    await query('DELETE FROM reports WHERE id = ?', [id]);
+    await transactionalDelete('reports', 'id', id, session);
 
     await logAction(
       req,

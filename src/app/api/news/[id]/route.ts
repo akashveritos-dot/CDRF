@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/db';
+import { query, transactionalDelete } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
 import { logAction } from '@/lib/audit';
@@ -153,9 +153,8 @@ export async function DELETE(
     }
 
     const session = await verifyToken(token);
-    // Only SUPERADMIN can delete
-    if (!session || session.role !== 'SUPERADMIN') {
-      return NextResponse.json({ error: 'Forbidden. Only SUPERADMIN can delete content.' }, { status: 403 });
+    if (!session || (session.role !== 'SUPERADMIN' && session.role !== 'ADMIN')) {
+      return NextResponse.json({ error: 'Forbidden. Only administrators can delete content.' }, { status: 403 });
     }
 
     // Verify item exists
@@ -167,7 +166,7 @@ export async function DELETE(
     const [story] = existing;
     const headline = story.headline || `ID ${id}`;
 
-    await query('DELETE FROM news WHERE id = ?', [id]);
+    await transactionalDelete('news', 'id', id, session);
 
     await logAction(
       req,

@@ -720,7 +720,7 @@ export default function HomeClient({
         <ScrollReveal direction="up">
           <div className={styles.sectionHeader} style={{ textAlign: 'center' }}>
             <div className={styles.sectionEyebrow}>Leadership</div>
-            <h2 className={styles.sectionTitle}>Governing &amp; Executive Council</h2>
+            <h2 className={styles.sectionTitle}>Key Governing Leadership</h2>
             <p className={styles.sectionSub} style={{ margin: '0 auto' }}>
               DCRF is steered by a joint council combining academic research, corporate sustainability pipelines, and technical disaster risk analytics.
             </p>

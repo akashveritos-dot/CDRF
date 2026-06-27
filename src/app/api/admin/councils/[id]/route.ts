@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
+import { logAction } from '@/lib/audit';
 
 // GET /api/admin/councils/[id] - Fetch single council member details (Admin Secured)
 export async function GET(
@@ -106,6 +107,8 @@ export async function PUT(
       ]
     );
 
+    await logAction(req, session, 'UPDATE', 'Councils', `Updated council member details for "${name}" (ID: ${id})`);
+
     return NextResponse.json({
       success: true,
       message: 'Council member updated successfully'
@@ -136,18 +139,21 @@ export async function DELETE(
     }
 
     const session = await verifyToken(token);
-    // Only SUPERADMIN can delete
-    if (!session || session.role !== 'SUPERADMIN') {
-      return NextResponse.json({ error: 'Forbidden. Only SUPERADMIN can delete content.' }, { status: 403 });
+    if (!session || (session.role !== 'SUPERADMIN' && session.role !== 'ADMIN')) {
+      return NextResponse.json({ error: 'Forbidden: Only administrators can delete council members.' }, { status: 403 });
     }
 
     // Verify member exists
-    const existing = await query<any[]>('SELECT id FROM councils WHERE id = ?', [id]);
+    const existing = await query<any[]>('SELECT id, name FROM councils WHERE id = ?', [id]);
     if (existing.length === 0) {
       return NextResponse.json({ error: 'Council member not found' }, { status: 404 });
     }
 
+    const { name } = existing[0];
+
     await query('DELETE FROM councils WHERE id = ?', [id]);
+
+    await logAction(req, session, 'DELETE', 'Councils', `Deleted council member: "${name}" (ID: ${id})`);
 
     return NextResponse.json({
       success: true,

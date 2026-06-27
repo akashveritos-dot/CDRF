@@ -74,8 +74,8 @@ export default function ContactClient({ contactData }: { contactData: ContactDat
         <PageHero
           theme="council"
           eyebrow="DCRF Emergency Coordination Center"
-          line1="CONTACT"
-          line2="SECRETARIAT"
+          line1="Contact"
+          line2="Secretariat"
           subtitle="Reach out to our operations room or submit a query directly to our policy coordination staff."
         />
       </ScrollReveal>

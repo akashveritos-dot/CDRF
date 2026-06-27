@@ -25,6 +25,7 @@ function getFriendlyError(err: any, fallback: string): string {
 }
 
 export default function AdminReports() {
+  const [role, setRole] = useState<string>('ADMIN');
   const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -164,6 +165,19 @@ export default function AdminReports() {
 
   useEffect(() => {
     fetchReports();
+    (async () => {
+      try {
+        const authRes = await fetch('/api/auth/me');
+        if (authRes.ok) {
+          const authData = await authRes.json();
+          if (authData.authenticated && authData.user) {
+            setRole(authData.user.role);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load user session role:', err);
+      }
+    })();
   }, []);
 
   // Shortcut triggers
@@ -383,8 +397,9 @@ export default function AdminReports() {
                       </button>
                       <button
                         onClick={() => handleDelete(report.id)}
-                        className={styles.deleteBtn}
-                        title="Delete Report"
+                        className={`${styles.deleteBtn} ${(role !== 'SUPERADMIN' && role !== 'ADMIN') ? styles.disabledBtn : ''}`}
+                        disabled={role !== 'SUPERADMIN' && role !== 'ADMIN'}
+                        title={role !== 'SUPERADMIN' && role !== 'ADMIN' ? 'Only administrators can delete reports' : 'Delete Report'}
                       >
                         <Trash2 size={14} />
                       </button>

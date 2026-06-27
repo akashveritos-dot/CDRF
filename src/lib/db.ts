@@ -239,7 +239,21 @@ async function runMigration(pool: mysql.Pool) {
     `;
     await pool.execute(createMapsMetadataTable);
 
-    console.log('[DB MIGRATION] Ensured membership, report_downloads, hero, api_configs, and maps_metadata tables exist.');
+    // Create deleted_records table for trash/backup functionality
+    const createDeletedRecordsTable = `
+      CREATE TABLE IF NOT EXISTS deleted_records (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        table_name VARCHAR(100) NOT NULL,
+        record_id VARCHAR(255) NOT NULL,
+        data JSON NOT NULL,
+        deleted_by_email VARCHAR(255) NOT NULL,
+        deleted_by_role VARCHAR(50) NOT NULL,
+        deleted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB;
+    `;
+    await pool.execute(createDeletedRecordsTable);
+
+    console.log('[DB MIGRATION] Ensured membership, report_downloads, hero, api_configs, maps_metadata, and deleted_records tables exist.');
 
     // Seed default plans if empty
     const [rows]: any = await pool.execute('SELECT COUNT(*) as count FROM membership_plans');
@@ -738,106 +752,132 @@ async function upgradePodcastData(pool: mysql.Pool) {
 
 async function upgradeConclaveData(pool: mysql.Pool) {
   try {
-    // Check if Stats Strip section exists for dcrc-26
-    const [rows]: any = await pool.execute(
-      "SELECT COUNT(*) as count FROM cms_page_sections WHERE page_slug = 'dcrc-26' AND title = 'Stats Strip'"
-    );
-    if (rows[0]?.count > 0) return; // Already upgraded
-
-    console.log("[DB UPGRADE] Upgrading conclave dcrc-26 page with Stats Strip, Partners, and Agenda...");
-
     // Get max display order
     const [maxOrder]: any = await pool.execute(
-      "SELECT MAX(display_order) as maxOrd FROM cms_page_sections WHERE page_slug = 'dcrc-26'"
+      "SELECT COALESCE(MAX(display_order), 0) as maxOrd FROM cms_page_sections WHERE page_slug = 'dcrc-26'"
     );
     let nextOrder = (maxOrder[0]?.maxOrd || 0) + 1;
 
-    // 1. Stats Strip
-    const [s1]: any = await pool.execute(
-      `INSERT INTO cms_page_sections (page_slug, display_order, title, description) 
-       VALUES (?, ?, ?, ?)`,
-      ['dcrc-26', nextOrder++, 'Stats Strip', 'Delegate stats strip']
-    );
-    const s1Id = s1.insertId;
-    const stats = [
-      ['500+', 'Delegates', { icon: 'users' }],
-      ['60+', 'Organizations', { icon: 'building' }],
-      ['12', 'Nations', { icon: 'globe' }],
-      ['30+', 'Speakers', { icon: 'mic' }],
-      ['2', 'Days of Sessions', { icon: 'zap' }],
-      ['4', 'Award Categories', { icon: 'award' }]
-    ];
-    for (let i = 0; i < stats.length; i++) {
-      await pool.execute(
-        `INSERT INTO cms_page_cards (section_id, display_order, title, description, extra_data) 
-         VALUES (?, ?, ?, ?, ?)`,
-        [s1Id, i, stats[i][0], stats[i][1], JSON.stringify(stats[i][2])]
+    // Helper to add section if it doesn't exist
+    const addSectionIfMissing = async (title: string, desc: string, cards: any[]) => {
+      const [rows]: any = await pool.execute(
+        "SELECT id FROM cms_page_sections WHERE page_slug = 'dcrc-26' AND title = ? LIMIT 1",
+        [title]
       );
-    }
+      if (rows.length > 0) return rows[0].id;
+
+      const [result]: any = await pool.execute(
+        `INSERT INTO cms_page_sections (page_slug, display_order, title, description) 
+         VALUES (?, ?, ?, ?)`,
+        ['dcrc-26', nextOrder++, title, desc]
+      );
+      const sectionId = result.insertId;
+
+      for (let i = 0; i < cards.length; i++) {
+        await pool.execute(
+          `INSERT INTO cms_page_cards (section_id, display_order, title, description, image_url, link_text, link_url, extra_data) 
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            sectionId,
+            i,
+            cards[i].title || '',
+            cards[i].description || '',
+            cards[i].imageUrl || '',
+            cards[i].linkText || '',
+            cards[i].linkUrl || '',
+            JSON.stringify(cards[i].extraData || {})
+          ]
+        );
+      }
+      return sectionId;
+    };
+
+    // 1. Stats Strip
+    await addSectionIfMissing('Stats Strip', 'Delegate stats strip', [
+      { title: '500+', description: 'Delegates', extraData: { icon: 'users' } },
+      { title: '60+', description: 'Organizations', extraData: { icon: 'building' } },
+      { title: '12', description: 'Nations', extraData: { icon: 'globe' } },
+      { title: '30+', description: 'Speakers', extraData: { icon: 'mic' } },
+      { title: '2', description: 'Days of Sessions', extraData: { icon: 'zap' } },
+      { title: '4', description: 'Award Categories', extraData: { icon: 'award' } }
+    ]);
 
     // 2. Partner Organisations Ticker
-    const [s2]: any = await pool.execute(
-      `INSERT INTO cms_page_sections (page_slug, display_order, title, description) 
-       VALUES (?, ?, ?, ?)`,
-      ['dcrc-26', nextOrder++, 'Partner Organisations', 'Partner ticker logos']
-    );
-    const s2Id = s2.insertId;
-    const logos = ['NDMA', 'UNDRR', 'World Bank', 'ISRO', 'TERI', 'CEEW', 'IIT Delhi', 'WRI India', 'GIZ', 'NITI Aayog'];
-    for (let i = 0; i < logos.length; i++) {
-      await pool.execute(
-        `INSERT INTO cms_page_cards (section_id, display_order, title, description, extra_data) 
-         VALUES (?, ?, ?, ?, ?)`,
-        [s2Id, i, logos[i], '', '{}']
-      );
-    }
+    await addSectionIfMissing('Partner Organisations', 'Partner ticker logos', [
+      { title: 'NDMA' }, { title: 'UNDRR' }, { title: 'World Bank' }, { title: 'ISRO' },
+      { title: 'TERI' }, { title: 'CEEW' }, { title: 'IIT Delhi' }, { title: 'WRI India' },
+      { title: 'GIZ' }, { title: 'NITI Aayog' }
+    ]);
 
     // 3. Conclave Agenda - Day 1
-    const [s3]: any = await pool.execute(
-      `INSERT INTO cms_page_sections (page_slug, display_order, title, description) 
-       VALUES (?, ?, ?, ?)`,
-      ['dcrc-26', nextOrder++, 'Conclave Agenda - Day 1', 'Day 1 conclave schedule']
-    );
-    const s3Id = s3.insertId;
-    const agendaDay1 = [
-      ['Inaugural Plenary & Keynote address', 'Welcome address by Secretary General DCRF. Launch of the Annual Disaster & Climate Action Index Report by NDMA officials.', { time: '09:30 - 10:30' }],
-      ['Panel: Aligning CSR & ESG Capital for Pre-Disaster Resilience', 'Directing corporate giving from post-disaster response to localized mitigation tools, early warning arrays, and municipal cooling structures.', { time: '11:00 - 12:30' }],
-      ['Panel: Himalayan Glacier Retreat & Downstream Flooding', 'Technical assessments from ISRO researchers and glacier geologists mapping GLOF patterns and water secure zones through 2050.', { time: '14:00 - 15:30' }],
-      ['Working Group: Heat Action Plan deployment guides', 'Municipal frameworks for Indian cities over 1 million population. Early warning, cool roofs, and cooling centers.', { time: '16:00 - 17:30' }]
-    ];
-    for (let i = 0; i < agendaDay1.length; i++) {
-      await pool.execute(
-        `INSERT INTO cms_page_cards (section_id, display_order, title, description, extra_data) 
-         VALUES (?, ?, ?, ?, ?)`,
-        [s3Id, i, agendaDay1[i][0], agendaDay1[i][1], JSON.stringify(agendaDay1[i][2])]
-      );
-    }
+    await addSectionIfMissing('Conclave Agenda - Day 1', 'Day 1 conclave schedule', [
+      { title: 'Inaugural Plenary & Keynote address', description: 'Welcome address by Secretary General DCRF. Launch of the Annual Disaster & Climate Action Index Report by NDMA officials.', extraData: { time: '09:30 - 10:30' } },
+      { title: 'Panel: Aligning CSR & ESG Capital for Pre-Disaster Resilience', description: 'Directing corporate giving from post-disaster response to localized mitigation tools, early warning arrays, and municipal cooling structures.', extraData: { time: '11:00 - 12:30' } },
+      { title: 'Panel: Himalayan Glacier Retreat & Downstream Flooding', description: 'Technical assessments from ISRO researchers and glacier geologists mapping GLOF patterns and water secure zones through 2050.', extraData: { time: '14:00 - 15:30' } },
+      { title: 'Working Group: Heat Action Plan deployment guides', description: 'Municipal frameworks for Indian cities over 1 million population. Early warning, cool roofs, and cooling centers.', extraData: { time: '16:00 - 17:30' } }
+    ]);
 
     // 4. Conclave Agenda - Day 2
-    const [s4]: any = await pool.execute(
-      `INSERT INTO cms_page_sections (page_slug, display_order, title, description) 
-       VALUES (?, ?, ?, ?)`,
-      ['dcrc-26', nextOrder++, 'Conclave Agenda - Day 2', 'Day 2 conclave schedule']
-    );
-    const s4Id = s4.insertId;
-    const agendaDay2 = [
-      ['Disaster-Tech start-up Pitch & Showcase', 'Geospatial mapping systems, drone surveillance models, real-time IoT sensors, and climate risk analytics startups presenting prototypes.', { time: '09:30 - 11:30' }],
-      ['Panel: Climate-Induced Migration & Community Shelters', 'Socio-economic vulnerabilities, delta erosion, and traditional coastal shelter architectures integrating modern Early Warning systems.', { time: '12:00 - 13:30' }],
-      ['Federation Networking & Working Group alignment', 'Interactive workshop matching corporate CSR leads with local NGOs and research bodies to deploy resilience projects.', { time: '14:30 - 16:00' }],
-      ['DCRF Recognition Awards Ceremony', 'Honoring Best Corporate Response, Best NGO Initiative, Disaster-Tech Innovator, and Climate Resilient Community Awards.', { time: '16:30 - 17:30' }]
-    ];
-    for (let i = 0; i < agendaDay2.length; i++) {
-      await pool.execute(
-        `INSERT INTO cms_page_cards (section_id, display_order, title, description, extra_data) 
-         VALUES (?, ?, ?, ?, ?)`,
-        [s4Id, i, agendaDay2[i][0], agendaDay2[i][1], JSON.stringify(agendaDay2[i][2])]
-      );
-    }
+    await addSectionIfMissing('Conclave Agenda - Day 2', 'Day 2 conclave schedule', [
+      { title: 'Disaster-Tech start-up Pitch & Showcase', description: 'Geospatial mapping systems, drone surveillance models, real-time IoT sensors, and climate risk analytics startups presenting prototypes.', extraData: { time: '09:30 - 11:30' } },
+      { title: 'Panel: Climate-Induced Migration & Community Shelters', description: 'Socio-economic vulnerabilities, delta erosion, and traditional coastal shelter architectures integrating modern Early Warning systems.', extraData: { time: '12:00 - 13:30' } },
+      { title: 'Federation Networking & Working Group alignment', description: 'Interactive workshop matching corporate CSR leads with local NGOs and research bodies to deploy resilience projects.', extraData: { time: '14:30 - 16:00' } },
+      { title: 'DCRF Recognition Awards Ceremony', description: 'Honoring Best Corporate Response, Best NGO Initiative, Disaster-Tech Innovator, and Climate Resilient Community Awards.', extraData: { time: '16:30 - 17:30' } }
+    ]);
 
-    console.log("[DB UPGRADE] Conclave dcrc-26 sections upgraded successfully.");
+    // 5. Banner Images (New slider section)
+    await addSectionIfMissing('Banner Images', 'Carousel banner images', [
+      { title: 'DCRC 2026 Conclave', description: 'Unifying multi-stakeholders for localized disaster mitigation and technology deployments.', imageUrl: 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80' },
+      { title: 'Climate Action & Pre-Event Preparedness', description: 'Directing ESG and CSR capital towards community-level climate action.', imageUrl: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80' }
+    ]);
+
+    // 6. Action Buttons (New action buttons at bottom of hero/banner)
+    await addSectionIfMissing('Action Buttons', 'Conclave quick links', [
+      { title: 'Agenda', linkUrl: '#agenda-gallery', extraData: { isDownload: true, downloadUrl: '/reports' } },
+      { title: 'Registration', linkUrl: '#register', extraData: { isRegistration: true } },
+      { title: 'Strategic Advisory Brief', linkUrl: '/reports', extraData: { isCustom: true } },
+      { title: 'DCRF Core Charter', linkUrl: '/charter-10-point-agenda', extraData: { isCustom: true } }
+    ]);
+
+    // 7. Agenda Images (New agenda visual gallery)
+    await addSectionIfMissing('Agenda Images', 'Visual agenda galleries', [
+      { title: 'Conclave Day 1 Schedule', imageUrl: 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=800&q=80', extraData: { downloadUrl: '/reports' } },
+      { title: 'Conclave Day 2 Schedule', imageUrl: 'https://images.unsplash.com/photo-1507207611509-ec012433ff52?auto=format&fit=crop&w=800&q=80', extraData: { downloadUrl: '/reports' } }
+    ]);
+
+    // 8. Speakers (New Speakers Section)
+    await addSectionIfMissing('Speakers', 'Distinguished Speakers list', [
+      { title: 'Dr. Kavita Sharma', description: 'Professor of Urban Planning & Climate Science, IIT Delhi', imageUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80' },
+      { title: 'Mr. Ashish Jha', description: 'Secretary General, Disaster & Climate Action Federation', imageUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=300&q=80' },
+      { title: 'Dr. Brijender Mishra', description: 'Convener & Associate Director, KPMG India', imageUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=300&q=80' }
+    ]);
+
+    // 9. Partners (logo/image gallery)
+    await addSectionIfMissing('Partners', 'Conclave partners image gallery', [
+      { title: 'NDMA', imageUrl: 'https://images.unsplash.com/photo-1599305090598-fe179d501227?auto=format&fit=crop&w=200&q=80' },
+      { title: 'UNDRR', imageUrl: 'https://images.unsplash.com/photo-1599305090598-fe179d501227?auto=format&fit=crop&w=200&q=80' },
+      { title: 'World Bank', imageUrl: 'https://images.unsplash.com/photo-1599305090598-fe179d501227?auto=format&fit=crop&w=200&q=80' },
+      { title: 'ISRO', imageUrl: 'https://images.unsplash.com/photo-1599305090598-fe179d501227?auto=format&fit=crop&w=200&q=80' }
+    ]);
+
+    // 10. Glimpse (photo gallery of past conclaves)
+    await addSectionIfMissing('Glimpse', 'Glimpses of past DCRC conclaves', [
+      { title: 'Past Conclave 1', imageUrl: 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=400&q=80' },
+      { title: 'Past Conclave 2', imageUrl: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=400&q=80' },
+      { title: 'Past Conclave 3', imageUrl: 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=400&q=80' }
+    ]);
+
+    // Ensure video_url exists for dcrc-26
+    await pool.execute(
+      "UPDATE cms_pages SET video_url = COALESCE(video_url, 'https://www.youtube.com/embed/Q8wzIcrqNnE') WHERE slug = 'dcrc-26'"
+    );
+
+    console.log("[DB UPGRADE] Conclave dcrc-26 sections and visual components upgraded successfully.");
   } catch (err) {
     console.warn("Could not upgrade conclave page sections:", err);
   }
 }
+
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function query<T = unknown>(sql: string, params: any[] = []): Promise<T> {
@@ -876,4 +916,55 @@ export async function query<T = unknown>(sql: string, params: any[] = []): Promi
     }
   }
   throw new Error('Database connection limit exceeded after multiple retries.');
+}
+
+export async function transactionalDelete(
+  tableName: string,
+  idColumn: string,
+  idValue: string | number,
+  session: { email: string; role: string }
+): Promise<boolean> {
+  const pool = getDbPool();
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    // 1. Fetch the existing record to back up
+    const [rows]: any = await connection.execute(
+      `SELECT * FROM \`${tableName}\` WHERE \`${idColumn}\` = ?`,
+      [idValue]
+    );
+
+    if (rows && rows.length > 0) {
+      const recordData = rows[0];
+      
+      // 2. Insert into deleted_records table
+      await connection.execute(
+        `INSERT INTO deleted_records (table_name, record_id, data, deleted_by_email, deleted_by_role) 
+         VALUES (?, ?, ?, ?, ?)`,
+        [
+          tableName,
+          String(idValue),
+          JSON.stringify(recordData),
+          session.email || 'system',
+          session.role || 'GUEST'
+        ]
+      );
+    }
+
+    // 3. Perform the actual delete
+    await connection.execute(
+      `DELETE FROM \`${tableName}\` WHERE \`${idColumn}\` = ?`,
+      [idValue]
+    );
+
+    await connection.commit();
+    return true;
+  } catch (error) {
+    await connection.rollback();
+    console.error(`[TRANSACTIONAL DELETE ERROR] Failed to delete from ${tableName}:`, error);
+    throw error;
+  } finally {
+    connection.release();
+  }
 }

@@ -18,11 +18,29 @@ import {
 import styles from './page.module.css';
 
 export default function AdminEvents() {
+  const [role, setRole] = useState<string>('ADMIN');
   const [registrations, setRegistrations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
   const [filterRole, setFilterRole] = useState('All'); // Attendance Mode
+  
+  // Fetch user role on mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const authRes = await fetch('/api/auth/me');
+        if (authRes.ok) {
+          const authData = await authRes.json();
+          if (authData.authenticated && authData.user) {
+            setRole(authData.user.role);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load user session role:', err);
+      }
+    })();
+  }, []);
 
   // Action State
   const [updatingId, setUpdatingId] = useState<number | null>(null);
@@ -271,9 +289,9 @@ export default function AdminEvents() {
 
                       <button 
                         onClick={() => handleDelete(item.id)} 
-                        disabled={updatingId === item.id}
-                        className={styles.deleteBtn}
-                        title="Delete Record"
+                        disabled={updatingId === item.id || (role !== 'SUPERADMIN' && role !== 'ADMIN')}
+                        className={`${styles.deleteBtn} ${(role !== 'SUPERADMIN' && role !== 'ADMIN') ? styles.disabledBtn : ''}`}
+                        title={role !== 'SUPERADMIN' && role !== 'ADMIN' ? 'Only administrators can delete registrations' : 'Delete Record'}
                       >
                         <Trash2 size={14} />
                       </button>

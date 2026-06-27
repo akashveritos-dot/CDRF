@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/db';
+import { query, transactionalDelete } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
+import { logAction } from '@/lib/audit';
 
 // Helper function to get current date/time in Indian Standard Time (IST)
 function getISTDatetime(): string {
@@ -133,7 +134,21 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    await query('DELETE FROM subscriptions WHERE id = ?', [id]);
+    const existing = await query<any[]>('SELECT email, name FROM subscriptions WHERE id = ?', [id]);
+    if (existing.length === 0) {
+      return NextResponse.json({ error: 'Subscription not found' }, { status: 404 });
+    }
+
+    const { email, name } = existing[0];
+    await transactionalDelete('subscriptions', 'id', id, session);
+
+    await logAction(
+      req,
+      session,
+      'DELETE',
+      'Subscriptions',
+      `Deleted subscription for ${name ? `${name} ` : ''}(${email})`
+    );
 
     return NextResponse.json({
       success: true,

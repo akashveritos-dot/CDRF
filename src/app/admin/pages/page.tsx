@@ -941,9 +941,9 @@ export default function AdminPagesManager() {
                               <Edit3 size={13} /> Edit
                             </button>
                             <button 
-                              className={`${styles.deleteBtn} ${role !== 'SUPERADMIN' ? styles.disabledBtn : ''}`}
-                              disabled={role !== 'SUPERADMIN'}
-                              title={role !== 'SUPERADMIN' ? 'Only Super Admin can delete elements' : 'Delete'}
+                              className={`${styles.deleteBtn} ${(role !== 'SUPERADMIN' && role !== 'ADMIN') ? styles.disabledBtn : ''}`}
+                              disabled={role !== 'SUPERADMIN' && role !== 'ADMIN'}
+                              title={role !== 'SUPERADMIN' && role !== 'ADMIN' ? 'Only administrators can delete elements' : 'Delete'}
                               onClick={() => handleDeleteCard(item.id!)}
                             >
                               <Trash2 size={13} /> Delete
@@ -1014,9 +1014,9 @@ export default function AdminPagesManager() {
                               <Edit3 size={13} /> Edit
                             </button>
                             <button 
-                              className={`${styles.deleteBtn} ${role !== 'SUPERADMIN' ? styles.disabledBtn : ''}`}
-                              disabled={role !== 'SUPERADMIN'}
-                              title={role !== 'SUPERADMIN' ? 'Only Super Admin can delete elements' : 'Delete'}
+                              className={`${styles.deleteBtn} ${(role !== 'SUPERADMIN' && role !== 'ADMIN') ? styles.disabledBtn : ''}`}
+                              disabled={role !== 'SUPERADMIN' && role !== 'ADMIN'}
+                              title={role !== 'SUPERADMIN' && role !== 'ADMIN' ? 'Only administrators can delete elements' : 'Delete'}
                               onClick={() => handleDeleteCard(item.id!)}
                             >
                               <Trash2 size={13} /> Delete

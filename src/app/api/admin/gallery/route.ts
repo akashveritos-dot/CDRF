@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/db';
+import { query, transactionalDelete } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
 import { logAction } from '@/lib/audit';
@@ -75,7 +75,7 @@ export async function DELETE(req: NextRequest) {
     const [item] = existing;
     const caption = item.caption || `ID ${id}`;
 
-    await query('DELETE FROM gallery_items WHERE id = ?', [id]);
+    await transactionalDelete('gallery_items', 'id', id, session);
 
     await logAction(
       req,

@@ -173,8 +173,8 @@ export default function AdminMapsPage() {
   };
 
   const handleDeleteHazard = async (id: string, name: string) => {
-    if (role !== 'SUPERADMIN') {
-      alert('Forbidden: Only Super Admins can delete state hazard details.');
+    if (role !== 'SUPERADMIN' && role !== 'ADMIN') {
+      alert('Forbidden: Only administrators can delete state hazard details.');
       return;
     }
 
@@ -328,9 +328,9 @@ export default function AdminMapsPage() {
                         </button>
                         <button
                           onClick={() => handleDeleteHazard(hazard.id, hazard.name)}
-                          className={`${styles.deleteBtn} ${role !== 'SUPERADMIN' ? styles.disabledBtn : ''}`}
-                          disabled={role !== 'SUPERADMIN'}
-                          title={role !== 'SUPERADMIN' ? 'Only Super Admin can delete states' : `Delete ${hazard.name}`}
+                          className={`${styles.deleteBtn} ${(role !== 'SUPERADMIN' && role !== 'ADMIN') ? styles.disabledBtn : ''}`}
+                          disabled={role !== 'SUPERADMIN' && role !== 'ADMIN'}
+                          title={role !== 'SUPERADMIN' && role !== 'ADMIN' ? 'Only administrators can delete states' : `Delete ${hazard.name}`}
                           aria-label={`Delete ${hazard.name}`}
                         >
                           <Trash2 size={14} />

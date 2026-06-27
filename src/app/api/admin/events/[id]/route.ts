@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/db';
+import { query, transactionalDelete } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
 import { logAction } from '@/lib/audit';
@@ -119,9 +119,8 @@ export async function DELETE(
     }
 
     const session = await verifyToken(token);
-    // Only SUPERADMIN can delete records
-    if (!session || session.role !== 'SUPERADMIN') {
-      return NextResponse.json({ error: 'Forbidden. Only SUPERADMIN can delete registrations.' }, { status: 403 });
+    if (!session || (session.role !== 'SUPERADMIN' && session.role !== 'ADMIN')) {
+      return NextResponse.json({ error: 'Forbidden. Only administrators can delete registrations.' }, { status: 403 });
     }
 
     // Verify registration exists
@@ -132,7 +131,7 @@ export async function DELETE(
 
     const [reg] = existing;
 
-    await query('DELETE FROM event_registrations WHERE id = ?', [id]);
+    await transactionalDelete('event_registrations', 'id', id, session);
 
     await logAction(
       req,

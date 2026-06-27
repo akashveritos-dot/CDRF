@@ -2,44 +2,12 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import styles from './page.module.css';
-import { eventFeatures } from '@/data/dataStore';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
-import { Calendar, MapPin, Users, Award, Shield, ChevronDown, Check, Zap, Building2, Globe, Mic, FileText } from 'lucide-react';
+import { 
+  Calendar, MapPin, Users, Award, Shield, ChevronDown, Check, Zap, 
+  Building2, Globe, Mic, FileText, ChevronLeft, ChevronRight, Download, Play 
+} from 'lucide-react';
 import PageHero from '@/components/ui/PageHero/PageHero';
-
-const scheduleDay1 = [
-  { time: '09:30 - 10:30', title: 'Inaugural Plenary & Keynote address', desc: 'Welcome address by Secretary General DCRF. Launch of the Annual Disaster & Climate Action Index Report by NDMA officials.' },
-  { time: '11:00 - 12:30', title: 'Panel: Aligning CSR & ESG Capital for Pre-Disaster Resilience', desc: 'Directing corporate giving from post-disaster response to localized mitigation tools, early warning arrays, and municipal cooling structures.' },
-  { time: '14:00 - 15:30', title: 'Panel: Himalayan Glacier Retreat & Downstream Flooding', desc: 'Technical assessments from ISRO researchers and glacier geologists mapping GLOF patterns and water secure zones through 2050.' },
-  { time: '16:00 - 17:30', title: 'Working Group: Heat Action Plan deployment guides', desc: 'Municipal frameworks for Indian cities over 1 million population. Early warning, cool roofs, and cooling centers.' }
-];
-
-const scheduleDay2 = [
-  { time: '09:30 - 11:30', title: 'Disaster-Tech start-up Pitch & Showcase', desc: 'Geospatial mapping systems, drone surveillance models, real-time IoT sensors, and climate risk analytics startups presenting prototypes.' },
-  { time: '12:00 - 13:30', title: 'Panel: Climate-Induced Migration & Community Shelters', desc: 'Socio-economic vulnerabilities, delta erosion, and traditional coastal shelter architectures integrating modern Early Warning systems.' },
-  { time: '14:30 - 16:00', title: 'Federation Networking & Working Group alignment', desc: 'Interactive workshop matching corporate CSR leads with local NGOs and research bodies to deploy resilience projects.' },
-  { time: '16:30 - 17:30', title: 'DCRF Recognition Awards Ceremony', desc: 'Honoring Best Corporate Response, Best NGO Initiative, Disaster-Tech Innovator, and Climate Resilient Community Awards.' }
-];
-
-const attendanceOptions = [
-  { value: 'In-Person Delegate', label: 'In-Person Delegate', subLabel: 'India International Centre', icon: <MapPin size={16} />, color: 'var(--gold-primary)' },
-  { value: 'Virtual Delegate', label: 'Virtual Delegate', subLabel: 'Live Web Stream', icon: <Users size={16} />, color: 'var(--teal-primary)' },
-  { value: 'Sponsor / Exhibition partner', label: 'Exhibitor', subLabel: 'Disaster-Tech Expo pavilion', icon: <Award size={16} />, color: 'var(--gold-light)' },
-  { value: 'Media representative', label: 'Media delegate', subLabel: 'Press pass', icon: <Shield size={16} />, color: '#64748b' },
-];
-
-const delegateStats = [
-  { icon: <Users size={20} />, value: '500+', label: 'Delegates' },
-  { icon: <Building2 size={20} />, value: '60+', label: 'Organizations' },
-  { icon: <Globe size={20} />, value: '12', label: 'Nations' },
-  { icon: <Mic size={20} />, value: '30+', label: 'Speakers' },
-  { icon: <Zap size={20} />, value: '2', label: 'Days of Sessions' },
-  { icon: <Award size={20} />, value: '4', label: 'Award Categories' },
-];
-
-const partnerLogos = [
-  'NDMA', 'UNDRR', 'World Bank', 'ISRO', 'TERI', 'CEEW', 'IIT Delhi', 'WRI India', 'GIZ', 'NITI Aayog'
-];
 
 function getFriendlyError(err: any, fallback: string): string {
   const msg = err?.message || '';
@@ -51,8 +19,7 @@ function getFriendlyError(err: any, fallback: string): string {
 
 export default function EventPage() {
   const [pageData, setPageData] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState('Day 1');
-  const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [currentSlide, setCurrentSlide] = useState(0);
   const [isRegistered, setIsRegistered] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -71,7 +38,6 @@ export default function EventPage() {
 
   useEffect(() => {
     setIsMounted(true);
-    // Fetch CMS page content for Conclave dcrc-26
     async function loadConclaveData() {
       try {
         const res = await fetch('/api/pages/dcrc-26');
@@ -85,64 +51,6 @@ export default function EventPage() {
     }
     loadConclaveData();
   }, []);
-
-  // Icon resolver helpers for dynamic DB cards
-  const getIcon = (iconName: string) => {
-    switch (iconName?.toLowerCase()) {
-      case 'users': return <Users size={20} />;
-      case 'building': return <Building2 size={20} />;
-      case 'globe': return <Globe size={20} />;
-      case 'mic': return <Mic size={20} />;
-      case 'zap': return <Zap size={20} />;
-      case 'award': return <Award size={20} />;
-      default: return <Users size={20} />;
-    }
-  };
-
-  const getFeatureIcon = (iconName: string) => {
-    switch (iconName) {
-      case '🏛️': return <Building2 size={24} style={{ color: 'var(--red-primary)' }} />;
-      case '🏆': return <Award size={24} style={{ color: 'var(--gold-primary)' }} />;
-      case '🔬': return <Zap size={24} style={{ color: 'var(--teal-primary)' }} />;
-      case '📊': return <FileText size={24} style={{ color: 'var(--blue-primary)' }} />;
-      case '🌐': return <Globe size={24} style={{ color: 'var(--purple-primary)' }} />;
-      case '🤝': return <Users size={24} style={{ color: 'var(--orange-primary)' }} />;
-      default: return <Zap size={24} style={{ color: 'var(--red-primary)' }} />;
-    }
-  };
-
-  // Map dynamic database sections
-  const statsSection = pageData?.sections?.find((s: any) => s.title === 'Stats Strip');
-  const displayDelegateStats = statsSection?.cards?.map((c: any) => ({
-    icon: getIcon(c.extraData?.icon || 'users'),
-    value: c.title,
-    label: c.description
-  })) || delegateStats;
-
-  const tickerSection = pageData?.sections?.find((s: any) => s.title === 'Partner Organisations');
-  const displayPartnerLogos = tickerSection?.cards?.map((c: any) => c.title) || partnerLogos;
-
-  const featuresSection = pageData?.sections?.find((s: any) => s.title === 'Event Features');
-  const displayFeatures = featuresSection?.cards?.map((c: any) => ({
-    id: c.id,
-    icon: getFeatureIcon(c.extraData?.icon),
-    title: c.title,
-    description: c.description
-  })) || eventFeatures;
-
-  const agenda1Section = pageData?.sections?.find((s: any) => s.title === 'Conclave Agenda - Day 1');
-  const displayScheduleDay1 = agenda1Section?.cards?.map((c: any) => ({
-    time: c.extraData?.time || '09:30 - 10:30',
-    title: c.title,
-    desc: c.description
-  })) || scheduleDay1;
-
-  const agenda2Section = pageData?.sections?.find((s: any) => s.title === 'Conclave Agenda - Day 2');
-  const displayScheduleDay2 = agenda2Section?.cards?.map((c: any) => ({
-    time: c.extraData?.time || '09:30 - 10:30',
-    title: c.title,
-    desc: c.description
-  })) || scheduleDay2;
 
   // Recalculate dropdown position on window resize / scroll when open
   useEffect(() => {
@@ -177,43 +85,17 @@ export default function EventPage() {
         setDropdownOpen(false);
       }
     };
-    
     if (dropdownOpen) {
       document.addEventListener('mousedown', handleClickOutside);
       document.addEventListener('touchstart', handleClickOutside);
     }
-    
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('touchstart', handleClickOutside);
     };
   }, [dropdownOpen]);
 
-  // Calculate live countdown to Nov 26, 2026
-  useEffect(() => {
-    const targetDate = new Date('2026-11-26T09:30:00+05:30').getTime();
-
-    const interval = setInterval(() => {
-      const now = new Date().getTime();
-      const difference = targetDate - now;
-
-      if (difference <= 0) {
-        clearInterval(interval);
-        setCountdown({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-        return;
-      }
-
-      const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-      setCountdown({ days, hours, minutes, seconds });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
-
+  // Handle registration
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -222,18 +104,10 @@ export default function EventPage() {
       const res = await fetch('/api/events/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          company: formData.company,
-          designation: formData.designation,
-          role: formData.role
-        })
+        body: JSON.stringify(formData)
       });
-
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to register interest');
-
       setIsRegistered(true);
     } catch (err: any) {
       setError(getFriendlyError(err, 'Failed to submit registration. Please try again.'));
@@ -242,10 +116,35 @@ export default function EventPage() {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+  // Find CMS sections
+  const bannerSection = pageData?.sections?.find((s: any) => s.title === 'Banner Images');
+  const actionButtonsSection = pageData?.sections?.find((s: any) => s.title === 'Action Buttons');
+  const agendaSection = pageData?.sections?.find((s: any) => s.title === 'Agenda Images');
+  const speakersSection = pageData?.sections?.find((s: any) => s.title === 'Speakers');
+  const partnersSection = pageData?.sections?.find((s: any) => s.title === 'Partners');
+  const glimpseSection = pageData?.sections?.find((s: any) => s.title === 'Glimpse');
+
+  // Slide auto-play
+  const bannerCards = bannerSection?.cards || [];
+  useEffect(() => {
+    if (bannerCards.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % bannerCards.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [bannerCards]);
+
+  const attendanceOptions = [
+    { value: 'In-Person Delegate', label: 'In-Person Delegate', subLabel: 'India International Centre', icon: <MapPin size={16} />, color: 'var(--wine-red-primary)' },
+    { value: 'Virtual Delegate', label: 'Virtual Delegate', subLabel: 'Live Web Stream', icon: <Users size={16} />, color: 'var(--teal-primary)' },
+    { value: 'Sponsor / Exhibition partner', label: 'Exhibitor', subLabel: 'Disaster-Tech Expo pavilion', icon: <Award size={16} />, color: 'var(--gold-light)' },
+    { value: 'Media representative', label: 'Media delegate', subLabel: 'Press pass', icon: <Shield size={16} />, color: '#64748b' },
+  ];
 
   return (
     <div className={styles.page}>
@@ -253,161 +152,281 @@ export default function EventPage() {
         <PageHero
           theme="events"
           eyebrow="Nov 26–27, 2026 · New Delhi"
-          line1="DCRC 2026"
+          line1="DCRF DCRC ’26"
           line2="CONCLAVE"
-          subtitle={pageData?.description || "India’s premier annual convening forum mapping disaster technologies, policy briefs, and corporate CSR resilience frameworks."}
+          subtitle={pageData?.description || "India’s premier annual convening forum mapping disaster preparedness, climate science updates, and corporate CSR resilience frameworks."}
         />
       </ScrollReveal>
 
-      {/* Main Conclave Banner */}
-      <ScrollReveal direction="up" delay={0.1}>
-        <div className={styles.banner}>
-          <div>
-            <div className={styles.eventEyebrow}>Hybrid Conclave • New Delhi</div>
-            <h3>{pageData?.title || "Disaster & Climate Resilience Conclave 2026"}</h3>
-            <p>
-              {pageData?.content ? (
-                <span dangerouslySetInnerHTML={{ __html: pageData.content }} />
-              ) : (
-                <span>
-                  Under the theme <strong>"Convergence for Action"</strong>, DCRC ’26 will gather 500+ delegates from ministries,
-                  global agencies (UNDRR, World Bank), major corporates, NGOs, and IIT researchers to map joint resilience operations.
-                </span>
-              )}
-            </p>
-            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginTop: '20px', fontSize: '13px', color: 'var(--text-muted)' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Calendar size={14} style={{ color: 'var(--gold-light)' }} />
-                Nov 26–27, 2026
-              </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <MapPin size={14} style={{ color: 'var(--gold-light)' }} />
-                India International Centre, New Delhi
-              </span>
-            </div>
-          </div>
-          <div className={styles.dateCard}>
-            <div className={styles.dateMonth}>November</div>
-            <div className={styles.dateDay}>26–27</div>
-            <div className={styles.dateYear}>2026 • New Delhi</div>
-          </div>
-        </div>
-      </ScrollReveal>
-
-      {/* Countdown Widget */}
-      <ScrollReveal direction="up">
-        <div className={styles.countdownSec}>
-          <span className={styles.countdownLabel}>Conclave Commencing In:</span>
-          <div className={styles.countdownGrid}>
-            <div className={styles.cdItem}>
-              <span className={styles.cdVal}>{countdown.days}</span>
-              <span className={styles.cdLabel}>Days</span>
-            </div>
-            <div className={styles.cdItem}>
-              <span className={styles.cdVal}>{countdown.hours}</span>
-              <span className={styles.cdLabel}>Hours</span>
-            </div>
-            <div className={styles.cdItem}>
-              <span className={styles.cdVal}>{countdown.minutes}</span>
-              <span className={styles.cdLabel}>Min</span>
-            </div>
-            <div className={styles.cdItem}>
-              <span className={styles.cdVal}>{countdown.seconds}</span>
-              <span className={styles.cdLabel}>Sec</span>
-            </div>
-          </div>
-        </div>
-      </ScrollReveal>
-
-      {/* ══ Animated Delegate Stats Strip ════════════════════ */}
-      <ScrollReveal direction="up" delay={0.08}>
-        <div className={styles.statsStrip}>
-          {displayDelegateStats.map((s: any, i: number) => (
-            <div key={i} className={styles.statChip}>
-              <span className={styles.statChipIcon}>{s.icon}</span>
-              <span className={styles.statChipValue}>{s.value}</span>
-              <span className={styles.statChipLabel}>{s.label}</span>
-            </div>
-          ))}
-        </div>
-      </ScrollReveal>
-
-      {/* ══ Partner / Org Ticker ════════════════════════ */}
-      <ScrollReveal direction="up" delay={0.1}>
-        <div className={styles.tickerWrap}>
-          <span className={styles.tickerLabel}>PARTNER ORGANISATIONS</span>
-          <div className={styles.tickerTrack}>
-            <div className={styles.tickerInner}>
-              {[...displayPartnerLogos, ...displayPartnerLogos].map((logo: string, i: number) => (
-                <span key={i} className={styles.tickerItem}>{logo}</span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </ScrollReveal>
-
-      {/* ══ Features Grid ════════════════════════════ */}
-      <div className={styles.featuresGrid}>
-        {displayFeatures.map((feat: any, idx: number) => (
-          <ScrollReveal
-            key={feat.id || idx}
-            direction="up"
-            delay={0.05 * (idx % 3)}
-          >
-            <div className={styles.featCard}>
-              <div className={styles.featIcon}>{feat.icon}</div>
-              <h5>{feat.title}</h5>
-              <p>{feat.description}</p>
-            </div>
-          </ScrollReveal>
-        ))}
+      {/* DCRF Visibility Brand Segment */}
+      <div className={styles.brandVisibilityBadge}>
+        <span className={styles.dcrfText}>DCRF</span>
+        <span className={styles.subText}>DISASTER & CLIMATE RESILIENCE FEDERATION</span>
       </div>
 
-      {/* ══ Premium Animated Timeline ═══════════════════ */}
-      <section className={styles.scheduleSec}>
-        <ScrollReveal direction="up">
-          <div className={styles.scheduleHeader}>
-            <span className={styles.scheduleEyebrow}>Programme</span>
-            <h2 className={styles.scheduleTitle}>Conclave Agenda</h2>
-          </div>
-        </ScrollReveal>
-
-        <ScrollReveal direction="up" delay={0.1}>
-          <div className={styles.scheduleTabs}>
-            {['Day 1', 'Day 2'].map((day) => (
-              <button
-                key={day}
-                className={`${styles.scheduleTab} ${activeTab === day ? styles.activeTab : ''}`}
-                onClick={() => setActiveTab(day)}
-              >
-                {day} Schedule
-              </button>
-            ))}
-          </div>
-        </ScrollReveal>
-
-        {/* Vertical animated timeline */}
-        <div className={styles.verticalTimeline}>
-          {(activeTab === 'Day 1' ? displayScheduleDay1 : displayScheduleDay2).map((item: any, idx: number) => (
-            <ScrollReveal key={idx} direction="left" delay={0.07 * idx}>
-              <div className={styles.tlItem}>
-                <div className={styles.tlLeft}>
-                  <span className={styles.tlTime}>{item.time}</span>
-                  <div className={styles.tlNode}>
-                    <span className={styles.tlNodeInner} />
+      {/* Slideable Banner Carousel Section */}
+      <ScrollReveal direction="up" delay={0.1}>
+        <div className={styles.carouselContainer}>
+          {bannerCards.length > 0 ? (
+            <div className={styles.carouselTrack} style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
+              {bannerCards.map((slide: any, idx: number) => (
+                <div key={slide.id || idx} className={styles.carouselSlide}>
+                  <img src={slide.imageUrl} alt={slide.title} className={styles.slideImage} />
+                  <div className={styles.slideOverlay}>
+                    <div className={styles.slideContent}>
+                      <h3>{slide.title}</h3>
+                      <p>{slide.description}</p>
+                    </div>
                   </div>
                 </div>
-                <div className={styles.tlCard}>
-                  <h4 className={styles.tlTitle}>{item.title}</h4>
-                  <p className={styles.tlDesc}>{item.desc}</p>
+              ))}
+            </div>
+          ) : (
+            <div className={styles.carouselSlideSingle}>
+              <img 
+                src="https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80" 
+                alt="Conclave" 
+                className={styles.slideImage} 
+              />
+              <div className={styles.slideOverlay}>
+                <div className={styles.slideContent}>
+                  <h3>Disaster & Climate Resilience Conclave 2026</h3>
+                  <p>India’s premier multi-stakeholder alliance driving convergence across climate science, media coordinates, and corporate social investments.</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {bannerCards.length > 1 && (
+            <>
+              <button 
+                className={`${styles.carouselArrow} ${styles.arrowLeft}`} 
+                onClick={() => setCurrentSlide((prev) => (prev - 1 + bannerCards.length) % bannerCards.length)}
+                aria-label="Previous slide"
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <button 
+                className={`${styles.carouselArrow} ${styles.arrowRight}`} 
+                onClick={() => setCurrentSlide((prev) => (prev + 1) % bannerCards.length)}
+                aria-label="Next slide"
+              >
+                <ChevronRight size={20} />
+              </button>
+              <div className={styles.carouselDots}>
+                {bannerCards.map((_: any, idx: number) => (
+                  <button 
+                    key={idx} 
+                    className={`${styles.carouselDot} ${currentSlide === idx ? styles.activeDot : ''}`}
+                    onClick={() => setCurrentSlide(idx)}
+                    aria-label={`Go to slide ${idx + 1}`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </ScrollReveal>
+
+      {/* Action Buttons / Cards below Banner */}
+      <ScrollReveal direction="up" delay={0.15}>
+        <div className={styles.actionCardsGrid}>
+          {actionButtonsSection?.cards?.map((btn: any, idx: number) => {
+            const extra = btn.extraData || {};
+            let onClickHandler = undefined;
+            if (extra.isRegistration) {
+              onClickHandler = (e: React.MouseEvent) => {
+                e.preventDefault();
+                document.getElementById('register')?.scrollIntoView({ behavior: 'smooth' });
+              };
+            }
+
+            return (
+              <a 
+                href={btn.linkUrl || '#'} 
+                key={btn.id || idx} 
+                className={styles.actionCard}
+                onClick={onClickHandler}
+                download={extra.isDownload ? true : undefined}
+              >
+                <div className={styles.actionCardContent}>
+                  <div className={styles.actionCardIcon}>
+                    {extra.isDownload ? <Download size={22} /> : extra.isRegistration ? <Users size={22} /> : <Zap size={22} />}
+                  </div>
+                  <h4>{btn.title}</h4>
+                  <p>{extra.isDownload ? 'Download PDF Document' : extra.isRegistration ? 'Apply for Passes' : 'Explore Resource'}</p>
+                </div>
+              </a>
+            );
+          }) || (
+            <>
+              <a href="#agenda-gallery" className={styles.actionCard}>
+                <div className={styles.actionCardContent}>
+                  <div className={styles.actionCardIcon}><Download size={22} /></div>
+                  <h4>Agenda</h4>
+                  <p>Download PDF Document</p>
+                </div>
+              </a>
+              <a href="#register" className={styles.actionCard}>
+                <div className={styles.actionCardContent}>
+                  <div className={styles.actionCardIcon}><Users size={22} /></div>
+                  <h4>Registration</h4>
+                  <p>Apply for Passes</p>
+                </div>
+              </a>
+              <a href="/reports" className={styles.actionCard}>
+                <div className={styles.actionCardContent}>
+                  <div className={styles.actionCardIcon}><Zap size={22} /></div>
+                  <h4>Policy Briefs</h4>
+                  <p>Explore Resources</p>
+                </div>
+              </a>
+              <a href="/charter-10-point-agenda" className={styles.actionCard}>
+                <div className={styles.actionCardContent}>
+                  <div className={styles.actionCardIcon}><Zap size={22} /></div>
+                  <h4>Core Charter</h4>
+                  <p>Explore Resources</p>
+                </div>
+              </a>
+            </>
+          )}
+        </div>
+      </ScrollReveal>
+
+      {/* Description Section */}
+      <ScrollReveal direction="up">
+        <div className={styles.descriptionBlock}>
+          <h2 className={styles.sectionTitle}>About DCRC 2026</h2>
+          <p>
+            Under the theme <strong>"Convergence for Action"</strong>, DCRC ’26 will gather 500+ delegates from ministries, 
+            global agencies (UNDRR, World Bank), major corporates, NGOs, and IIT researchers to map joint resilience operations.
+            The conclave focuses on directing corporate giving towards localized mitigation tools, early warning arrays, and municipal cooling structures.
+          </p>
+        </div>
+      </ScrollReveal>
+
+      {/* After description: Speaker Section */}
+      {speakersSection && speakersSection.cards?.length > 0 && (
+        <section className={styles.eventSection}>
+          <ScrollReveal direction="up">
+            <h2 className={styles.sectionTitle}>Distinguished Speakers</h2>
+          </ScrollReveal>
+          <div className={styles.speakersGrid}>
+            {speakersSection.cards.map((sp: any, idx: number) => (
+              <ScrollReveal direction="up" delay={idx * 0.05} key={sp.id || idx}>
+                <div className={styles.speakerCard}>
+                  <img src={sp.imageUrl} alt={sp.title} className={styles.speakerPhoto} />
+                  <div className={styles.speakerInfo}>
+                    <h4>{sp.title}</h4>
+                    <p>{sp.description}</p>
+                  </div>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* After description: Partners Section */}
+      {partnersSection && partnersSection.cards?.length > 0 && (
+        <section className={styles.eventSection}>
+          <ScrollReveal direction="up">
+            <h2 className={styles.sectionTitle}>Our Partners</h2>
+          </ScrollReveal>
+          <div className={styles.partnersGrid}>
+            {partnersSection.cards.map((p: any, idx: number) => (
+              <ScrollReveal direction="up" delay={idx * 0.05} key={p.id || idx}>
+                <div className={styles.partnerCard}>
+                  <img src={p.imageUrl} alt={p.title} className={styles.partnerLogo} />
+                  <h4>{p.title}</h4>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* After description: Glimpse Section */}
+      {glimpseSection && glimpseSection.cards?.length > 0 && (
+        <section className={styles.eventSection}>
+          <ScrollReveal direction="up">
+            <h2 className={styles.sectionTitle}>Glimpse of DCRC</h2>
+          </ScrollReveal>
+          <div className={styles.glimpseGrid}>
+            {glimpseSection.cards.map((g: any, idx: number) => (
+              <ScrollReveal direction="up" delay={idx * 0.05} key={g.id || idx}>
+                <div className={styles.glimpseCard}>
+                  <img src={g.imageUrl} alt={g.title || 'Conclave Glimpse'} className={styles.glimpsePhoto} />
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Agenda Images / Visual Gallery section (Replaces Timeline) */}
+      <section id="agenda-gallery" className={styles.eventSection}>
+        <ScrollReveal direction="up">
+          <h2 className={styles.sectionTitle}>Conclave Agenda</h2>
+          <p className={styles.sectionSub}>Displaying the schedule agenda visually below. Manageable from the DCRF backend.</p>
+        </ScrollReveal>
+        
+        <div className={styles.agendaGallery}>
+          {agendaSection?.cards?.map((agenda: any, idx: number) => (
+            <ScrollReveal direction="up" delay={idx * 0.1} key={agenda.id || idx}>
+              <div className={styles.agendaImgContainer}>
+                <img src={agenda.imageUrl} alt={agenda.title} className={styles.agendaImg} />
+                <div className={styles.agendaImgCaption}>
+                  <h4>{agenda.title}</h4>
                 </div>
               </div>
             </ScrollReveal>
-          ))}
+          )) || (
+            <div className={styles.agendaImgContainerSingle}>
+              <img 
+                src="https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=800&q=80" 
+                alt="Conclave Schedule Agenda" 
+                className={styles.agendaImg} 
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Download Agenda Button */}
+        <div className={styles.downloadContainer}>
+          <a 
+            href={agendaSection?.cards?.[0]?.extraData?.downloadUrl || '/reports'} 
+            className={styles.downloadBtn}
+            download
+          >
+            <Download size={16} />
+            <span>Download Full Agenda (PDF)</span>
+          </a>
         </div>
       </section>
 
-      {/* Registration form */}
+      {/* Responsive YouTube Clip Section */}
+      {pageData?.videoUrl && (
+        <section className={styles.eventSection}>
+          <ScrollReveal direction="up">
+            <h2 className={styles.sectionTitle}>Conclave Video Highlights</h2>
+          </ScrollReveal>
+          <ScrollReveal direction="up" delay={0.1}>
+            <div className={styles.youtubeSec}>
+              <iframe 
+                src={pageData.videoUrl} 
+                title="DCRC Conclave Highlight Video" 
+                frameBorder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowFullScreen
+                className={styles.youtubeEmbed}
+              />
+            </div>
+          </ScrollReveal>
+        </section>
+      )}
+
+      {/* Registration Section (Form kept at the bottom as requested) */}
       <ScrollReveal direction="up">
         <div id="register" className={styles.registerSec}>
           {isRegistered ? (
@@ -605,6 +624,14 @@ export default function EventPage() {
           )}
         </div>
       </ScrollReveal>
+
+      {/* Bottom Attendance/Registration sticky-referral button */}
+      <div className={styles.stickyRegistrationContainer}>
+        <a href="#register" className={styles.stickyRegBtn}>
+          <Users size={16} />
+          <span>Apply to Register Attendance</span>
+        </a>
+      </div>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/db';
+import { query, transactionalDelete } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
 import { logAction } from '@/lib/audit';
@@ -99,7 +99,7 @@ export async function DELETE(
 
     const [member] = existing;
 
-    await query('DELETE FROM memberships WHERE id = ?', [id]);
+    await transactionalDelete('memberships', 'id', id, session);
 
     await logAction(
       req,

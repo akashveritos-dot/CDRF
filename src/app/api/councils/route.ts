@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
+import { logAction } from '@/lib/audit';
 
 // GET /api/councils - Fetch all active council members (Public) or all members for Admin
 export async function GET(req: NextRequest) {
@@ -102,13 +103,14 @@ export async function POST(req: NextRequest) {
       );
     }
     
-    // Insert new council member
     await query(
       `INSERT INTO councils 
         (id, name, role, role_badge_color, avatar_initials, profile_image, bio, linkedin_url, organization, display_order) 
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [id, name, role, roleBadgeColor, avatarInitials, profileImage, bio, linkedinUrl, organization, displayOrder]
     );
+
+    await logAction(req, session, 'ADD', 'Councils', `Added council member: "${name}" (ID: ${id})`);
     
     return NextResponse.json({ success: true, message: 'Council member added successfully' });
     

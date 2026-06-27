@@ -176,8 +176,8 @@ export default function AdminHeroPage() {
   };
 
   const handleDeleteStat = async (id: number, label: string) => {
-    if (role !== 'SUPERADMIN') {
-      alert('Forbidden: Only Super Admins can delete statistics cards.');
+    if (role !== 'SUPERADMIN' && role !== 'ADMIN') {
+      alert('Forbidden: Only administrators can delete statistics cards.');
       return;
     }
 
@@ -395,9 +395,9 @@ export default function AdminHeroPage() {
                   </button>
                   <button
                     onClick={() => handleDeleteStat(stat.id!, stat.label)}
-                    className={`${styles.deleteBtn} ${role !== 'SUPERADMIN' ? styles.disabledBtn : ''}`}
-                    disabled={role !== 'SUPERADMIN'}
-                    title={role !== 'SUPERADMIN' ? 'Only Super Admin can delete stats' : `Delete ${stat.label}`}
+                    className={`${styles.deleteBtn} ${(role !== 'SUPERADMIN' && role !== 'ADMIN') ? styles.disabledBtn : ''}`}
+                    disabled={role !== 'SUPERADMIN' && role !== 'ADMIN'}
+                    title={role !== 'SUPERADMIN' && role !== 'ADMIN' ? 'Only administrators can delete stats' : `Delete ${stat.label}`}
                     aria-label={`Delete ${stat.label}`}
                   >
                     <Trash2 size={14} />

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/db';
+import { query, transactionalDelete } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
 import { logAction } from '@/lib/audit';
@@ -125,8 +125,8 @@ export async function DELETE(req: NextRequest) {
     }
 
     const session = await verifyToken(token);
-    if (!session || session.role !== 'SUPERADMIN') {
-      return NextResponse.json({ error: 'Forbidden: Only Super Admins can delete state hazard mappings' }, { status: 403 });
+    if (!session || (session.role !== 'SUPERADMIN' && session.role !== 'ADMIN')) {
+      return NextResponse.json({ error: 'Forbidden: Only administrators can delete state hazard mappings' }, { status: 403 });
     }
 
     const { searchParams } = new URL(req.url);
@@ -142,7 +142,7 @@ export async function DELETE(req: NextRequest) {
     }
     const name = existing[0].name;
 
-    await query('DELETE FROM state_hazards WHERE id = ?', [id]);
+    await transactionalDelete('state_hazards', 'id', id, session);
     await logAction(req, session, 'DELETE', 'StateHazard', `Deleted state hazard details for state: "${name}" (ID: ${id})`);
 
     return NextResponse.json({ success: true, message: 'State hazard details deleted successfully' });

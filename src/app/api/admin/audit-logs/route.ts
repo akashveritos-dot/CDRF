@@ -14,8 +14,8 @@ export async function GET(req: NextRequest) {
     }
 
     const session = await verifyToken(token);
-    if (!session || (session.role !== 'ADMIN' && session.role !== 'SUPERADMIN')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    if (!session || session.role !== 'SUPERADMIN') {
+      return NextResponse.json({ error: 'Forbidden: Only SUPERADMIN can view audit logs' }, { status: 403 });
     }
 
     const url = new URL(req.url);

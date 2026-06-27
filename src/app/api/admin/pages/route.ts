@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/db';
+import { query, transactionalDelete } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
 import { logAction } from '@/lib/audit';
@@ -191,7 +191,7 @@ export async function POST(req: NextRequest) {
         // Delete removed cards
         for (const existingCardId of existingCardIds) {
           if (!incomingCardIds.has(existingCardId)) {
-            await query('DELETE FROM cms_page_cards WHERE id = ?', [existingCardId]);
+            await transactionalDelete('cms_page_cards', 'id', existingCardId, session);
           }
         }
 
@@ -251,8 +251,8 @@ export async function DELETE(req: NextRequest) {
     }
 
     const session = await verifyToken(token);
-    if (!session || session.role !== 'SUPERADMIN') {
-      return NextResponse.json({ error: 'Forbidden: Only Super Admins can delete pages' }, { status: 403 });
+    if (!session || (session.role !== 'SUPERADMIN' && session.role !== 'ADMIN')) {
+      return NextResponse.json({ error: 'Forbidden: Only administrators can delete pages' }, { status: 403 });
     }
 
     const { slug } = await req.json();
@@ -263,12 +263,14 @@ export async function DELETE(req: NextRequest) {
     // Delete cards for all sections of this page
     const sections = await query<any[]>('SELECT id FROM cms_page_sections WHERE page_slug = ?', [slug]);
     for (const section of sections) {
-      await query('DELETE FROM cms_page_cards WHERE section_id = ?', [section.id]);
+      const cards = await query<any[]>('SELECT id FROM cms_page_cards WHERE section_id = ?', [section.id]);
+      for (const card of cards) {
+        await transactionalDelete('cms_page_cards', 'id', card.id, session);
+      }
+      await transactionalDelete('cms_page_sections', 'id', section.id, session);
     }
-    // Delete all sections
-    await query('DELETE FROM cms_page_sections WHERE page_slug = ?', [slug]);
     // Delete the page
-    await query('DELETE FROM cms_pages WHERE slug = ?', [slug]);
+    await transactionalDelete('cms_pages', 'slug', slug, session);
 
     await logAction(req, session, 'DELETE', 'CMS Pages', `Deleted CMS page: "${slug}"`);
 

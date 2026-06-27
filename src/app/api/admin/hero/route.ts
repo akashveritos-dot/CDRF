@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/db';
+import { query, transactionalDelete } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
 import { logAction } from '@/lib/audit';
@@ -128,8 +128,8 @@ export async function DELETE(req: NextRequest) {
     }
 
     const session = await verifyToken(token);
-    if (!session || session.role !== 'SUPERADMIN') {
-      return NextResponse.json({ error: 'Forbidden: Only Super Admins can delete hero statistics' }, { status: 403 });
+    if (!session || (session.role !== 'SUPERADMIN' && session.role !== 'ADMIN')) {
+      return NextResponse.json({ error: 'Forbidden: Only administrators can delete hero statistics' }, { status: 403 });
     }
 
     const { searchParams } = new URL(req.url);
@@ -145,7 +145,7 @@ export async function DELETE(req: NextRequest) {
     }
     const label = existing[0].label;
 
-    await query('DELETE FROM hero_strip_stats WHERE id = ?', [id]);
+    await transactionalDelete('hero_strip_stats', 'id', id, session);
     await logAction(req, session, 'DELETE', 'HeroStats', `Deleted hero stat: "${label}" (ID: ${id})`);
 
     return NextResponse.json({ success: true, message: 'Hero statistics deleted successfully' });
