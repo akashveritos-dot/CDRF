@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { useTelemetry } from '@/context/TelemetryContext';
+import { useToast } from '@/components/ui/Toast/ToastContext';
 import styles from './DisasterEffects.module.css';
 
 interface DisasterEffectsProps {
@@ -77,6 +78,26 @@ const DisasterEffects: React.FC<DisasterEffectsProps> = ({
     state: 'Delhi'
   });
   const [dismissed, setDismissed] = useState(false);
+  const { toast } = useToast();
+  const [toastShown, setToastShown] = useState(false);
+
+  useEffect(() => {
+    setToastShown(false);
+  }, [selectedStateId, liveTheme]);
+
+  useEffect(() => {
+    if (liveTheme && (liveTheme === 'flood' || liveTheme === 'storm') && !toastShown) {
+      const title = liveTheme === 'storm' ? '⛈️ Storm Alert' : '☔ Rainfall Detected';
+      const msg = `Live weather telemetry registered in ${locationName.city}${locationName.state ? `, ${locationName.state}` : ''}${temperature !== null ? ` (${temperature}°C)` : ''}.`;
+      toast({
+        variant: liveTheme === 'storm' ? 'error' : 'info',
+        title,
+        message: msg,
+        duration: 3000
+      });
+      setToastShown(true);
+    }
+  }, [liveTheme, locationName, temperature, toastShown, toast]);
 
   useEffect(() => {
     setMounted(true);
@@ -370,39 +391,7 @@ const DisasterEffects: React.FC<DisasterEffectsProps> = ({
         </div>
       )}
 
-      {/* Floating Glassmorphic Weather Alert Banner */}
-      {liveTheme && (liveTheme === 'flood' || liveTheme === 'storm') && !dismissed && (
-        <div className={`${styles.weatherPill} ${liveTheme === 'storm' ? styles.weatherPillStorm : ''}`}>
-          <div className={styles.pulseDotContainer}>
-            <span className={styles.liveDot} />
-          </div>
-          <div className={styles.weatherInfoText}>
-            <span className={styles.alertEmoji}>
-              {liveTheme === 'storm' ? '⛈️' : '☔'}
-            </span>
-            <span className={styles.alertMessage}>
-              <strong>{liveTheme === 'storm' ? 'Storm Alert' : 'Rainfall Detected'}</strong> in{' '}
-              <span className={styles.cityName}>
-                {locationName.city}{locationName.state ? `, ${locationName.state}` : ''}
-              </span>
-              {temperature !== null && (
-                <>
-                  {' '}• <span className={styles.tempText}>{temperature}°C</span>
-                </>
-              )}
-            </span>
-          </div>
-          <button 
-            type="button"
-            className={styles.closeBtn}
-            onClick={() => setDismissed(true)}
-            aria-label="Dismiss weather alert"
-            title="Dismiss alert"
-          >
-            <X size={14} />
-          </button>
-        </div>
-      )}
+      {/* Floating Glassmorphic Weather Alert Banner converted to toast */}
     </div>
   );
 };

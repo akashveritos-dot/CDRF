@@ -61,6 +61,19 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const registerRef = useRef<HTMLDivElement | null>(null);
+  const [formVisible, setFormVisible] = useState(false);
+
+  useEffect(() => {
+    const node = registerRef.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setFormVisible(entry.isIntersecting),
+      { threshold: 0.15 }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const clickOutside = (e: MouseEvent | TouchEvent) => {
@@ -421,7 +434,7 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
 
         {/* Registration Section */}
         <ScrollReveal direction="up">
-          <div id="register" className={styles.registerSec}>
+          <div id="register" className={styles.registerSec} ref={registerRef}>
             {isSuccess ? (
               <div className={styles.successBox}>
                 <CheckCircle size={40} style={{ color: 'var(--accessible-green)', marginBottom: '16px', display: 'inline-block' }} />
@@ -578,7 +591,7 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
         </ScrollReveal>
 
         {/* Bottom sticky registration referral button */}
-        <div className={styles.stickyRegistrationContainer}>
+        <div className={`${styles.stickyRegistrationContainer} ${formVisible ? styles.stickyHidden : styles.stickyVisible}`}>
           <a href="#register" className={styles.stickyRegBtn}>
             <Users size={16} />
             <span>Apply to Register Attendance</span>

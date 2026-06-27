@@ -1357,13 +1357,24 @@
   left: 50%;
   transform: translateX(-50%);
   z-index: 1000;
-  animation: slideUp 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 350ms ease, transform 350ms cubic-bezier(0.16, 1, 0.3, 1), visibility 350ms ease;
   /* Stays above the chat widget which sits at bottom 24px */
 }
 
-@keyframes slideUp {
-  from { transform: translate(-50%, 100%); opacity: 0; }
-  to { transform: translate(-50%, 0); opacity: 1; }
+/* Visible state — slides up from below */
+.stickyVisible {
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
+
+/* Hidden state — slides away downward */
+.stickyHidden {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transform: translate(-50%, 32px);
 }
 
 .stickyRegBtn {
@@ -1443,6 +1454,26 @@
   }
   .stickyRegistrationContainer {
     bottom: 80px;
+  }
+
+  /* Form grid single column on mobile */
+  .formGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .fieldFull {
+    grid-column: span 1;
+  }
+
+  .registerSec {
+    padding: 28px 20px;
+    margin: 40px 0 0;
+    border-radius: var(--radius-md);
+  }
+
+  .regFormTitle {
+    font-size: 22px;
   }
 }
 

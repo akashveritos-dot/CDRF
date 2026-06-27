@@ -25,6 +25,7 @@
     "react-dom": "19.2.4",
     "recharts": "^3.8.1",
     "sharp": "^0.33.5",
+    "skillfish": "^1.0.38",
     "suncalc": "^1.9.0"
   },
   "devDependencies": {

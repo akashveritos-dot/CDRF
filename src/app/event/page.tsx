@@ -35,6 +35,8 @@ export default function EventPage() {
   const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const registerRef = useRef<HTMLDivElement | null>(null);
+  const [formVisible, setFormVisible] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -50,6 +52,17 @@ export default function EventPage() {
       }
     }
     loadConclaveData();
+
+    // IntersectionObserver to track registration form visibility
+    const node = registerRef.current;
+    if (node) {
+      const observer = new IntersectionObserver(
+        ([entry]) => setFormVisible(entry.isIntersecting),
+        { threshold: 0.15 }
+      );
+      observer.observe(node);
+      return () => observer.disconnect();
+    }
   }, []);
 
   // Recalculate dropdown position on window resize / scroll when open
@@ -431,7 +444,7 @@ export default function EventPage() {
 
       {/* Registration Section (Form kept at the bottom as requested) */}
       <ScrollReveal direction="up">
-        <div id="register" className={styles.registerSec}>
+        <div id="register" className={styles.registerSec} ref={registerRef}>
           {isRegistered ? (
             <div className={styles.successBox}>
               <div className={styles.successIcon}>✓</div>
@@ -629,7 +642,7 @@ export default function EventPage() {
       </ScrollReveal>
 
       {/* Bottom Attendance/Registration sticky-referral button */}
-      <div className={styles.stickyRegistrationContainer}>
+      <div className={`${styles.stickyRegistrationContainer} ${formVisible ? styles.stickyHidden : styles.stickyVisible}`}>
         <a href="#register" className={styles.stickyRegBtn}>
           <Users size={16} />
           <span>Apply to Register Attendance</span>
