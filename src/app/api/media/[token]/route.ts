@@ -55,31 +55,32 @@ export async function GET(
     const secFetchDest = req.headers.get('sec-fetch-dest');
     const secFetchMode = req.headers.get('sec-fetch-mode');
 
-    // If the browser sends Sec-Fetch headers (all modern browsers do):
+    // Headers checks are relaxed so that we do not break valid image rendering
+    // across different browser versions, caches, or direct link extensions.
+    /*
     if (secFetchSite !== null) {
-      // Block if NOT same-origin (e.g., opened in new tab = "none", cross-site = "cross-site")
       if (secFetchSite !== 'same-origin' && secFetchSite !== 'same-site') {
         return new NextResponse(null, { status: 403 });
       }
     }
 
     if (secFetchDest !== null) {
-      // Only allow image, video, audio, or empty (for fetch/XHR from our own code)
       const allowedDests = ['image', 'video', 'audio', 'empty', ''];
       if (!allowedDests.includes(secFetchDest)) {
-        // "document" = opened in new tab → BLOCKED
         return new NextResponse(null, { status: 403 });
       }
     }
+    */
 
     // ── 3. Referer validation (fallback for older browsers) ──────────
     const referer = req.headers.get('referer') || '';
     const host = req.headers.get('host') || '';
 
-    // If no Sec-Fetch headers AND no valid referer → block
+    /*
     if (secFetchSite === null && host && referer && !referer.includes(host)) {
       return new NextResponse(null, { status: 403 });
     }
+    */
 
     // ── 4. File validation ───────────────────────────────────────────
     const ext = path.extname(filename).toLowerCase();
@@ -111,12 +112,36 @@ export async function GET(
       }
     }
 
+    // Dynamic fallback: if file is missing locally (e.g. during local dev with remote DB),
+    // fetch and cache it from the production server.
+    if (!filePath) {
+      const remoteUrl = `https://dcrfindia.org/uploads/${safeName}`;
+      try {
+        console.log(`[MEDIA] Local file missing. Fetching from production: ${remoteUrl}`);
+        const response = await fetch(remoteUrl, { next: { revalidate: 3600 } });
+        if (response.ok) {
+          const arrayBuffer = await response.arrayBuffer();
+          const buffer = Buffer.from(arrayBuffer);
+          const localDir = path.join(process.cwd(), 'public', 'uploads');
+          if (!fs.existsSync(localDir)) {
+            fs.mkdirSync(localDir, { recursive: true });
+          }
+          const targetPath = path.join(localDir, safeName);
+          fs.writeFileSync(targetPath, buffer);
+          filePath = targetPath;
+          console.log(`[MEDIA] Cached remote file locally: ${targetPath}`);
+        }
+      } catch (err) {
+        console.warn(`[MEDIA WARNING] Failed to download remote file ${remoteUrl}:`, err);
+      }
+    }
+
     if (!filePath) {
       return new NextResponse(null, { status: 404 });
     }
 
-    const fileBuffer = fs.readFileSync(filePath);
-    const stat = fs.statSync(filePath);
+    const fileBuffer = await fs.promises.readFile(filePath);
+    const stat = await fs.promises.stat(filePath);
 
     return new NextResponse(fileBuffer, {
       status: 200,
@@ -125,13 +150,14 @@ export async function GET(
         'Content-Length': stat.size.toString(),
         // ── Security headers ────────────────────────────────────────
         'Content-Disposition': 'inline', // Never trigger download dialog
-        'Cache-Control': 'private, max-age=1800, must-revalidate', // 30 min cache (matches token rounding)
+        'Cache-Control': 'public, max-age=86400, stale-while-revalidate=3600', // Cache publicly for 24 hours
         'X-Content-Type-Options': 'nosniff',
         'X-Frame-Options': 'SAMEORIGIN',
         'Cross-Origin-Resource-Policy': 'same-origin', // Block cross-origin embedding
         'Access-Control-Allow-Origin': '', // No CORS
         // Prevent saving / right-click save
         'Content-Security-Policy': "default-src 'none'",
+
       },
     });
   } catch (error: any) {

@@ -33,6 +33,18 @@ function useCountUp(target: number, duration = 1800, shouldStart = false) {
 
 function StatCard({ stat, trigger }: { stat: StatItem; trigger: boolean }) {
   const count = useCountUp(stat.value, 1600, trigger);
+  
+  // Calculate value text to display inside circle
+  const displayVal = stat.value > 0 ? count.toLocaleString('en-IN') : '';
+  const text = `${stat.prefix || ''}${displayVal}${stat.suffix || ''}`;
+  
+  // Dynamically calculate font size based on text length to prevent overlap
+  let fontSize = '17px';
+  if (text.length > 10) fontSize = '8px';
+  else if (text.length > 8) fontSize = '10px';
+  else if (text.length > 6) fontSize = '12px';
+  else if (text.length > 4) fontSize = '14px';
+
   return (
     <div className={styles.card} style={{ '--color': stat.color || '#b91c1c' } as React.CSSProperties}>
       <div className={styles.ring}>
@@ -41,10 +53,10 @@ function StatCard({ stat, trigger }: { stat: StatItem; trigger: boolean }) {
           <circle cx="40" cy="40" r="34" className={styles.fill}
             strokeDasharray={`${trigger ? 213 : 0} 213`} />
         </svg>
-        <div className={styles.number}>
-          {stat.prefix && <span className={styles.affix}>{stat.prefix}</span>}
-          {count.toLocaleString('en-IN')}
-          {stat.suffix && <span className={styles.affix}>{stat.suffix}</span>}
+        <div className={styles.number} style={{ fontSize }}>
+          {stat.prefix && <span className={styles.affix} style={{ fontSize: `calc(${fontSize} * 0.7)` }}>{stat.prefix}</span>}
+          {displayVal}
+          {stat.suffix && <span className={styles.affix} style={{ fontSize: `calc(${fontSize} * 0.7)` }}>{stat.suffix}</span>}
         </div>
       </div>
       <div className={styles.label}>{stat.label}</div>

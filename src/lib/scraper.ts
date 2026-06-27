@@ -7,19 +7,64 @@ const FEEDS = [
   { source: 'ReliefWeb India (Disaster Reports)', url: 'https://reliefweb.int/country/ind/rss.xml' }
 ];
 
-export const categoryFallbacks: Record<string, string> = {
-  earthquake: 'https://images.unsplash.com/photo-1594897030264-ab7d87efc473?auto=format&fit=crop&w=800&q=80',
-  flood: 'https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?auto=format&fit=crop&w=800&q=80',
-  wildfire: 'https://images.unsplash.com/photo-1508873696983-2df519f0397e?auto=format&fit=crop&w=800&q=80',
-  cyclone: 'https://images.unsplash.com/photo-1527482797697-8795b05a133d?auto=format&fit=crop&w=800&q=80',
-  storm: 'https://images.unsplash.com/photo-1504370805625-d32c54b16100?auto=format&fit=crop&w=800&q=80',
-  landslide: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80',
-  drought: 'https://images.unsplash.com/photo-1473116763269-b552f58d6f67?auto=format&fit=crop&w=800&q=80',
-  climate: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80',
-  environment: 'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80',
-  sustainability: 'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=800&q=80',
-  breaking: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80'
+export const categoryFallbacks: Record<string, string[]> = {
+  earthquake: [
+    'https://images.unsplash.com/photo-1594897030264-ab7d87efc473?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1541185933-ef5d8ed016c2?auto=format&fit=crop&w=800&q=80'
+  ],
+  flood: [
+    'https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1469521669889-41c1941e1218?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1547683905-f686c993aae5?auto=format&fit=crop&w=800&q=80'
+  ],
+  wildfire: [
+    'https://images.unsplash.com/photo-1508873696983-2df519f0397e?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1602916897489-06b986c0a68e?auto=format&fit=crop&w=800&q=80'
+  ],
+  cyclone: [
+    'https://images.unsplash.com/photo-1527482797697-8795b05a133d?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1504370805625-d32c54b16100?auto=format&fit=crop&w=800&q=80'
+  ],
+  storm: [
+    'https://images.unsplash.com/photo-1504370805625-d32c54b16100?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1561484930-998b6a7b22e8?auto=format&fit=crop&w=800&q=80'
+  ],
+  landslide: [
+    'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=800&q=80'
+  ],
+  drought: [
+    'https://images.unsplash.com/photo-1473116763269-b552f58d6f67?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=800&q=80'
+  ],
+  climate: [
+    'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1434725039720-abb26e552fc1?auto=format&fit=crop&w=800&q=80'
+  ],
+  environment: [
+    'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80'
+  ],
+  sustainability: [
+    'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=800&q=80'
+  ],
+  breaking: [
+    'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80'
+  ]
 };
+
+export function getCategoryFallback(category: string, salt: string): string {
+  const list = categoryFallbacks[category] || categoryFallbacks.breaking;
+  let hash = 0;
+  for (let i = 0; i < salt.length; i++) {
+    hash = salt.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % list.length;
+  return list[index];
+}
+
 
 // Simple classification engine based on keyword matching
 export function classifyCategory(title: string, excerpt: string): string {
@@ -297,27 +342,55 @@ export async function runScraper(): Promise<{ success: boolean; itemsScraped: nu
           resolvedImageUrl = await fetchArticleOgImage(link);
         }
         if (!resolvedImageUrl) {
-          resolvedImageUrl = categoryFallbacks[category] || categoryFallbacks.breaking;
+          resolvedImageUrl = getCategoryFallback(category, title);
         }
         
         try {
-          // Use INSERT IGNORE to prevent duplicate entries based on unique URL
-          const result = await query<DbInsertResult>(
-            `INSERT IGNORE INTO scraped_content (headline, excerpt, source, url, category, status, image_url, location, published_date) 
-             VALUES (?, ?, ?, ?, ?, 'Pending', ?, ?, ?)`,
-            [
-              title,
-              description.substring(0, 500),
-              feed.source,
-              link,
-              category,
-              resolvedImageUrl,
-              location,
-              publishedDate
-            ]
+          // Check if article url already exists to prevent duplicate publishing
+          const exists = await query<any[]>(
+            'SELECT id FROM scraped_content WHERE url = ? LIMIT 1',
+            [link]
           );
 
-          if (result.affectedRows > 0) {
+          if (exists.length === 0) {
+            // 1. Insert into news table (publishes automatically to frontend)
+            const newsResult = await query<any>(
+              `INSERT INTO news (tag, source, headline, excerpt, published_date, author, external_link, thumbnail_emoji, image_url, category, location) 
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              [
+                'Alert',
+                feed.source,
+                title,
+                description.substring(0, 500),
+                publishedDate,
+                'Editor, DCRF',
+                link,
+                '📡',
+                resolvedImageUrl,
+                category.toLowerCase(),
+                location
+              ]
+            );
+            
+            const newNewsId = newsResult.insertId;
+
+            // 2. Insert into scraped_content mapping with Published status
+            await query(
+              `INSERT INTO scraped_content (headline, excerpt, source, url, category, status, image_url, location, published_date, published_id, published_type) 
+               VALUES (?, ?, ?, ?, ?, 'Published', ?, ?, ?, ?, 'News')`,
+              [
+                title,
+                description.substring(0, 500),
+                feed.source,
+                link,
+                category,
+                resolvedImageUrl,
+                location,
+                publishedDate,
+                newNewsId
+              ]
+            );
+
             itemsScraped += 1;
           }
         } catch (dbErr) {
@@ -341,30 +414,58 @@ export async function runScraper(): Promise<{ success: boolean; itemsScraped: nu
     
     for (const { title, description, link, source, imageUrl: itemImageUrl, pubDate, location } of simulated) {
       const category = classifyCategory(title, description);
-      const resolvedImageUrl = itemImageUrl || categoryFallbacks[category] || categoryFallbacks.breaking;
+      const resolvedImageUrl = itemImageUrl || getCategoryFallback(category, title);
       const publishedDate = parsePubDate(pubDate);
       
       try {
-        const result = await query<DbInsertResult>(
-          `INSERT IGNORE INTO scraped_content (headline, excerpt, source, url, category, status, image_url, location, published_date) 
-           VALUES (?, ?, ?, ?, ?, 'Pending', ?, ?, ?)`,
-          [
-            title,
-            description,
-            source,
-            link,
-            category,
-            resolvedImageUrl,
-            location,
-            publishedDate
-          ]
+        const exists = await query<any[]>(
+          'SELECT id FROM scraped_content WHERE url = ? LIMIT 1',
+          [link]
         );
 
-        if (result.affectedRows > 0) {
+        if (exists.length === 0) {
+          // 1. Insert into news
+          const newsResult = await query<any>(
+            `INSERT INTO news (tag, source, headline, excerpt, published_date, author, external_link, thumbnail_emoji, image_url, category, location) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+              'Alert',
+              source,
+              title,
+              description,
+              publishedDate,
+              'Editor, DCRF',
+              link,
+              '📡',
+              resolvedImageUrl,
+              category.toLowerCase(),
+              location
+            ]
+          );
+          
+          const newNewsId = newsResult.insertId;
+
+          // 2. Insert into scraped_content as Published
+          await query(
+            `INSERT INTO scraped_content (headline, excerpt, source, url, category, status, image_url, location, published_date, published_id, published_type) 
+             VALUES (?, ?, ?, ?, ?, 'Published', ?, ?, ?, ?, 'News')`,
+            [
+              title,
+              description,
+              source,
+              link,
+              category,
+              resolvedImageUrl,
+              location,
+              publishedDate,
+              newNewsId
+            ]
+          );
+
           itemsScraped += 1;
         }
-      } catch {
-        // Safe to ignore duplicate insertions
+      } catch (simErr) {
+        console.error('Simulated backup insertion failed:', simErr);
       }
     }
   }

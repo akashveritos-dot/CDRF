@@ -79,7 +79,11 @@ const getCachedTelemetryData = unstable_cache(
       monsoonHeatmap,
       activeIncidentsRes,
       reportsCountRes,
-      alertsCountRes
+      alertsCountRes,
+      heroSettingsRows,
+      heroStripStats,
+      apiConfigs,
+      mapsMetadataRows
     ] = await Promise.all([
       query<TickerAlert[]>('SELECT * FROM ticker_alerts ORDER BY id DESC'),
       query<HeroStat[]>('SELECT * FROM hero_stats'),
@@ -91,7 +95,11 @@ const getCachedTelemetryData = unstable_cache(
       query<MonsoonHeatmap[]>('SELECT * FROM monsoon_heatmap'),
       query<{ total: string | number | null }[]>('SELECT SUM(count) as total FROM disaster_events'),
       query<{ cnt: number | null }[]>('SELECT COUNT(*) as cnt FROM reports'),
-      query<{ cnt: number | null }[]>('SELECT COUNT(*) as cnt FROM ticker_alerts')
+      query<{ cnt: number | null }[]>('SELECT COUNT(*) as cnt FROM ticker_alerts'),
+      query<any[]>('SELECT * FROM hero_settings ORDER BY id DESC LIMIT 1'),
+      query<any[]>('SELECT * FROM hero_strip_stats ORDER BY display_order ASC'),
+      query<any[]>('SELECT * FROM api_configs ORDER BY id ASC'),
+      query<any[]>('SELECT * FROM maps_metadata WHERE id = \'india-disaster-risk\' LIMIT 1')
     ]);
 
     return {
@@ -105,7 +113,11 @@ const getCachedTelemetryData = unstable_cache(
       monsoonHeatmap,
       activeIncidentsRes,
       reportsCountRes,
-      alertsCountRes
+      alertsCountRes,
+      heroSettings: heroSettingsRows[0] || null,
+      heroStripStats,
+      apiConfigs,
+      mapsMetadata: mapsMetadataRows[0] || null
     };
   },
   ['telemetry-db-data-cache'],
@@ -184,7 +196,11 @@ export async function GET() {
       monsoonHeatmap,
       activeIncidentsRes,
       reportsCountRes,
-      alertsCountRes
+      alertsCountRes,
+      heroSettings,
+      heroStripStats,
+      apiConfigs,
+      mapsMetadata
     } = await getCachedTelemetryData();
 
     // Sort heroStats to match static fallback layout order to prevent reordering-animation glitches
@@ -261,7 +277,11 @@ export async function GET() {
       lossShare,
       stateHazards,
       heatmapData,
-      homepageStats
+      homepageStats,
+      heroSettings,
+      heroStripStats,
+      apiConfigs,
+      mapsMetadata
     });
   } catch (error: unknown) {
     const errMsg = error instanceof Error ? error.message : String(error);

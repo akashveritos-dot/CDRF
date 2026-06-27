@@ -199,6 +199,7 @@ function MediaElementPlayer({ url, onDuration }: { url: string; onDuration?: (d:
 
 /* ─── MAIN ───────────────────────────────────── */
 export default function AdminPagesManager() {
+  const [role, setRole] = useState<string>('ADMIN');
   const [pages, setPages] = useState<PageMeta[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
@@ -232,6 +233,13 @@ export default function AdminPagesManager() {
     (async () => {
       setIsLoading(true);
       try {
+        // Fetch user session for role-based permissions
+        const authRes = await fetch('/api/auth/me');
+        const authData = await authRes.json();
+        if (authData.authenticated && authData.user) {
+          setRole(authData.user.role);
+        }
+
         const res = await fetch('/api/admin/pages');
         if (res.ok) {
           const data = await res.json();
@@ -932,7 +940,12 @@ export default function AdminPagesManager() {
                             }}>
                               <Edit3 size={13} /> Edit
                             </button>
-                            <button className={styles.deleteBtn} onClick={() => handleDeleteCard(item.id!)}>
+                            <button 
+                              className={`${styles.deleteBtn} ${role !== 'SUPERADMIN' ? styles.disabledBtn : ''}`}
+                              disabled={role !== 'SUPERADMIN'}
+                              title={role !== 'SUPERADMIN' ? 'Only Super Admin can delete elements' : 'Delete'}
+                              onClick={() => handleDeleteCard(item.id!)}
+                            >
                               <Trash2 size={13} /> Delete
                             </button>
                           </div>
@@ -1000,7 +1013,12 @@ export default function AdminPagesManager() {
                             }}>
                               <Edit3 size={13} /> Edit
                             </button>
-                            <button className={styles.deleteBtn} onClick={() => handleDeleteCard(item.id!)}>
+                            <button 
+                              className={`${styles.deleteBtn} ${role !== 'SUPERADMIN' ? styles.disabledBtn : ''}`}
+                              disabled={role !== 'SUPERADMIN'}
+                              title={role !== 'SUPERADMIN' ? 'Only Super Admin can delete elements' : 'Delete'}
+                              onClick={() => handleDeleteCard(item.id!)}
+                            >
                               <Trash2 size={13} /> Delete
                             </button>
                           </div>

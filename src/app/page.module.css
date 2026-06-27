@@ -1029,7 +1029,13 @@
   font-size: 13px;
   color: var(--text-muted);
   line-height: 1.6;
-  flex: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: 4.8em;
+  text-align: justify;
 }
 
 .feedCardBtn {
@@ -1128,7 +1134,13 @@
   color: var(--text-muted);
   line-height: 1.6;
   margin-bottom: 20px;
-  flex: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: 4.8em;
+  text-align: justify;
 }
 
 .reportMetaGrid {
@@ -1140,6 +1152,7 @@
   border-top: 1px solid var(--border-color);
   padding-top: 14px;
   margin-bottom: 14px;
+  margin-top: auto;
 }
 
 .reportMetaGrid div {
@@ -1700,3 +1713,147 @@
     padding: 20px 16px;
   }
 }
+
+/* Super Admin API panel styles */
+.apiPanelCard {
+  background: var(--bg-surface);
+  border: 1.5px solid rgba(185, 28, 28, 0.15);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  box-shadow: var(--shadow-premium), 0 0 30px rgba(185, 28, 28, 0.05);
+  margin-top: 40px;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.apiPanelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.apiPanelTitleBlock {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.apiPanelIcon {
+  color: var(--red-primary);
+}
+
+.apiPanelTitleBlock h3 {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-default);
+  margin: 0;
+}
+
+.apiPanelBadge {
+  font-size: 10px;
+  font-weight: 800;
+  background: var(--red-pale);
+  color: var(--red-primary);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.apiPanelSubtitle {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  margin: 0 0 24px;
+}
+
+.apiConfigsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.apiConfigItem {
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color var(--transition-fast);
+}
+
+.apiConfigItem:hover {
+  border-color: var(--gold-primary);
+}
+
+.apiConfigHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.apiConfigName {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-default);
+}
+
+.apiConfigMethod {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.methodGet {
+  background: rgba(41, 128, 185, 0.1);
+  color: #2980b9;
+}
+
+.methodPost {
+  background: rgba(14, 122, 107, 0.1);
+  color: #0e7a6b;
+}
+
+.apiConfigUrl {
+  font-size: 11px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  padding: 6px 10px;
+  border-radius: 4px;
+  word-break: break-all;
+}
+
+.apiConfigDesc {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  flex-grow: 1;
+}
+
+.apiConfigFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 8px;
+  margin-top: 4px;
+  color: var(--text-muted);
+}
+
+.statusActive {
+  color: var(--accessible-green);
+  font-weight: 700;
+}
+
+.statusInactive {
+  color: var(--text-muted);
+  font-weight: 700;
+}
+

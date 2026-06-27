@@ -192,6 +192,13 @@
   font-size: 13px;
   color: var(--text-muted);
   line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: 4.8em;
+  text-align: justify;
 }
 
 .footer {
@@ -372,6 +379,7 @@
 }
 
 .modalInput {
+  box-sizing: border-box;
   width: 100%;
   padding: 12px 14px;
   font-size: 14px;
@@ -393,6 +401,7 @@
 }
 
 .modalSubmitBtn {
+  box-sizing: border-box;
   width: 100%;
   padding: 12px;
   font-size: 14px;
@@ -454,4 +463,16 @@
   width: 16px;
   height: 16px;
   cursor: pointer;
+}
+
+.modalDescription {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 20px;
+  max-height: 120px;
+  overflow-y: auto;
+  padding-right: 8px;
+  border-left: 3px solid var(--gold-primary);
+  padding-left: 12px;
 }

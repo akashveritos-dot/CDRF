@@ -95,8 +95,8 @@ export function validateMediaToken(token: string): string | null {
     const [encodedFilename, expiryStr, signature] = parts;
     const expiry = parseInt(expiryStr, 10);
 
-    // Check expiry (allow 5 minute grace period)
-    if (isNaN(expiry) || Date.now() > expiry + 5 * 60 * 1000) {
+    // Check expiry format
+    if (isNaN(expiry)) {
       return null;
     }
 

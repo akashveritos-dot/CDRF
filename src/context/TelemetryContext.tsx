@@ -27,6 +27,10 @@ interface TelemetryData {
     disasterCategories: number;
     alertsIssued: number;
   };
+  heroSettings?: any;
+  heroStripStats?: any[];
+  apiConfigs?: any[];
+  mapsMetadata?: any;
 }
 
 interface TelemetryContextValue {
@@ -55,7 +59,11 @@ const DEFAULT_STATE: TelemetryData = {
     reportsPublished: 6,
     disasterCategories: 10,
     alertsIssued: 7
-  }
+  },
+  heroSettings: null,
+  heroStripStats: [],
+  apiConfigs: [],
+  mapsMetadata: null
 };
 
 export function TelemetryProvider({ children }: { children: ReactNode }) {
@@ -78,7 +86,11 @@ export function TelemetryProvider({ children }: { children: ReactNode }) {
             lossShare: json.lossShare || DEFAULT_STATE.lossShare,
             stateHazards: json.stateHazards || DEFAULT_STATE.stateHazards,
             heatmapData: json.heatmapData || DEFAULT_STATE.heatmapData,
-            homepageStats: json.homepageStats || DEFAULT_STATE.homepageStats
+            homepageStats: json.homepageStats || DEFAULT_STATE.homepageStats,
+            heroSettings: json.heroSettings || null,
+            heroStripStats: json.heroStripStats || [],
+            apiConfigs: json.apiConfigs || [],
+            mapsMetadata: json.mapsMetadata || null
           });
           setError(null);
         }

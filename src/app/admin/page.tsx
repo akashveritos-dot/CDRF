@@ -250,6 +250,10 @@ export default function AdminDashboard() {
               Initiate deep extraction sequences against PIB, disastersnews, and thecsruniverse. 
               The system will categorize items and stage them in the queue.
             </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', fontSize: '12px', color: 'var(--text-muted)' }}>
+              <Clock size={14} style={{ color: 'var(--red-primary)' }} />
+              <span><strong>Scheduled daily runs (IST):</strong> 8:00 AM • 12:00 PM • 4:00 PM (Automated)</span>
+            </div>
             
             <div className={styles.actionRow}>
               <button 

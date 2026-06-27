@@ -270,6 +270,7 @@
 }
 
 .input {
+  box-sizing: border-box;
   width: 100%;
   padding: 13px 16px;
   background: var(--bg-surface-alt);
@@ -291,6 +292,7 @@
 }
 
 .unlockBtn {
+  box-sizing: border-box;
   width: 100%;
   padding: 14px 24px;
   background: linear-gradient(135deg, var(--gold-primary), var(--wine-red-light));

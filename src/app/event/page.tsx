@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import styles from './page.module.css';
 import { eventFeatures } from '@/data/dataStore';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
-import { Calendar, MapPin, Users, Award, Shield, ChevronDown, Check, Zap, Building2, Globe, Mic } from 'lucide-react';
+import { Calendar, MapPin, Users, Award, Shield, ChevronDown, Check, Zap, Building2, Globe, Mic, FileText } from 'lucide-react';
 import PageHero from '@/components/ui/PageHero/PageHero';
 
 const scheduleDay1 = [
@@ -50,6 +50,7 @@ function getFriendlyError(err: any, fallback: string): string {
 }
 
 export default function EventPage() {
+  const [pageData, setPageData] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('Day 1');
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [isRegistered, setIsRegistered] = useState(false);
@@ -70,7 +71,78 @@ export default function EventPage() {
 
   useEffect(() => {
     setIsMounted(true);
+    // Fetch CMS page content for Conclave dcrc-26
+    async function loadConclaveData() {
+      try {
+        const res = await fetch('/api/pages/dcrc-26');
+        if (res.ok) {
+          const data = await res.json();
+          setPageData(data);
+        }
+      } catch (err) {
+        console.error('Failed to load conclave database sections:', err);
+      }
+    }
+    loadConclaveData();
   }, []);
+
+  // Icon resolver helpers for dynamic DB cards
+  const getIcon = (iconName: string) => {
+    switch (iconName?.toLowerCase()) {
+      case 'users': return <Users size={20} />;
+      case 'building': return <Building2 size={20} />;
+      case 'globe': return <Globe size={20} />;
+      case 'mic': return <Mic size={20} />;
+      case 'zap': return <Zap size={20} />;
+      case 'award': return <Award size={20} />;
+      default: return <Users size={20} />;
+    }
+  };
+
+  const getFeatureIcon = (iconName: string) => {
+    switch (iconName) {
+      case '🏛️': return <Building2 size={24} style={{ color: 'var(--red-primary)' }} />;
+      case '🏆': return <Award size={24} style={{ color: 'var(--gold-primary)' }} />;
+      case '🔬': return <Zap size={24} style={{ color: 'var(--teal-primary)' }} />;
+      case '📊': return <FileText size={24} style={{ color: 'var(--blue-primary)' }} />;
+      case '🌐': return <Globe size={24} style={{ color: 'var(--purple-primary)' }} />;
+      case '🤝': return <Users size={24} style={{ color: 'var(--orange-primary)' }} />;
+      default: return <Zap size={24} style={{ color: 'var(--red-primary)' }} />;
+    }
+  };
+
+  // Map dynamic database sections
+  const statsSection = pageData?.sections?.find((s: any) => s.title === 'Stats Strip');
+  const displayDelegateStats = statsSection?.cards?.map((c: any) => ({
+    icon: getIcon(c.extraData?.icon || 'users'),
+    value: c.title,
+    label: c.description
+  })) || delegateStats;
+
+  const tickerSection = pageData?.sections?.find((s: any) => s.title === 'Partner Organisations');
+  const displayPartnerLogos = tickerSection?.cards?.map((c: any) => c.title) || partnerLogos;
+
+  const featuresSection = pageData?.sections?.find((s: any) => s.title === 'Event Features');
+  const displayFeatures = featuresSection?.cards?.map((c: any) => ({
+    id: c.id,
+    icon: getFeatureIcon(c.extraData?.icon),
+    title: c.title,
+    description: c.description
+  })) || eventFeatures;
+
+  const agenda1Section = pageData?.sections?.find((s: any) => s.title === 'Conclave Agenda - Day 1');
+  const displayScheduleDay1 = agenda1Section?.cards?.map((c: any) => ({
+    time: c.extraData?.time || '09:30 - 10:30',
+    title: c.title,
+    desc: c.description
+  })) || scheduleDay1;
+
+  const agenda2Section = pageData?.sections?.find((s: any) => s.title === 'Conclave Agenda - Day 2');
+  const displayScheduleDay2 = agenda2Section?.cards?.map((c: any) => ({
+    time: c.extraData?.time || '09:30 - 10:30',
+    title: c.title,
+    desc: c.description
+  })) || scheduleDay2;
 
   // Recalculate dropdown position on window resize / scroll when open
   useEffect(() => {
@@ -183,7 +255,7 @@ export default function EventPage() {
           eyebrow="Nov 26–27, 2026 · New Delhi"
           line1="DCRC 2026"
           line2="CONCLAVE"
-          subtitle="India’s premier annual convening forum mapping disaster technologies, policy briefs, and corporate CSR resilience frameworks."
+          subtitle={pageData?.description || "India’s premier annual convening forum mapping disaster technologies, policy briefs, and corporate CSR resilience frameworks."}
         />
       </ScrollReveal>
 
@@ -192,10 +264,16 @@ export default function EventPage() {
         <div className={styles.banner}>
           <div>
             <div className={styles.eventEyebrow}>Hybrid Conclave • New Delhi</div>
-            <h3>Disaster & Climate Resilience Conclave 2026</h3>
+            <h3>{pageData?.title || "Disaster & Climate Resilience Conclave 2026"}</h3>
             <p>
-              Under the theme <strong>"Convergence for Action"</strong>, DCRC ’26 will gather 500+ delegates from ministries,
-              global agencies (UNDRR, World Bank), major corporates, NGOs, and IIT researchers to map joint resilience operations.
+              {pageData?.content ? (
+                <span dangerouslySetInnerHTML={{ __html: pageData.content }} />
+              ) : (
+                <span>
+                  Under the theme <strong>"Convergence for Action"</strong>, DCRC ’26 will gather 500+ delegates from ministries,
+                  global agencies (UNDRR, World Bank), major corporates, NGOs, and IIT researchers to map joint resilience operations.
+                </span>
+              )}
             </p>
             <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginTop: '20px', fontSize: '13px', color: 'var(--text-muted)' }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -244,7 +322,7 @@ export default function EventPage() {
       {/* ══ Animated Delegate Stats Strip ════════════════════ */}
       <ScrollReveal direction="up" delay={0.08}>
         <div className={styles.statsStrip}>
-          {delegateStats.map((s, i) => (
+          {displayDelegateStats.map((s: any, i: number) => (
             <div key={i} className={styles.statChip}>
               <span className={styles.statChipIcon}>{s.icon}</span>
               <span className={styles.statChipValue}>{s.value}</span>
@@ -260,7 +338,7 @@ export default function EventPage() {
           <span className={styles.tickerLabel}>PARTNER ORGANISATIONS</span>
           <div className={styles.tickerTrack}>
             <div className={styles.tickerInner}>
-              {[...partnerLogos, ...partnerLogos].map((logo, i) => (
+              {[...displayPartnerLogos, ...displayPartnerLogos].map((logo: string, i: number) => (
                 <span key={i} className={styles.tickerItem}>{logo}</span>
               ))}
             </div>
@@ -270,9 +348,9 @@ export default function EventPage() {
 
       {/* ══ Features Grid ════════════════════════════ */}
       <div className={styles.featuresGrid}>
-        {eventFeatures.map((feat, idx) => (
+        {displayFeatures.map((feat: any, idx: number) => (
           <ScrollReveal
-            key={feat.id}
+            key={feat.id || idx}
             direction="up"
             delay={0.05 * (idx % 3)}
           >
@@ -310,7 +388,7 @@ export default function EventPage() {
 
         {/* Vertical animated timeline */}
         <div className={styles.verticalTimeline}>
-          {(activeTab === 'Day 1' ? scheduleDay1 : scheduleDay2).map((item, idx) => (
+          {(activeTab === 'Day 1' ? displayScheduleDay1 : displayScheduleDay2).map((item: any, idx: number) => (
             <ScrollReveal key={idx} direction="left" delay={0.07 * idx}>
               <div className={styles.tlItem}>
                 <div className={styles.tlLeft}>

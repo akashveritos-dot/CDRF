@@ -60,7 +60,8 @@ async function runMigration(pool: mysql.Pool) {
       'ALTER TABLE report_downloads ADD COLUMN designation VARCHAR(255) NULL',
       "ALTER TABLE report_downloads ADD COLUMN entity_type ENUM('Individual', 'Organization') DEFAULT 'Individual'",
       'ALTER TABLE report_downloads ADD COLUMN organization_name VARCHAR(255) NULL',
-      'ALTER TABLE report_downloads ADD COLUMN mobile VARCHAR(20) NULL'
+      'ALTER TABLE report_downloads ADD COLUMN mobile VARCHAR(20) NULL',
+      'ALTER TABLE news ADD COLUMN is_manual TINYINT DEFAULT 0'
     ];
     for (const sql of alterQueries) {
       try {
@@ -182,7 +183,63 @@ async function runMigration(pool: mysql.Pool) {
     `;
     await pool.execute(createReportDownloadsTable);
 
-    console.log('[DB MIGRATION] Ensured membership plans, discounts, history, and report_downloads tables exist.');
+    // Create hero_settings table
+    const createHeroSettingsTable = `
+      CREATE TABLE IF NOT EXISTS hero_settings (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        eyebrow VARCHAR(255) DEFAULT 'Founded 2026 • New Delhi, India',
+        title TEXT NOT NULL,
+        subtitle TEXT NOT NULL,
+        image_url VARCHAR(512) DEFAULT '/hero_background.jpg',
+        video_url VARCHAR(512) DEFAULT NULL,
+        button_text VARCHAR(255) DEFAULT 'Join the Resilience Movement',
+        button_url VARCHAR(255) DEFAULT '/membership#join',
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB;
+    `;
+    await pool.execute(createHeroSettingsTable);
+
+    // Create hero_strip_stats table
+    const createHeroStripStatsTable = `
+      CREATE TABLE IF NOT EXISTS hero_strip_stats (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        label VARCHAR(255) NOT NULL,
+        count INT NOT NULL,
+        suffix VARCHAR(20) DEFAULT '+',
+        display_order INT DEFAULT 0,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB;
+    `;
+    await pool.execute(createHeroStripStatsTable);
+
+    // Create api_configs table
+    const createApiConfigsTable = `
+      CREATE TABLE IF NOT EXISTS api_configs (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        api_name VARCHAR(255) NOT NULL,
+        api_url VARCHAR(512) NOT NULL,
+        method VARCHAR(10) DEFAULT 'GET',
+        description TEXT,
+        data_source VARCHAR(255) DEFAULT 'Public API',
+        status VARCHAR(50) DEFAULT 'Active',
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB;
+    `;
+    await pool.execute(createApiConfigsTable);
+
+    // Create maps_metadata table
+    const createMapsMetadataTable = `
+      CREATE TABLE IF NOT EXISTS maps_metadata (
+        id VARCHAR(50) PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        overview TEXT NOT NULL,
+        info_source VARCHAR(255) DEFAULT 'ISRO & IMD Telemetry',
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB;
+    `;
+    await pool.execute(createMapsMetadataTable);
+
+    console.log('[DB MIGRATION] Ensured membership, report_downloads, hero, api_configs, and maps_metadata tables exist.');
 
     // Seed default plans if empty
     const [rows]: any = await pool.execute('SELECT COUNT(*) as count FROM membership_plans');
@@ -200,6 +257,74 @@ async function runMigration(pool: mysql.Pool) {
         );
       }
       console.log('[DB MIGRATION] Seeded membership plans successfully.');
+    }
+
+    // Seed hero_settings if empty
+    const [heroRows]: any = await pool.execute('SELECT COUNT(*) as count FROM hero_settings');
+    if (heroRows[0] && heroRows[0].count === 0) {
+      await pool.execute(
+        `INSERT INTO hero_settings (eyebrow, title, subtitle, image_url, button_text, button_url) 
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [
+          'Founded 2026 • New Delhi, India',
+          'Building *Resilience*\\nThrough Knowledge,\\nConvergence & Action',
+          'India’s premier multi-stakeholder federation unifying corporates, NGOs, academia, and government bodies to advance disaster preparedness and climate resilience — from early warning to sustainable recovery.',
+          '/hero_background.jpg',
+          'Join the Resilience Movement',
+          '/membership#join'
+        ]
+      );
+      console.log('[DB MIGRATION] Seeded hero_settings.');
+    }
+
+    // Seed hero_strip_stats if empty
+    const [stripRows]: any = await pool.execute('SELECT COUNT(*) as count FROM hero_strip_stats');
+    if (stripRows[0] && stripRows[0].count === 0) {
+      const seedStripStats = [
+        ['Active Incidents', 725, '+', 0],
+        ['Countries Affected', 6, '', 1],
+        ['Reports Published', 9, '+', 2],
+        ['Alerts Issued', 7, '+', 3]
+      ];
+      for (const stat of seedStripStats) {
+        await pool.execute(
+          'INSERT INTO hero_strip_stats (label, count, suffix, display_order) VALUES (?, ?, ?, ?)',
+          stat
+        );
+      }
+      console.log('[DB MIGRATION] Seeded hero_strip_stats.');
+    }
+
+    // Seed api_configs if empty
+    const [apiRows]: any = await pool.execute('SELECT COUNT(*) as count FROM api_configs');
+    if (apiRows[0] && apiRows[0].count === 0) {
+      const seedApis = [
+        ['Open-Meteo Weather API', 'https://api.open-meteo.com/v1/forecast', 'GET', 'Fetches real-time temperature data for major cities on the homepage dashboard.', 'Open-Meteo Meteorological Agency', 'Active'],
+        ['Ipapi Geolocation API', 'https://ipapi.co/{ip}/json/', 'GET', 'Resolves user IP address to geographical location to customize regional disaster alerts.', 'Ipapi Geolocation Service', 'Active']
+      ];
+      for (const api of seedApis) {
+        await pool.execute(
+          'INSERT INTO api_configs (api_name, api_url, method, description, data_source, status) VALUES (?, ?, ?, ?, ?, ?)',
+          api
+        );
+      }
+      console.log('[DB MIGRATION] Seeded api_configs.');
+    }
+
+    // Seed maps_metadata if empty
+    const [mapsMetaRows]: any = await pool.execute('SELECT COUNT(*) as count FROM maps_metadata');
+    if (mapsMetaRows[0] && mapsMetaRows[0].count === 0) {
+      await pool.execute(
+        `INSERT INTO maps_metadata (id, title, overview, info_source) 
+         VALUES (?, ?, ?, ?)`,
+        [
+          'india-disaster-risk',
+          'Composite Disaster Risk · India',
+          'Interactive spatial visualization of real-time composite climate hazard levels, heat stress tags, and river flooding discharge indexes across Indian states.',
+          'ISRO RISAT, IMD Stations, CWC Streams'
+        ]
+      );
+      console.log('[DB MIGRATION] Seeded maps_metadata.');
     }
   } catch (error) {
     console.error('[DB MIGRATION ERROR] Migration runner failed:', error);
@@ -428,6 +553,8 @@ async function seedPageData(pool: mysql.Pool) {
 
     // ── UPGRADE: Add missing content sections for pages that only have stats ──
     await addMissingSections(pool);
+    await upgradePodcastData(pool);
+    await upgradeConclaveData(pool);
 
   } catch (error) {
     console.error('[DB SEED ERROR] Failed to seed page data:', error);
@@ -606,6 +733,109 @@ async function upgradePodcastData(pool: mysql.Pool) {
     }
   } catch (err) {
     console.warn("[DB UPGRADE WARN] upgradePodcastData failed:", err);
+  }
+}
+
+async function upgradeConclaveData(pool: mysql.Pool) {
+  try {
+    // Check if Stats Strip section exists for dcrc-26
+    const [rows]: any = await pool.execute(
+      "SELECT COUNT(*) as count FROM cms_page_sections WHERE page_slug = 'dcrc-26' AND title = 'Stats Strip'"
+    );
+    if (rows[0]?.count > 0) return; // Already upgraded
+
+    console.log("[DB UPGRADE] Upgrading conclave dcrc-26 page with Stats Strip, Partners, and Agenda...");
+
+    // Get max display order
+    const [maxOrder]: any = await pool.execute(
+      "SELECT MAX(display_order) as maxOrd FROM cms_page_sections WHERE page_slug = 'dcrc-26'"
+    );
+    let nextOrder = (maxOrder[0]?.maxOrd || 0) + 1;
+
+    // 1. Stats Strip
+    const [s1]: any = await pool.execute(
+      `INSERT INTO cms_page_sections (page_slug, display_order, title, description) 
+       VALUES (?, ?, ?, ?)`,
+      ['dcrc-26', nextOrder++, 'Stats Strip', 'Delegate stats strip']
+    );
+    const s1Id = s1.insertId;
+    const stats = [
+      ['500+', 'Delegates', { icon: 'users' }],
+      ['60+', 'Organizations', { icon: 'building' }],
+      ['12', 'Nations', { icon: 'globe' }],
+      ['30+', 'Speakers', { icon: 'mic' }],
+      ['2', 'Days of Sessions', { icon: 'zap' }],
+      ['4', 'Award Categories', { icon: 'award' }]
+    ];
+    for (let i = 0; i < stats.length; i++) {
+      await pool.execute(
+        `INSERT INTO cms_page_cards (section_id, display_order, title, description, extra_data) 
+         VALUES (?, ?, ?, ?, ?)`,
+        [s1Id, i, stats[i][0], stats[i][1], JSON.stringify(stats[i][2])]
+      );
+    }
+
+    // 2. Partner Organisations Ticker
+    const [s2]: any = await pool.execute(
+      `INSERT INTO cms_page_sections (page_slug, display_order, title, description) 
+       VALUES (?, ?, ?, ?)`,
+      ['dcrc-26', nextOrder++, 'Partner Organisations', 'Partner ticker logos']
+    );
+    const s2Id = s2.insertId;
+    const logos = ['NDMA', 'UNDRR', 'World Bank', 'ISRO', 'TERI', 'CEEW', 'IIT Delhi', 'WRI India', 'GIZ', 'NITI Aayog'];
+    for (let i = 0; i < logos.length; i++) {
+      await pool.execute(
+        `INSERT INTO cms_page_cards (section_id, display_order, title, description, extra_data) 
+         VALUES (?, ?, ?, ?, ?)`,
+        [s2Id, i, logos[i], '', '{}']
+      );
+    }
+
+    // 3. Conclave Agenda - Day 1
+    const [s3]: any = await pool.execute(
+      `INSERT INTO cms_page_sections (page_slug, display_order, title, description) 
+       VALUES (?, ?, ?, ?)`,
+      ['dcrc-26', nextOrder++, 'Conclave Agenda - Day 1', 'Day 1 conclave schedule']
+    );
+    const s3Id = s3.insertId;
+    const agendaDay1 = [
+      ['Inaugural Plenary & Keynote address', 'Welcome address by Secretary General DCRF. Launch of the Annual Disaster & Climate Action Index Report by NDMA officials.', { time: '09:30 - 10:30' }],
+      ['Panel: Aligning CSR & ESG Capital for Pre-Disaster Resilience', 'Directing corporate giving from post-disaster response to localized mitigation tools, early warning arrays, and municipal cooling structures.', { time: '11:00 - 12:30' }],
+      ['Panel: Himalayan Glacier Retreat & Downstream Flooding', 'Technical assessments from ISRO researchers and glacier geologists mapping GLOF patterns and water secure zones through 2050.', { time: '14:00 - 15:30' }],
+      ['Working Group: Heat Action Plan deployment guides', 'Municipal frameworks for Indian cities over 1 million population. Early warning, cool roofs, and cooling centers.', { time: '16:00 - 17:30' }]
+    ];
+    for (let i = 0; i < agendaDay1.length; i++) {
+      await pool.execute(
+        `INSERT INTO cms_page_cards (section_id, display_order, title, description, extra_data) 
+         VALUES (?, ?, ?, ?, ?)`,
+        [s3Id, i, agendaDay1[i][0], agendaDay1[i][1], JSON.stringify(agendaDay1[i][2])]
+      );
+    }
+
+    // 4. Conclave Agenda - Day 2
+    const [s4]: any = await pool.execute(
+      `INSERT INTO cms_page_sections (page_slug, display_order, title, description) 
+       VALUES (?, ?, ?, ?)`,
+      ['dcrc-26', nextOrder++, 'Conclave Agenda - Day 2', 'Day 2 conclave schedule']
+    );
+    const s4Id = s4.insertId;
+    const agendaDay2 = [
+      ['Disaster-Tech start-up Pitch & Showcase', 'Geospatial mapping systems, drone surveillance models, real-time IoT sensors, and climate risk analytics startups presenting prototypes.', { time: '09:30 - 11:30' }],
+      ['Panel: Climate-Induced Migration & Community Shelters', 'Socio-economic vulnerabilities, delta erosion, and traditional coastal shelter architectures integrating modern Early Warning systems.', { time: '12:00 - 13:30' }],
+      ['Federation Networking & Working Group alignment', 'Interactive workshop matching corporate CSR leads with local NGOs and research bodies to deploy resilience projects.', { time: '14:30 - 16:00' }],
+      ['DCRF Recognition Awards Ceremony', 'Honoring Best Corporate Response, Best NGO Initiative, Disaster-Tech Innovator, and Climate Resilient Community Awards.', { time: '16:30 - 17:30' }]
+    ];
+    for (let i = 0; i < agendaDay2.length; i++) {
+      await pool.execute(
+        `INSERT INTO cms_page_cards (section_id, display_order, title, description, extra_data) 
+         VALUES (?, ?, ?, ?, ?)`,
+        [s4Id, i, agendaDay2[i][0], agendaDay2[i][1], JSON.stringify(agendaDay2[i][2])]
+      );
+    }
+
+    console.log("[DB UPGRADE] Conclave dcrc-26 sections upgraded successfully.");
+  } catch (err) {
+    console.warn("Could not upgrade conclave page sections:", err);
   }
 }
 

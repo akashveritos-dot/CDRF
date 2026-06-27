@@ -251,8 +251,8 @@ export async function DELETE(req: NextRequest) {
     }
 
     const session = await verifyToken(token);
-    if (!session || (session.role !== 'ADMIN' && session.role !== 'SUPERADMIN')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    if (!session || session.role !== 'SUPERADMIN') {
+      return NextResponse.json({ error: 'Forbidden: Only Super Admins can delete pages' }, { status: 403 });
     }
 
     const { slug } = await req.json();

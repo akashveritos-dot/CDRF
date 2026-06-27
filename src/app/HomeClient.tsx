@@ -28,7 +28,8 @@ import {
   ExternalLink,
   Thermometer,
   Download,
-  Linkedin
+  Linkedin,
+  ShieldAlert
 } from 'lucide-react';
 
 // Dynamic Import Loading Placeholders to prevent Cumulative Layout Shift (CLS)
@@ -131,12 +132,67 @@ interface HomeClientProps {
   initialCouncils: any[];
 }
 
+interface WordConfig {
+  text: string;
+  isItalic?: boolean;
+  newLine?: boolean;
+}
+
+const parseTitle = (rawText: string): WordConfig[] => {
+  if (!rawText) return [];
+  const cleanText = rawText.replace(/\\n/g, '\n');
+  const lines = cleanText.split('\n');
+  const configs: WordConfig[] = [];
+  lines.forEach((line, lineIdx) => {
+    const words = line.split(' ');
+    words.forEach((word, wordIdx) => {
+      if (!word) return;
+      let isItalic = false;
+      let text = word;
+      if (word.includes('*')) {
+        isItalic = true;
+        text = word.replace(/\*/g, '');
+      } else {
+        // Automatically italicize "Resilience" case-insensitive
+        const cleanWord = word.replace(/[^a-zA-Z]/g, '').toLowerCase();
+        if (cleanWord === 'resilience') {
+          isItalic = true;
+        }
+      }
+      configs.push({
+        text,
+        isItalic,
+        newLine: lineIdx > 0 && wordIdx === 0
+      });
+    });
+  });
+  return configs;
+};
+
 export default function HomeClient({
   initialNews,
   initialReports,
   initialCouncils
 }: HomeClientProps) {
   const { data: telemetryData } = useTelemetry();
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+
+  useEffect(() => {
+    async function checkUserRole() {
+      try {
+        const res = await fetch('/api/auth/me');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.authenticated && data.user && data.user.role === 'SUPERADMIN') {
+            setIsSuperAdmin(true);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch user session:', err);
+      }
+    }
+    checkUserRole();
+  }, []);
 
   const stats = telemetryData.heroStats || [];
   const temps = telemetryData.cityTemps || [];
@@ -151,6 +207,19 @@ export default function HomeClient({
     disasterCategories: 10,
     alertsIssued: 7
   };
+
+  const heroSettings = telemetryData.heroSettings || {
+    eyebrow: 'Founded 2026 • New Delhi, India',
+    title: 'Building *Resilience*\nThrough Knowledge,\nConvergence & Action',
+    subtitle: 'India’s premier multi-stakeholder federation unifying corporates, NGOs, academia, and government bodies to advance disaster preparedness and climate resilience — from early warning to sustainable recovery.',
+    image_url: '/hero_background.jpg',
+    button_text: 'Join the Resilience Movement',
+    button_url: '/membership#join'
+  };
+
+  const parsedWords = React.useMemo(() => {
+    return parseTitle(heroSettings.title);
+  }, [heroSettings.title]);
 
   const [councilMembers] = useState<any[]>(initialCouncils);
   const [latestNews] = useState<any[]>(initialNews);
@@ -192,12 +261,19 @@ export default function HomeClient({
     }
   };
 
-  const dashboardStatsList = [
-    { id: 'incidents', count: homeStats.activeIncidents, suffix: '+', label: 'Active Incidents' },
-    { id: 'countries', count: homeStats.countriesAffected, suffix: '', label: 'Countries Affected' },
-    { id: 'reports', count: homeStats.reportsPublished, suffix: '+', label: 'Reports Published' },
-    { id: 'alerts', count: homeStats.alertsIssued, suffix: '+', label: 'Alerts Issued' }
-  ];
+  const dashboardStatsList = telemetryData.heroStripStats && telemetryData.heroStripStats.length > 0
+    ? telemetryData.heroStripStats.map((s: any) => ({
+        id: `stat-${s.id}`,
+        count: s.count,
+        suffix: s.suffix,
+        label: s.label
+      }))
+    : [
+        { id: 'incidents', count: homeStats.activeIncidents, suffix: '+', label: 'Active Incidents' },
+        { id: 'countries', count: homeStats.countriesAffected, suffix: '', label: 'Countries Affected' },
+        { id: 'reports', count: homeStats.reportsPublished, suffix: '+', label: 'Reports Published' },
+        { id: 'alerts', count: homeStats.alertsIssued, suffix: '+', label: 'Alerts Issued' }
+      ];
 
   return (
     <div>
@@ -207,7 +283,7 @@ export default function HomeClient({
         {/* Next.js Optimized Hero Background Image for Preloading & Speed (Solves LCP Discovery) */}
         <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
           <Image
-            src="/hero_background.jpg"
+            src={heroSettings.image_url || "/hero_background.jpg"}
             alt="Disaster & Climate Resilience Federation Background"
             fill
             priority
@@ -221,18 +297,17 @@ export default function HomeClient({
           <ScrollReveal direction="up" delay={0.1}>
             <div className={styles.heroEyebrow}>
               <Shield size={12} style={{ color: 'var(--red-primary)' }} />
-              Founded 2026 • New Delhi, India
+              {heroSettings.eyebrow}
             </div>
             <h1>
-              <WordTypingEffect />
+              <WordTypingEffect words={parsedWords} />
             </h1>
             <p className={styles.heroSub}>
-              India’s premier multi-stakeholder federation unifying corporates, NGOs, academia,
-              and government bodies to advance disaster preparedness and climate resilience — from early warning to sustainable recovery.
+              {heroSettings.subtitle}
             </p>
             <div className={styles.heroActions}>
-              <Link href="/membership#join" className={styles.btnPrimary}>
-                Join the Resilience Movement
+              <Link href={heroSettings.button_url || "/membership#join"} className={styles.btnPrimary}>
+                {heroSettings.button_text || "Join the Resilience Movement"}
                 <ArrowRight size={16} />
               </Link>
               <a href="#insights" className={styles.btnOutline}>
@@ -289,7 +364,7 @@ export default function HomeClient({
 
       {/* STATS STRIP SECTION - DYNAMIC COUNTERS */}
       <section className={styles.statsStrip}>
-        {dashboardStatsList.map((stat, idx) => (
+        {dashboardStatsList.map((stat: any, idx: number) => (
           <div key={stat.id} className={styles.stripStat}>
             <div className={styles.stripNum}>
               <CountUp end={stat.count} suffix={stat.suffix} />
@@ -380,6 +455,48 @@ export default function HomeClient({
             <Heatmap data={heatmapData} />
           </ScrollReveal>
         </div>
+
+        {isSuperAdmin && telemetryData.apiConfigs && telemetryData.apiConfigs.length > 0 && (
+          <ScrollReveal direction="up" delay={0.4}>
+            <div className={styles.apiPanelCard}>
+              <div className={styles.apiPanelHeader}>
+                <div className={styles.apiPanelTitleBlock}>
+                  <ShieldAlert size={18} className={styles.apiPanelIcon} />
+                  <h3>API Command Center (Super Admin View)</h3>
+                </div>
+                <span className={styles.apiPanelBadge}>Secure Telemetry Configs</span>
+              </div>
+              <p className={styles.apiPanelSubtitle}>
+                Active external and internal endpoints utilized to drive the composite climate hazard dashboard and weather models.
+              </p>
+              
+              <div className={styles.apiConfigsGrid}>
+                {telemetryData.apiConfigs.map((api: any) => (
+                  <div key={api.id} className={styles.apiConfigItem}>
+                    <div className={styles.apiConfigHeader}>
+                      <span className={styles.apiConfigName}>{api.api_name}</span>
+                      <span className={`${styles.apiConfigMethod} ${api.method === 'POST' ? styles.methodPost : styles.methodGet}`}>
+                        {api.method}
+                      </span>
+                    </div>
+                    <div className={styles.apiConfigUrl}>
+                      <code>{api.api_url}</code>
+                    </div>
+                    <div className={styles.apiConfigDesc}>
+                      {api.description}
+                    </div>
+                    <div className={styles.apiConfigFooter}>
+                      <span><strong>Source:</strong> {api.data_source}</span>
+                      <span className={`${styles.apiConfigStatus} ${api.status === 'Active' ? styles.statusActive : styles.statusInactive}`}>
+                        ● {api.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </ScrollReveal>
+        )}
       </section>
 
       {/* LATEST NEWS FEED SECTION */}

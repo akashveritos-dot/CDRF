@@ -298,7 +298,7 @@ export default function PodcastsClient({ initialEpisodes, initialVideos }: Podca
               {!isVideo && (
                 <audio
                   ref={audioRef}
-                  src={currentEp?.audioUrl}
+                  src={currentEp?.audioUrl || undefined}
                   onTimeUpdate={handleTimeUpdate}
                   onLoadedMetadata={handleLoadedMetadata}
                   onEnded={handleEnded}

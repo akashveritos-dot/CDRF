@@ -224,7 +224,7 @@ export default function ReportsPageClient({ initialReports }: ReportsPageClientP
                   <h3 className={styles.cardTitle}>{report.title}</h3>
                   <p className={styles.description}>{report.description}</p>
                   
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 12px', fontSize: '11px', color: 'var(--text-muted)', borderTop: '1px solid var(--border-color)', paddingTop: '14px', marginTop: '14px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 12px', fontSize: '11px', color: 'var(--text-muted)', borderTop: '1px solid var(--border-color)', paddingTop: '14px', marginTop: 'auto' }}>
                     <div>
                       <strong style={{ color: 'var(--text-default)' }}>Source:</strong> <span>{report.source || 'DCRF'}</span>
                     </div>
@@ -283,6 +283,12 @@ export default function ReportsPageClient({ initialReports }: ReportsPageClientP
             <p className={styles.modalSub}>
               {modalReport.category} • {modalReport.year} • {modalReport.page_count || modalReport.pageCount} pages
             </p>
+
+            {modalReport.description && (
+              <p className={styles.modalDescription}>
+                {modalReport.description}
+              </p>
+            )}
 
             {/* Error */}
             {modalError && (

@@ -171,8 +171,8 @@ export async function POST(req: NextRequest) {
         
         // Insert into news table
         const newsResult = await query<any>(
-          `INSERT INTO news (tag, source, headline, excerpt, published_date, author, external_link, thumbnail_emoji, image_url, category, location) 
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          `INSERT INTO news (tag, source, headline, excerpt, published_date, author, external_link, thumbnail_emoji, image_url, category, location, is_manual) 
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
           [
             'Alert',
             source || item.source || 'Scraped Alert',

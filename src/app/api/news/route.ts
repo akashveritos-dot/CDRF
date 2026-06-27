@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
     if (conditions.length > 0) {
       sql += ' WHERE ' + conditions.join(' AND ');
     }
-    sql += ' ORDER BY display_order ASC, published_date DESC, id DESC';
+    sql += ' ORDER BY is_manual DESC, display_order ASC, published_date DESC, id DESC';
     if (limit > 0) {
       sql += ' LIMIT ?';
       params.push(limit);
@@ -107,8 +107,8 @@ export async function POST(req: NextRequest) {
     const galleryImagesJson = gallery_images ? JSON.stringify(gallery_images) : '[]';
 
     const result = await query<any>(
-      `INSERT INTO news (tag, source, headline, excerpt, full_content, published_date, author, external_link, thumbnail_emoji, image_url, category, gallery_images) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO news (tag, source, headline, excerpt, full_content, published_date, author, external_link, thumbnail_emoji, image_url, category, gallery_images, is_manual) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
       [
         tag || 'Breaking',
         source || 'cdrf.vercel.app',
