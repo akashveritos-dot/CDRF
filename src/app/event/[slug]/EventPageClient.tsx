@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Loader2, Calendar, MapPin, CheckCircle, AlertTriangle, ChevronDown, 
-  Check, Building2, Tag, Users, Award, Shield, Zap, ChevronLeft, ChevronRight, Download 
+import {
+  Loader2, Calendar, MapPin, CheckCircle, AlertTriangle, ChevronDown,
+  Check, Building2, Tag, Users, Award, Shield, Zap, ChevronLeft, ChevronRight, Download
 } from 'lucide-react';
 import styles from './page.module.css';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
@@ -52,7 +52,7 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
   const [company, setCompany] = useState('');
   const [designation, setDesignation] = useState('');
   const [role, setRole] = useState('Delegate');
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [formError, setFormError] = useState('');
@@ -190,10 +190,10 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
               </div>
             ) : (
               <div className={styles.carouselSlideSingle}>
-                <img 
-                  src="https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80" 
-                  alt="Conclave" 
-                  className={styles.slideImage} 
+                <img
+                  src="https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80"
+                  alt="Conclave"
+                  className={styles.slideImage}
                 />
                 <div className={styles.slideOverlay}>
                   <div className={styles.slideContent}>
@@ -206,15 +206,15 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
 
             {bannerCards.length > 1 && (
               <>
-                <button 
-                  className={`${styles.carouselArrow} ${styles.arrowLeft}`} 
+                <button
+                  className={`${styles.carouselArrow} ${styles.arrowLeft}`}
                   onClick={() => setCurrentSlide((prev) => (prev - 1 + bannerCards.length) % bannerCards.length)}
                   aria-label="Previous slide"
                 >
                   <ChevronLeft size={20} />
                 </button>
-                <button 
-                  className={`${styles.carouselArrow} ${styles.arrowRight}`} 
+                <button
+                  className={`${styles.carouselArrow} ${styles.arrowRight}`}
                   onClick={() => setCurrentSlide((prev) => (prev + 1) % bannerCards.length)}
                   aria-label="Next slide"
                 >
@@ -222,8 +222,8 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                 </button>
                 <div className={styles.carouselDots}>
                   {bannerCards.map((_: any, idx: number) => (
-                    <button 
-                      key={idx} 
+                    <button
+                      key={idx}
                       className={`${styles.carouselDot} ${currentSlide === idx ? styles.activeDot : ''}`}
                       onClick={() => setCurrentSlide(idx)}
                       aria-label={`Go to slide ${idx + 1}`}
@@ -250,9 +250,9 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
 
               const isFileLink = btn.linkUrl?.match(/\.(pdf|png|jpe?g|gif|svg)$/i) || btn.linkUrl?.startsWith('/api/files/');
               return (
-                <a 
-                  href={btn.linkUrl || '#'} 
-                  key={btn.id || idx} 
+                <a
+                  href={btn.linkUrl || '#'}
+                  key={btn.id || idx}
                   className={styles.actionCard}
                   onClick={onClickHandler}
                   target={isFileLink ? '_blank' : undefined}
@@ -268,37 +268,37 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                 </a>
               );
             }) || (
-              <>
-                <a href="#agenda-gallery" className={styles.actionCard}>
-                  <div className={styles.actionCardContent}>
-                    <div className={styles.actionCardIcon}><Download size={22} /></div>
-                    <h4>Agenda</h4>
-                    <p>Download PDF Document</p>
-                  </div>
-                </a>
-                <a href="#register" className={styles.actionCard}>
-                  <div className={styles.actionCardContent}>
-                    <div className={styles.actionCardIcon}><Users size={22} /></div>
-                    <h4>Registration</h4>
-                    <p>Apply for Passes</p>
-                  </div>
-                </a>
-                <a href="/reports" className={styles.actionCard}>
-                  <div className={styles.actionCardContent}>
-                    <div className={styles.actionCardIcon}><Zap size={22} /></div>
-                    <h4>Policy Briefs</h4>
-                    <p>Explore Resources</p>
-                  </div>
-                </a>
-                <a href="/charter-10-point-agenda" className={styles.actionCard}>
-                  <div className={styles.actionCardContent}>
-                    <div className={styles.actionCardIcon}><Zap size={22} /></div>
-                    <h4>Core Charter</h4>
-                    <p>Explore Resources</p>
-                  </div>
-                </a>
-              </>
-            )}
+                <>
+                  <a href="#agenda-gallery" className={styles.actionCard}>
+                    <div className={styles.actionCardContent}>
+                      <div className={styles.actionCardIcon}><Download size={22} /></div>
+                      <h4>Agenda</h4>
+                      <p>Download PDF Document</p>
+                    </div>
+                  </a>
+                  <a href="#register" className={styles.actionCard}>
+                    <div className={styles.actionCardContent}>
+                      <div className={styles.actionCardIcon}><Users size={22} /></div>
+                      <h4>Registration</h4>
+                      <p>Apply for Passes</p>
+                    </div>
+                  </a>
+                  <a href="/reports" className={styles.actionCard}>
+                    <div className={styles.actionCardContent}>
+                      <div className={styles.actionCardIcon}><Zap size={22} /></div>
+                      <h4>Policy Briefs</h4>
+                      <p>Explore Resources</p>
+                    </div>
+                  </a>
+                  <a href="/charter-10-point-agenda" className={styles.actionCard}>
+                    <div className={styles.actionCardContent}>
+                      <div className={styles.actionCardIcon}><Zap size={22} /></div>
+                      <h4>Core Charter</h4>
+                      <p>Explore Resources</p>
+                    </div>
+                  </a>
+                </>
+              )}
           </div>
         </ScrollReveal>
 
@@ -375,7 +375,7 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
             <h2 className={styles.sectionTitle}>Conclave Agenda</h2>
             <p className={styles.sectionSub}>Explore the planned roadmap, session timelines, and event schedules below.</p>
           </ScrollReveal>
-          
+
           <div className={styles.agendaGallery}>
             {agendaSection?.cards?.map((agenda: any, idx: number) => (
               <ScrollReveal direction="up" delay={idx * 0.1} key={agenda.id || idx}>
@@ -387,20 +387,20 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                 </div>
               </ScrollReveal>
             )) || (
-              <div className={styles.agendaImgContainerSingle}>
-                <img 
-                  src="https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=800&q=80" 
-                  alt="Conclave Schedule Agenda" 
-                  className={styles.agendaImg} 
-                />
-              </div>
-            )}
+                <div className={styles.agendaImgContainerSingle}>
+                  <img
+                    src="https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=800&q=80"
+                    alt="Conclave Schedule Agenda"
+                    className={styles.agendaImg}
+                  />
+                </div>
+              )}
           </div>
 
           {/* Download Agenda Button */}
           <div className={styles.downloadContainer}>
-            <a 
-              href={agendaSection?.cards?.[0]?.extraData?.downloadUrl || '/reports'} 
+            <a
+              href={agendaSection?.cards?.[0]?.extraData?.downloadUrl || '/reports'}
               className={styles.downloadBtn}
               target="_blank"
               rel="noopener noreferrer"
@@ -419,11 +419,11 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
             </ScrollReveal>
             <ScrollReveal direction="up" delay={0.1}>
               <div className={styles.youtubeSec}>
-                <iframe 
-                  src={pageData.videoUrl} 
-                  title="DCRC Conclave Highlight Video" 
-                  frameBorder="0" 
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                <iframe
+                  src={pageData.videoUrl}
+                  title="DCRC Conclave Highlight Video"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                   className={styles.youtubeEmbed}
                 />
@@ -440,9 +440,9 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                 <CheckCircle size={40} style={{ color: 'var(--accessible-green)', marginBottom: '16px', display: 'inline-block' }} />
                 <h3 className={styles.successTitle}>Request Staged Successfully</h3>
                 <p className={styles.successText}>{successMsg}</p>
-                <button 
-                  onClick={() => setIsSuccess(false)} 
-                  className={styles.submitBtn} 
+                <button
+                  onClick={() => setIsSuccess(false)}
+                  className={styles.submitBtn}
                   style={{ margin: '20px auto 0' }}
                 >
                   Register Another User
@@ -569,9 +569,9 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                     </div>
                   )}
 
-                  <button 
-                    type="submit" 
-                    disabled={isSubmitting} 
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
                     className={styles.submitBtn}
                     style={{ width: '100%' }}
                   >
@@ -589,14 +589,6 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
             )}
           </div>
         </ScrollReveal>
-
-        {/* Bottom sticky registration referral button */}
-        <div className={`${styles.stickyRegistrationContainer} ${formVisible ? styles.stickyHidden : styles.stickyVisible}`}>
-          <a href="#register" className={styles.stickyRegBtn}>
-            <Users size={16} />
-            <span>Apply to Register Attendance</span>
-          </a>
-        </div>
       </div>
     );
   }
@@ -615,7 +607,7 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
         <div className={styles.webinarLayout}>
           <div className={styles.webinarMain}>
             <ScrollReveal direction="right" delay={0.1}>
-              <div 
+              <div
                 className={styles.bodyText}
                 dangerouslySetInnerHTML={{ __html: pageData.content }}
               />
@@ -645,9 +637,9 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                     <CheckCircle size={40} style={{ color: 'var(--accessible-green)', marginBottom: '16px', display: 'inline-block' }} />
                     <h3 className={styles.successTitle}>Registration Received</h3>
                     <p className={styles.successText}>{successMsg}</p>
-                    <button 
-                      onClick={() => setIsSuccess(false)} 
-                      className={styles.submitBtn} 
+                    <button
+                      onClick={() => setIsSuccess(false)}
+                      className={styles.submitBtn}
                       style={{ margin: '20px auto 0' }}
                     >
                       Register Another Delegate
@@ -715,9 +707,9 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                         </div>
                       )}
 
-                      <button 
-                        type="submit" 
-                        disabled={isSubmitting} 
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
                         className={styles.submitBtn}
                       >
                         {isSubmitting ? (
@@ -758,7 +750,7 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
       <div className={styles.grid}>
         <div className={styles.leftColumn}>
           <ScrollReveal direction="right" delay={0.1}>
-            <div 
+            <div
               className={styles.bodyText}
               dangerouslySetInnerHTML={{ __html: pageData.content }}
             />
@@ -777,7 +769,7 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                     />
                   </div>
                 )}
-                
+
                 {displayImage && !pageData.videoUrl && (
                   <div className={styles.imageWrapper}>
                     <img
@@ -800,9 +792,9 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                   <CheckCircle size={40} style={{ color: 'var(--accessible-green)', marginBottom: '16px', display: 'inline-block' }} />
                   <h3 className={styles.successTitle}>Request Staged Successfully</h3>
                   <p className={styles.successText}>{successMsg}</p>
-                  <button 
-                    onClick={() => setIsSuccess(false)} 
-                    className={styles.submitBtn} 
+                  <button
+                    onClick={() => setIsSuccess(false)}
+                    className={styles.submitBtn}
                     style={{ margin: '20px auto 0' }}
                   >
                     Register Another User
@@ -922,9 +914,9 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                       </div>
                     )}
 
-                    <button 
-                      type="submit" 
-                      disabled={isSubmitting} 
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
                       className={styles.submitBtn}
                     >
                       {isSubmitting ? (

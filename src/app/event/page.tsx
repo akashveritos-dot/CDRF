@@ -640,14 +640,6 @@ export default function EventPage() {
           )}
         </div>
       </ScrollReveal>
-
-      {/* Bottom Attendance/Registration sticky-referral button */}
-      <div className={`${styles.stickyRegistrationContainer} ${formVisible ? styles.stickyHidden : styles.stickyVisible}`}>
-        <a href="#register" className={styles.stickyRegBtn}>
-          <Users size={16} />
-          <span>Apply to Register Attendance</span>
-        </a>
-      </div>
     </div>
   );
 }

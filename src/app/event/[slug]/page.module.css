@@ -1537,7 +1537,17 @@
   }
 
   .regFormTitle {
-    font-size: 22px;
+    font-size: 18px !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .submitBtn {
+    font-size: 11px !important;
+    letter-spacing: 0.5px !important;
+    padding: 13px 20px !important;
+    white-space: nowrap !important;
   }
 }
 
