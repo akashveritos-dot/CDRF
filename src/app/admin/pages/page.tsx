@@ -6,6 +6,7 @@ import {
   Edit3, X, Upload, ChevronDown, ChevronRight, Play, Eye
 } from 'lucide-react';
 import styles from './page.module.css';
+import ConfirmModal from '@/components/ui/ConfirmModal/ConfirmModal';
 
 /* ─── Interfaces ─────────────────────────────── */
 interface CardItem {
@@ -239,6 +240,8 @@ export default function AdminPagesManager() {
     content: ''
   });
 
+  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
+
   /* ── Load page list ─────────── */
   useEffect(() => {
     (async () => {
@@ -467,8 +470,12 @@ export default function AdminPagesManager() {
   };
 
   /* ── Delete card ───────────── */
-  const handleDeleteCard = async (cardId: number) => {
-    if (!confirm('Delete this item? This cannot be undone.')) return;
+  const handleDeleteCard = (cardId: number) => {
+    setDeleteTargetId(cardId);
+  };
+
+  const triggerDeleteCard = async (cardId: number) => {
+    setDeleteTargetId(null);
     setStatus(null);
     try {
       await saveFullPage(selectedSlug!, (existingSections) => {
@@ -1119,6 +1126,13 @@ export default function AdminPagesManager() {
           )}
         </div>
       </div>
+      <ConfirmModal
+        isOpen={deleteTargetId !== null}
+        title="Confirm Deletion"
+        message="Are you sure you want to permanently delete this item? This action cannot be undone."
+        onConfirm={() => deleteTargetId && triggerDeleteCard(deleteTargetId)}
+        onCancel={() => setDeleteTargetId(null)}
+      />
     </div>
   );
 }

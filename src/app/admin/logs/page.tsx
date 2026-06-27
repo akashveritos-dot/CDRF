@@ -10,6 +10,7 @@ import {
   Clock
 } from 'lucide-react';
 import styles from './page.module.css';
+import ConfirmModal from '@/components/ui/ConfirmModal/ConfirmModal';
 
 export default function AdminAuditLogs() {
   const [logs, setLogs] = useState<any[]>([]);
@@ -60,6 +61,7 @@ export default function AdminAuditLogs() {
   const [restoringId, setRestoringId] = useState<number | null>(null);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [restoreTarget, setRestoreTarget] = useState<{ id: number; tableName: string } | null>(null);
 
   const fetchDeletedRecords = useCallback(async () => {
     setTrashLoading(true);
@@ -84,10 +86,12 @@ export default function AdminAuditLogs() {
     }
   }, [activeTab, fetchDeletedRecords]);
 
-  const handleRestore = async (backupId: number, tableName: string) => {
-    if (!confirm(`Are you sure you want to restore this deleted record back to the "${tableName}" table?`)) {
-      return;
-    }
+  const handleRestore = (backupId: number, tableName: string) => {
+    setRestoreTarget({ id: backupId, tableName });
+  };
+
+  const triggerRestore = async (backupId: number, tableName: string) => {
+    setRestoreTarget(null);
     setRestoringId(backupId);
     setSuccessMsg('');
     setErrorMsg('');
@@ -379,6 +383,15 @@ export default function AdminAuditLogs() {
           )}
         </>
       )}
+      <ConfirmModal
+        isOpen={restoreTarget !== null}
+        title="Confirm Restoration"
+        message={`Are you sure you want to restore this deleted record back to the "${restoreTarget?.tableName}" table?`}
+        onConfirm={() => restoreTarget && triggerRestore(restoreTarget.id, restoreTarget.tableName)}
+        onCancel={() => setRestoreTarget(null)}
+        confirmText="Restore Record"
+        isDanger={false}
+      />
     </div>
   );
 }
