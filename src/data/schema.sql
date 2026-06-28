@@ -384,6 +384,24 @@ CREATE TABLE IF NOT EXISTS contact_messages (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
+-- 17a. Audit Logs Table
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_email VARCHAR(255) NOT NULL,
+    user_name VARCHAR(255) NOT NULL,
+    user_role VARCHAR(50) NOT NULL,
+    action_type ENUM('ADD', 'UPDATE', 'DELETE', 'PUBLISH', 'UNPUBLISH', 'RESTORE', 'OTHER') NOT NULL,
+    section VARCHAR(255) NOT NULL,
+    details TEXT NOT NULL,
+    ip_address VARCHAR(100) DEFAULT NULL,
+    location VARCHAR(255) DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_audit_user (user_email),
+    INDEX idx_audit_action (action_type),
+    INDEX idx_audit_section (section),
+    INDEX idx_audit_date (created_at DESC)
+) ENGINE=InnoDB;
+
 -- 18. Event Registrations Table
 CREATE TABLE IF NOT EXISTS event_registrations (
     id INT AUTO_INCREMENT PRIMARY KEY,

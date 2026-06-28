@@ -28,12 +28,19 @@ export function getDbPool(): mysql.Pool {
       ssl: process.env.DB_SSL === 'true' ? {} : undefined
     });
 
-    // Run migrations in the background
-    runMigration(globalForDb.pool);
+    // Migrations removed from automatic startup
+    // Run manually when needed: node scripts/migrate.js
   }
   return globalForDb.pool;
 }
 
+// ═══════════════════════════════════════════════════════════════
+// MIGRATION, SEEDING, AND UPGRADE FUNCTIONS
+// These are NO LONGER called automatically on server startup
+// Run manually when needed using a separate migration script
+// ═══════════════════════════════════════════════════════════════
+
+/* DISABLED - DO NOT RUN ON STARTUP
 async function runMigration(pool: mysql.Pool) {
   try {
     const alterQueries = [
@@ -346,11 +353,13 @@ async function runMigration(pool: mysql.Pool) {
     console.error('[DB MIGRATION ERROR] Migration runner failed:', error);
   }
 }
+END OF DISABLED runMigration */
 
 // ═══════════════════════════════════════════════════════════════
 // Seed all hardcoded frontend data into cms_page_sections + cards
-// Only runs if no sections exist for a given page_slug
+// DISABLED - DO NOT RUN ON STARTUP
 // ═══════════════════════════════════════════════════════════════
+/* DISABLED - DO NOT RUN ON STARTUP
 async function seedPageData(pool: mysql.Pool) {
   const sectionHelper = async (pageSlug: string, sections: any[], pageTitle?: string) => {
     // Ensure cms_pages record exists so it appears in admin sidebar
@@ -576,8 +585,10 @@ async function seedPageData(pool: mysql.Pool) {
     console.error('[DB SEED ERROR] Failed to seed page data:', error);
   }
 }
+END OF DISABLED seedPageData */
 
 /** Add content sections to mission-vision if only Key Statistics exists */
+/* DISABLED - DO NOT RUN ON STARTUP
 async function addMissingSections(pool: mysql.Pool) {
   try {
     // Check if mission-vision has content sections beyond Key Statistics
@@ -660,7 +671,9 @@ async function addMissingSections(pool: mysql.Pool) {
     console.warn('[DB UPGRADE] Could not add missing sections:', err);
   }
 }
+END OF DISABLED addMissingSections */
 
+/* DISABLED - DO NOT RUN ON STARTUP
 async function upgradePodcastData(pool: mysql.Pool) {
   try {
     const [sections]: any = await pool.execute(
@@ -751,7 +764,9 @@ async function upgradePodcastData(pool: mysql.Pool) {
     console.warn("[DB UPGRADE WARN] upgradePodcastData failed:", err);
   }
 }
+END OF DISABLED upgradePodcastData */
 
+/* DISABLED - DO NOT RUN ON STARTUP
 async function upgradeConclaveData(pool: mysql.Pool) {
   try {
     // Get max display order
@@ -914,7 +929,13 @@ async function upgradeConclaveData(pool: mysql.Pool) {
     console.warn("Could not upgrade conclave page sections:", err);
   }
 }
+END OF DISABLED upgradeConclaveData */
 
+
+// ═══════════════════════════════════════════════════════════════
+// ACTIVE DATABASE UTILITY FUNCTIONS
+// These remain active for runtime database operations
+// ═══════════════════════════════════════════════════════════════
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function query<T = unknown>(sql: string, params: any[] = []): Promise<T> {

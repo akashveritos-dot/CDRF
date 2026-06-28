@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
     if (sections && Array.isArray(sections)) {
       // Get existing section IDs for this page
       const existingSections = await query<any[]>(
-        'SELECT id FROM cms_page_sections WHERE page_slug = ?', [slug]
+        'SELECT id, title FROM cms_page_sections WHERE page_slug = ?', [slug]
       );
       const existingSectionIds = new Set(existingSections.map((s: any) => s.id));
       const incomingSectionIds = new Set(sections.filter((s: any) => s.id).map((s: any) => s.id));
@@ -135,8 +135,34 @@ export async function POST(req: NextRequest) {
       // Delete sections that were removed (cascade delete their cards too)
       for (const existingId of existingSectionIds) {
         if (!incomingSectionIds.has(existingId)) {
+          const sectionToDelete = existingSections.find((s: any) => s.id === existingId);
+          const sectionTitle = sectionToDelete?.title || `Section ID ${existingId}`;
+          
+          // Log card deletions first
+          const cardsToDelete = await query<any[]>(
+            'SELECT id, title FROM cms_page_cards WHERE section_id = ?', [existingId]
+          );
+          for (const card of cardsToDelete) {
+            await logAction(
+              req,
+              session,
+              'DELETE',
+              'CMS Page Cards',
+              `Deleted card "${card.title || 'Untitled'}" from section "${sectionTitle}" in page "${title}" (${slug})`
+            );
+          }
+          
           await query('DELETE FROM cms_page_cards WHERE section_id = ?', [existingId]);
           await query('DELETE FROM cms_page_sections WHERE id = ?', [existingId]);
+          
+          // Log section deletion
+          await logAction(
+            req,
+            session,
+            'DELETE',
+            'CMS Page Sections',
+            `Deleted section "${sectionTitle}" from page "${title}" (${slug})`
+          );
         }
       }
 
@@ -152,6 +178,7 @@ export async function POST(req: NextRequest) {
         }
 
         let sectionId: number;
+        const isNewSection = !section.id || !existingSectionIds.has(section.id);
 
         if (section.id && existingSectionIds.has(section.id)) {
           // Update existing section
@@ -166,6 +193,15 @@ export async function POST(req: NextRequest) {
             buttonUrl, section.id
           ]);
           sectionId = section.id;
+          
+          // Log section update
+          await logAction(
+            req,
+            session,
+            'UPDATE',
+            'CMS Page Sections',
+            `Updated section "${section.title || 'Untitled'}" in page "${title}" (${slug})`
+          );
         } else {
           // Insert new section
           const result = await query<any>(`
@@ -177,6 +213,15 @@ export async function POST(req: NextRequest) {
             buttonUrl
           ]);
           sectionId = result.insertId;
+          
+          // Log section creation
+          await logAction(
+            req,
+            session,
+            'ADD',
+            'CMS Page Sections',
+            `Created new section "${section.title || 'Untitled'}" in page "${title}" (${slug})`
+          );
         }
 
         // Sync cards for this section
@@ -184,7 +229,7 @@ export async function POST(req: NextRequest) {
         
         // Get existing cards for this section
         const existingCards = await query<any[]>(
-          'SELECT id FROM cms_page_cards WHERE section_id = ?', [sectionId]
+          'SELECT id, title FROM cms_page_cards WHERE section_id = ?', [sectionId]
         );
         const existingCardIds = new Set(existingCards.map((c: any) => c.id));
         const incomingCardIds = new Set(cards.filter((c: any) => c.id).map((c: any) => c.id));
@@ -192,7 +237,17 @@ export async function POST(req: NextRequest) {
         // Delete removed cards
         for (const existingCardId of existingCardIds) {
           if (!incomingCardIds.has(existingCardId)) {
+            const cardToDelete = existingCards.find((c: any) => c.id === existingCardId);
             await transactionalDelete('cms_page_cards', 'id', existingCardId, session);
+            
+            // Log card deletion
+            await logAction(
+              req,
+              session,
+              'DELETE',
+              'CMS Page Cards',
+              `Deleted card "${cardToDelete?.title || 'Untitled'}" from section "${section.title || 'Untitled'}" in page "${title}" (${slug})`
+            );
           }
         }
 
@@ -215,12 +270,30 @@ export async function POST(req: NextRequest) {
               WHERE id = ?
             `, [j, card.title || null, card.description || null, card.imageUrl || null,
                 card.linkText || null, linkUrl, card.extraData ? JSON.stringify(card.extraData) : '{}', card.id]);
+            
+            // Log card update
+            await logAction(
+              req,
+              session,
+              'UPDATE',
+              'CMS Page Cards',
+              `Updated card "${card.title || 'Untitled'}" in section "${section.title || 'Untitled'}" in page "${title}" (${slug})`
+            );
           } else {
             await query(`
               INSERT INTO cms_page_cards (section_id, display_order, title, description, image_url, link_text, link_url, extra_data)
               VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             `, [sectionId, j, card.title || null, card.description || null, card.imageUrl || null,
                 card.linkText || null, linkUrl, card.extraData ? JSON.stringify(card.extraData) : '{}']);
+            
+            // Log card creation
+            await logAction(
+              req,
+              session,
+              'ADD',
+              'CMS Page Cards',
+              `Created new card "${card.title || 'Untitled'}" in section "${section.title || 'Untitled'}" in page "${title}" (${slug})`
+            );
           }
         }
       }
