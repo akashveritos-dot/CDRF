@@ -20,7 +20,7 @@ export async function GET() {
     }
 
     const pages = await query<any[]>(
-      `SELECT id, slug, title, category, description, 
+      `SELECT id, slug, title, category, description, eyebrow, 
               video_url as videoUrl, image_url as imageUrl, 
               main_image_url as mainImageUrl,
               content, updated_at as updatedAt 
@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { slug, title, category, description, videoUrl, imageUrl, mainImageUrl, content, sections } = body;
+    const { slug, title, category, description, eyebrow, videoUrl, imageUrl, mainImageUrl, content, sections } = body;
 
     if (!slug || !title || !category) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -110,17 +110,18 @@ export async function POST(req: NextRequest) {
 
     // Upsert the page
     await query(`
-      INSERT INTO cms_pages (slug, title, category, description, video_url, image_url, main_image_url, content)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO cms_pages (slug, title, category, description, eyebrow, video_url, image_url, main_image_url, content)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON DUPLICATE KEY UPDATE
         title = VALUES(title),
         category = VALUES(category),
         description = VALUES(description),
+        eyebrow = VALUES(eyebrow),
         video_url = VALUES(video_url),
         image_url = VALUES(image_url),
         main_image_url = VALUES(main_image_url),
         content = VALUES(content)
-    `, [slug, title, category, description || null, videoUrl || null, imageUrl || null, mainImageUrl || null, content || null]);
+    `, [slug, title, category, description || null, eyebrow || null, videoUrl || null, imageUrl || null, mainImageUrl || null, content || null]);
 
     // Sync sections if provided
     if (sections && Array.isArray(sections)) {

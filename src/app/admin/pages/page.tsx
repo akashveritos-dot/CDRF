@@ -255,6 +255,7 @@ export default function AdminPagesManager() {
     title: '',
     category: '',
     description: '',
+    eyebrow: '',
     videoUrl: '',
     imageUrl: '',
     content: ''
@@ -336,6 +337,7 @@ export default function AdminPagesManager() {
         title: pageData.title || '',
         category: pageData.category || '',
         description: pageData.description || '',
+        eyebrow: pageData.eyebrow || '',
         videoUrl: pageData.videoUrl || '',
         imageUrl: pageData.imageUrl || '',
         content: pageData.content || ''
@@ -530,6 +532,7 @@ export default function AdminPagesManager() {
           title: pageFields.title || page.title,
           category: pageFields.category || page.category,
           description: pageFields.description,
+          eyebrow: pageFields.eyebrow,
           videoUrl: pageFields.videoUrl,
           imageUrl: pageFields.imageUrl,
           content: pageFields.content,
@@ -907,6 +910,7 @@ export default function AdminPagesManager() {
                   </div>
 
                   {renderFieldInput('title', pageFields.title, v => setPageFields(f => ({ ...f, title: v })), 'Page Title')}
+                  {renderFieldInput('eyebrow', pageFields.eyebrow, v => setPageFields(f => ({ ...f, eyebrow: v })), 'Hero Eyebrow (e.g. Date/Location)')}
                   {renderFieldInput('description', pageFields.description, v => setPageFields(f => ({ ...f, description: v })), 'Short Description')}
                   {renderFieldInput('imageUrl', pageFields.imageUrl, v => setPageFields(f => ({ ...f, imageUrl: v })), 'Cover Image URL')}
                   {renderFieldInput('videoUrl', pageFields.videoUrl, v => setPageFields(f => ({ ...f, videoUrl: v })), 'Video Embed URL')}

@@ -61,7 +61,8 @@ async function runMigration(pool: mysql.Pool) {
       "ALTER TABLE report_downloads ADD COLUMN entity_type ENUM('Individual', 'Organization') DEFAULT 'Individual'",
       'ALTER TABLE report_downloads ADD COLUMN organization_name VARCHAR(255) NULL',
       'ALTER TABLE report_downloads ADD COLUMN mobile VARCHAR(20) NULL',
-      'ALTER TABLE news ADD COLUMN is_manual TINYINT DEFAULT 0'
+      'ALTER TABLE news ADD COLUMN is_manual TINYINT DEFAULT 0',
+      'ALTER TABLE cms_pages ADD COLUMN eyebrow VARCHAR(255) NULL'
     ];
     for (const sql of alterQueries) {
       try {
@@ -885,6 +886,11 @@ async function upgradeConclaveData(pool: mysql.Pool) {
     // Ensure video_url exists for dcrc-26
     await pool.execute(
       "UPDATE cms_pages SET video_url = COALESCE(video_url, 'https://www.youtube.com/embed/Q8wzIcrqNnE') WHERE slug = 'dcrc-26'"
+    );
+
+    // Seed default eyebrow values for dcrc-26
+    await pool.execute(
+      "UPDATE cms_pages SET eyebrow = COALESCE(eyebrow, 'Nov 26–27, 2026 · New Delhi') WHERE slug = 'dcrc-26'"
     );
 
     // Fix incorrect Agenda redirect links

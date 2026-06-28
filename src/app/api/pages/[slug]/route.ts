@@ -10,7 +10,7 @@ export async function GET(
     const params = await props.params;
     const { slug } = params;
     const rows = await query<any[]>(
-      `SELECT slug, title, category, description, 
+      `SELECT slug, title, category, description, eyebrow, 
               video_url as videoUrl, image_url as imageUrl, 
               main_image_url as mainImageUrl, content 
        FROM cms_pages WHERE slug = ?`,

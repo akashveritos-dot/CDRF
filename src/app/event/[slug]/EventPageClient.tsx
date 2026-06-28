@@ -16,6 +16,7 @@ export interface PageData {
   title: string;
   category: string;
   description: string;
+  eyebrow?: string;
   videoUrl?: string;
   imageUrl?: string;
   content: string;
@@ -279,7 +280,7 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
         <ScrollReveal direction="down">
           <PageHero
             theme="events"
-            eyebrow="Nov 26–27, 2026 · New Delhi"
+            eyebrow={pageData.eyebrow || "Nov 26–27, 2026 · New Delhi"}
             line1="DCRF"
             line2="Dcrc ’26 Conclave"
             subtitle=""
@@ -839,14 +840,15 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                   {/* Double the array for a seamless loop marquee */}
                   {[...partnerCards, ...partnerCards].map((p: any, idx: number) => (
                     <a
-                      href="#"
+                      href={p.linkUrl || '#'}
+                      target={p.linkUrl ? '_blank' : undefined}
+                      rel={p.linkUrl ? 'noopener noreferrer' : undefined}
                       key={idx}
                       className={styles.partnerMarqueeCard}
                       onClick={(e) => {
-                        e.preventDefault();
-                        const urls = partnerCards.map((c: any) => c.imageUrl);
-                        const captions = partnerCards.map((c: any) => c.title || 'Partner Logo');
-                        openLightbox(urls, captions, idx % partnerCards.length);
+                        if (!p.linkUrl) {
+                          e.preventDefault();
+                        }
                       }}
                     >
                       <img src={p.imageUrl} alt={p.title} />

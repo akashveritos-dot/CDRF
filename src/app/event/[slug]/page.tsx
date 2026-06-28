@@ -12,7 +12,7 @@ export default async function EventSubpage(props: { params: Promise<{ slug: stri
 
   try {
     const rows = await query<any[]>(
-      'SELECT slug, title, category, description, video_url as videoUrl, image_url as imageUrl, content FROM cms_pages WHERE slug = ?',
+      'SELECT slug, title, category, description, eyebrow, video_url as videoUrl, image_url as imageUrl, content FROM cms_pages WHERE slug = ?',
       [slug]
     );
 
