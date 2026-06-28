@@ -130,7 +130,7 @@ function MediaElementPlayer({ url, onDuration }: { url: string; onDuration?: (d:
     const media = mediaRef.current;
     if (!media) return;
     if (media.paused) {
-      media.play().catch(() => {});
+      media.play().catch(() => { });
       setPlaying(true);
     } else {
       media.pause();
@@ -231,7 +231,7 @@ export default function AdminPagesManager() {
   const [showSectionManager, setShowSectionManager] = useState(false);
   const [fullSections, setFullSections] = useState<any[]>([]);
   const [editingSectionId, setEditingSectionId] = useState<number | null>(null);
-  
+
   // Section Add fields
   const [newSecTitle, setNewSecTitle] = useState('');
   const [newSecDesc, setNewSecDesc] = useState('');
@@ -239,7 +239,7 @@ export default function AdminPagesManager() {
   const [newSecVideo, setNewSecVideo] = useState('');
   const [newSecBtnText, setNewSecBtnText] = useState('');
   const [newSecBtnUrl, setNewSecBtnUrl] = useState('');
-  
+
   // Section Edit fields
   const [editSecFields, setEditSecFields] = useState<any>({});
 
@@ -734,7 +734,7 @@ export default function AdminPagesManager() {
     const updated = [...fullSections, newSec];
     setFullSections(updated);
     saveAllSections(updated);
-    
+
     // Clear inputs
     setNewSecTitle('');
     setNewSecDesc('');
@@ -968,7 +968,7 @@ export default function AdminPagesManager() {
                               {renderFieldInput('videoUrl', editSecFields.videoUrl, v => setEditSecFields((f: any) => ({ ...f, videoUrl: v })), 'Section Video URL')}
                               {renderFieldInput('buttonText', editSecFields.buttonText, v => setEditSecFields((f: any) => ({ ...f, buttonText: v })), 'Button Text')}
                               {renderFieldInput('buttonUrl', editSecFields.buttonUrl, v => setEditSecFields((f: any) => ({ ...f, buttonUrl: v })), 'Button URL')}
-                              
+
                               <div className={styles.editActions} style={{ marginTop: '10px', display: 'flex', gap: '8px' }}>
                                 <button className={styles.saveBtn} onClick={() => handleUpdateSection(sec.id)} disabled={isSaving} style={{ padding: '4px 10px', fontSize: '11px' }}>
                                   <Save size={12} /> Save Changes
@@ -1042,26 +1042,6 @@ export default function AdminPagesManager() {
                 </div>
               )}
 
-              {/* Cards filter tabs and cards listing (only shown when not editing settings or sections) */}
-              {!showSectionManager && !showPageSettings && !showAddForm && (
-                <>
-                  {/* Section filter tabs */}
-                  {sections.length > 1 && (
-                    <div className={styles.filterBar}>
-                      <button className={`${styles.filterChip} ${filterSection === 'all' ? styles.filterActive : ''}`}
-                        onClick={() => setFilterSection('all')}>
-                        All ({items.length})
-                      </button>
-                      {sections.map(s => (
-                        <button key={s.id}
-                          className={`${styles.filterChip} ${filterSection === String(s.id) ? styles.filterActive : ''}`}
-                          onClick={() => setFilterSection(String(s.id))}>
-                          {s.title} ({s.cardCount})
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
               {/* Status */}
               {status && (
                 <div className={`${styles.statusMsg} ${status.type === 'success' ? styles.statusSuccess : styles.statusError}`}>
@@ -1093,10 +1073,10 @@ export default function AdminPagesManager() {
                       {renderFieldInput('title', addFields.title || '', v => setAddFields(f => ({ ...f, title: v })), 'Episode Title')}
                       {renderFieldInput('description', addFields.description || '', v => setAddFields(f => ({ ...f, description: v })), 'Description')}
                       {renderFieldInput('imageUrl', addFields.imageUrl || '', v => setAddFields(f => ({ ...f, imageUrl: v })), 'Cover Image URL')}
-                      
+
                       <div className={styles.formRowGrid}>
                         {renderFieldInput('extra_episodeNumber', addFields.extra_episodeNumber || '', v => setAddFields(f => ({ ...f, extra_episodeNumber: v })), 'Episode Number')}
-                        
+
                         <div className={styles.fieldRow}>
                           <label className={styles.fieldLabel}>Category Tag</label>
                           <select className={styles.input} value={addFields.extra_tag || 'Policy'} onChange={e => setAddFields(f => ({ ...f, extra_tag: e.target.value }))}>
@@ -1124,20 +1104,14 @@ export default function AdminPagesManager() {
                           <button
                             type="button"
                             className={`${styles.mediaTypeBtn} ${addMediaType === 'audio' ? styles.mediaTypeBtnActive : ''}`}
-                            onClick={() => {
-                              setAddMediaType('audio');
-                              setAddFields(f => ({ ...f, extra_videoUrl: '' }));
-                            }}
+                            onClick={() => { setAddMediaType('audio'); setAddFields(f => ({ ...f, extra_videoUrl: '' })); }}
                           >
                             🎙️ Audio Episode
                           </button>
                           <button
                             type="button"
                             className={`${styles.mediaTypeBtn} ${addMediaType === 'video' ? styles.mediaTypeBtnActive : ''}`}
-                            onClick={() => {
-                              setAddMediaType('video');
-                              setAddFields(f => ({ ...f, extra_audioUrl: '' }));
-                            }}
+                            onClick={() => { setAddMediaType('video'); setAddFields(f => ({ ...f, extra_audioUrl: '' })); }}
                           >
                             🎥 Video Episode
                           </button>
@@ -1166,6 +1140,8 @@ export default function AdminPagesManager() {
                       {renderFieldInput('title', addFields.title || '', v => setAddFields(f => ({ ...f, title: v })), 'Title')}
                       {renderFieldInput('description', addFields.description || '', v => setAddFields(f => ({ ...f, description: v })), 'Description')}
                       {renderFieldInput('imageUrl', addFields.imageUrl || '', v => setAddFields(f => ({ ...f, imageUrl: v })), 'Image')}
+                      {renderFieldInput('linkText', addFields.linkText || '', v => setAddFields(f => ({ ...f, linkText: v })), 'Link Text (optional)')}
+                      {renderFieldInput('linkUrl', addFields.linkUrl || '', v => setAddFields(f => ({ ...f, linkUrl: v })), 'Link URL (optional)')}
 
                       {/* Show extra fields based on existing items */}
                       {extraKeys.map(k => {
@@ -1194,274 +1170,294 @@ export default function AdminPagesManager() {
                 </div>
               )}
 
-              {/* ── ITEMS LIST ── */}
-              {isLoadingItems ? (
-                <div className={styles.loadingState}><Loader2 size={24} className={styles.spinner} /><span>Loading...</span></div>
-              ) : filteredItems.length === 0 ? (
-                <div className={styles.emptyState}>
-                  No items yet. Click "Add New Item" to create your first entry.
-                </div>
-              ) : (
+              {/* Cards filter tabs and cards listing (only shown when not editing settings or sections) */}
+              {!showSectionManager && !showPageSettings && !showAddForm && (
                 <>
-                  <div className={styles.dragInfoBanner}>
-                    💡 Drag and drop cards by their handle (☰) to reorder items dynamically.
-                  </div>
-                  <div className={styles.itemsList}>
-                    {filteredItems.map((item) => {
-                      const isEpisodeCard = selectedSlug === 'podcasts' && item.sectionTitle === 'Episodes';
-                      return (
-                        <div
-                          key={item.id}
-                          className={`${styles.itemCard} ${draggedItemId === item.id ? styles.itemCardDragging : ''}`}
-                          draggable
-                          onDragStart={(e) => handleDragStart(e, item.id!)}
-                          onDragOver={(e) => handleDragOver(e, item.id!)}
-                          onDrop={(e) => handleDrop(e, item.id!)}
-                        >
-                          <div className={styles.dragHandleCol} title="Drag to reorder">
-                            ☰
-                          </div>
-                      {editingId === item.id ? (
-                        /* ── EDITING MODE ── */
-                        <div className={styles.editForm}>
-                          <div className={styles.editFormHeader}>
-                            <span className={styles.editBadge}>Editing</span>
-                            <div className={styles.editActions}>
-                              <button className={styles.saveBtn} onClick={() => handleSaveCard(item.id!)} disabled={isSaving}>
-                                {isSaving ? <Loader2 size={13} className={styles.spinner} /> : <Save size={13} />}
-                                <span>Save</span>
-                              </button>
-                              <button className={styles.cancelBtn} onClick={() => setEditingId(null)}>
-                                <X size={13} /> Cancel
-                              </button>
-                            </div>
-                          </div>
-                          {isEditEpisode ? (
-                            <div className={styles.customEpisodeForm}>
-                              {renderFieldInput('title', editFields.title || '', v => setEditFields(f => ({ ...f, title: v })), 'Episode Title')}
-                              {renderFieldInput('description', editFields.description || '', v => setEditFields(f => ({ ...f, description: v })), 'Description')}
-                              {renderFieldInput('imageUrl', editFields.imageUrl || '', v => setEditFields(f => ({ ...f, imageUrl: v })), 'Cover Image URL')}
-                              
-                              <div className={styles.formRowGrid}>
-                                {renderFieldInput('extra_episodeNumber', editFields.extra_episodeNumber || '', v => setEditFields(f => ({ ...f, extra_episodeNumber: v })), 'Episode Number')}
-                                
-                                <div className={styles.fieldRow}>
-                                  <label className={styles.fieldLabel}>Category Tag</label>
-                                  <select className={styles.input} value={editFields.extra_tag || 'Policy'} onChange={e => setEditFields(f => ({ ...f, extra_tag: e.target.value }))}>
-                                    {['Climate Finance', 'Heatwaves', 'Floods', 'Policy', 'Early Warning', 'Glaciers'].map(t => (
-                                      <option key={t} value={t}>{t}</option>
-                                    ))}
-                                  </select>
-                                </div>
-                              </div>
-
-                              <div className={styles.formRowGrid}>
-                                {renderFieldInput('extra_speaker', editFields.extra_speaker || '', v => setEditFields(f => ({ ...f, extra_speaker: v })), 'Guest Speaker')}
-                                {renderFieldInput('extra_speakerTitle', editFields.extra_speakerTitle || '', v => setEditFields(f => ({ ...f, extra_speakerTitle: v })), 'Speaker Title/Org')}
-                              </div>
-
-                              <div className={styles.formRowGrid}>
-                                {renderFieldInput('extra_date', editFields.extra_date || '', v => setEditFields(f => ({ ...f, extra_date: v })), 'Publish Date')}
-                                {renderFieldInput('extra_duration', editFields.extra_duration || '', v => setEditFields(f => ({ ...f, extra_duration: v })), 'Duration (e.g. 42 min)')}
-                              </div>
-
-                              {/* Media Type Selector */}
-                              <div className={styles.mediaTypeSelectorRow}>
-                                <label className={styles.fieldLabel}>Media Type</label>
-                                <div className={styles.mediaTypeButtons}>
-                                  <button
-                                    type="button"
-                                    className={`${styles.mediaTypeBtn} ${editMediaType === 'audio' ? styles.mediaTypeBtnActive : ''}`}
-                                    onClick={() => {
-                                      setEditMediaType('audio');
-                                      setEditFields(f => ({ ...f, extra_videoUrl: '' }));
-                                    }}
-                                  >
-                                    🎙️ Audio Episode
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className={`${styles.mediaTypeBtn} ${editMediaType === 'video' ? styles.mediaTypeBtnActive : ''}`}
-                                    onClick={() => {
-                                      setEditMediaType('video');
-                                      setEditFields(f => ({ ...f, extra_audioUrl: '' }));
-                                    }}
-                                  >
-                                    🎥 Video Episode
-                                  </button>
-                                </div>
-                              </div>
-
-                              {editMediaType === 'audio' ? (
-                                renderFieldInput('extra_audioUrl', editFields.extra_audioUrl || '', v => setEditFields(f => ({ ...f, extra_audioUrl: v, extra_videoUrl: '' })), 'Audio URL (MP3)', (dur) => setEditFields(f => ({ ...f, extra_duration: dur })))
-                              ) : (
-                                renderFieldInput('extra_videoUrl', editFields.extra_videoUrl || '', v => setEditFields(f => ({ ...f, extra_videoUrl: v, extra_audioUrl: '' })), 'Video URL (MP4 / YouTube)', (dur) => setEditFields(f => ({ ...f, extra_duration: dur })))
-                              )}
-
-                              <div className={styles.fieldRow}>
-                                <label className={styles.checkboxLabel}>
-                                  <input
-                                    type="checkbox"
-                                    checked={editFields.extra_isFeatured === 'true'}
-                                    onChange={e => setEditFields(f => ({ ...f, extra_isFeatured: e.target.checked ? 'true' : 'false' }))}
-                                  />
-                                  <span>Featured Episode (displays at top of the player)</span>
-                                </label>
-                              </div>
-                            </div>
-                          ) : (
-                            Object.entries(editFields).map(([key, val]) => {
-                              const isMediaKey = key.includes('video') || key.includes('Video') || key.includes('embed') || key.includes('Embed') || key.includes('audio') || key.includes('Audio');
-                              return renderFieldInput(
-                                key, val,
-                                v => setEditFields(f => ({ ...f, [key]: v })),
-                                undefined,
-                                isMediaKey ? (dur: string) => setEditFields(f => ({ ...f, extra_duration: dur })) : undefined
-                              );
-                            })
-                          )}
-                        </div>
-                      ) : isEpisodeCard ? (
-                        /* ── EPISODE CUSTOM VIEW MODE ── */
-                        <div className={styles.itemView}>
-                          {/* Episode Cover Image */}
-                          {item.imageUrl && (
-                            <div className={styles.episodeThumbLarge}>
-                              <img src={item.imageUrl} alt={item.title} />
-                            </div>
-                          )}
-
-                          <div className={styles.itemBody}>
-                            <div className={styles.itemTopRow}>
-                              <span className={styles.episodeNumBadge}>Ep. {item.extraData?.episodeNumber}</span>
-                              <span className={styles.sectionBadge}>{item.extraData?.tag || 'Podcast'}</span>
-                              {item.extraData?.isFeatured && <span className={styles.featuredBadge}>★ Featured</span>}
-                              <h4 className={styles.itemTitle}>{item.title || '(untitled)'}</h4>
-                            </div>
-
-                            {item.description && <p className={styles.itemDesc}>{item.description}</p>}
-
-                            {/* Beautiful structured meta details grid */}
-                            <div className={styles.episodeMetaGrid}>
-                              <div><strong>Guest Speaker:</strong> {item.extraData?.speaker || 'N/A'} {item.extraData?.speakerTitle ? `(${item.extraData.speakerTitle})` : ''}</div>
-                              <div><strong>Publish Date:</strong> {item.extraData?.date || 'N/A'}</div>
-                              <div><strong>Duration:</strong> {item.extraData?.duration || 'N/A'}</div>
-                              <div>
-                                <strong>Media:</strong> {item.extraData?.videoUrl ? (
-                                  <span className={styles.mediaTypeSpan}>🎥 Video</span>
-                                ) : (
-                                  <span className={styles.mediaTypeSpan}>🎙️ Audio</span>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Render Player cleanly with spacing */}
-                            <div className={styles.adminPlayerContainer}>
-                              <MediaElementPlayer url={item.extraData?.videoUrl || item.extraData?.audioUrl || ''} />
-                            </div>
-                          </div>
-
-                          {/* Actions */}
-                          <div className={styles.itemActions}>
-                            <button className={styles.editBtn} onClick={() => {
-                              setEditingId(item.id!);
-                              setEditFields(cardToFields(item));
-                              setShowAddForm(false);
-                              const hasVideo = !!item.extraData?.videoUrl;
-                              setEditMediaType(hasVideo ? 'video' : 'audio');
-                            }}>
-                              <Edit3 size={13} /> Edit
-                            </button>
-                            <button 
-                              className={`${styles.deleteBtn} ${(role !== 'SUPERADMIN' && role !== 'ADMIN') ? styles.disabledBtn : ''}`}
-                              disabled={role !== 'SUPERADMIN' && role !== 'ADMIN'}
-                              title={role !== 'SUPERADMIN' && role !== 'ADMIN' ? 'Only administrators can delete elements' : 'Delete'}
-                              onClick={() => handleDeleteCard(item.id!)}
-                            >
-                              <Trash2 size={13} /> Delete
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        /* ── GENERAL VIEW MODE ── */
-                        <div className={styles.itemView}>
-                          {/* Image thumbnail */}
-                          {item.imageUrl && (
-                            <div className={styles.itemThumb}>
-                              <img src={item.imageUrl} alt={item.title} />
-                            </div>
-                          )}
-
-                          <div className={styles.itemBody}>
-                            {/* Section badge + title */}
-                            <div className={styles.itemTopRow}>
-                              {item.sectionTitle && sections.length > 1 && (
-                                <span className={styles.sectionBadge}>{item.sectionTitle}</span>
-                              )}
-                              <h4 className={styles.itemTitle}>{item.title || '(untitled)'}</h4>
-                            </div>
-
-                            {/* Description */}
-                            {item.description && (
-                              <p className={styles.itemDesc}>{item.description.length > 120 ? item.description.slice(0, 120) + '...' : item.description}</p>
-                            )}
-
-                            {/* Extra data tags + image previews */}
-                            {item.extraData && Object.keys(item.extraData).length > 0 && (
-                              <div className={styles.extraTags}>
-                                {Object.entries(item.extraData).map(([k, v]) => {
-                                  const val = String(v);
-                                  const isImg = (k.toLowerCase().includes('image') || k.toLowerCase().includes('poster')) && val.startsWith('http');
-                                  if (isImg) {
-                                    return (
-                                      <div key={k} className={styles.inlinePreviewImg}>
-                                        <img src={val} alt={k} />
-                                      </div>
-                                    );
-                                  }
-                                  return (
-                                    <span key={k} className={styles.extraTag}>
-                                      <strong>{k}:</strong> {val.length > 30 ? val.slice(0, 30) + '...' : val}
-                                    </span>
-                                  );
-                                })}
-                              </div>
-                            )}
-
-                            {/* Media inline preview */}
-                            {(item.extraData?.audioUrl || item.extraData?.embedUrl || item.extraData?.videoUrl) && (
-                              <MediaElementPlayer url={item.extraData.audioUrl || item.extraData.embedUrl || item.extraData.videoUrl} />
-                            )}
-                          </div>
-
-                          {/* Actions */}
-                          <div className={styles.itemActions}>
-                            <button className={styles.editBtn} onClick={() => {
-                              setEditingId(item.id!);
-                              setEditFields(cardToFields(item));
-                              setShowAddForm(false);
-                              const hasVideo = !!item.extraData?.videoUrl;
-                              setEditMediaType(hasVideo ? 'video' : 'audio');
-                            }}>
-                              <Edit3 size={13} /> Edit
-                            </button>
-                            <button 
-                              className={`${styles.deleteBtn} ${(role !== 'SUPERADMIN' && role !== 'ADMIN') ? styles.disabledBtn : ''}`}
-                              disabled={role !== 'SUPERADMIN' && role !== 'ADMIN'}
-                              title={role !== 'SUPERADMIN' && role !== 'ADMIN' ? 'Only administrators can delete elements' : 'Delete'}
-                              onClick={() => handleDeleteCard(item.id!)}
-                            >
-                              <Trash2 size={13} /> Delete
-                            </button>
-                          </div>
-                        </div>
-                      )}
+                  {/* Section filter tabs */}
+                  {sections.length > 1 && (
+                    <div className={styles.filterBar}>
+                      <button className={`${styles.filterChip} ${filterSection === 'all' ? styles.filterActive : ''}`}
+                        onClick={() => setFilterSection('all')}>
+                        All ({items.length})
+                      </button>
+                      {sections.map(s => (
+                        <button key={s.id}
+                          className={`${styles.filterChip} ${filterSection === String(s.id) ? styles.filterActive : ''}`}
+                          onClick={() => setFilterSection(String(s.id))}>
+                          {s.title} ({s.cardCount})
+                        </button>
+                      ))}
                     </div>
-                    );
-                  })}
-                </div>
-                </>
-              )}
+                  )}
+
+                  {/* ── ITEMS LIST ── */}
+                  {isLoadingItems ? (
+                    <div className={styles.loadingState}><Loader2 size={24} className={styles.spinner} /><span>Loading...</span></div>
+                  ) : filteredItems.length === 0 ? (
+                    <div className={styles.emptyState}>
+                      No items yet. Click "Add New Item" to create your first entry.
+                    </div>
+                  ) : (
+                    <>
+                      <div className={styles.dragInfoBanner}>
+                        💡 Drag and drop cards by their handle (☰) to reorder items dynamically.
+                      </div>
+                      <div className={styles.itemsList}>
+                        {filteredItems.map((item) => {
+                          const isEpisodeCard = selectedSlug === 'podcasts' && item.sectionTitle === 'Episodes';
+                          return (
+                            <div
+                              key={item.id}
+                              className={`${styles.itemCard} ${draggedItemId === item.id ? styles.itemCardDragging : ''}`}
+                              draggable
+                              onDragStart={(e) => handleDragStart(e, item.id!)}
+                              onDragOver={(e) => handleDragOver(e, item.id!)}
+                              onDrop={(e) => handleDrop(e, item.id!)}
+                            >
+                              <div className={styles.dragHandleCol} title="Drag to reorder">
+                                ☰
+                              </div>
+                              {editingId === item.id ? (
+                                /* ── EDITING MODE ── */
+                                <div className={styles.editForm}>
+                                  <div className={styles.editFormHeader}>
+                                    <span className={styles.editBadge}>Editing</span>
+                                    <div className={styles.editActions}>
+                                      <button className={styles.saveBtn} onClick={() => handleSaveCard(item.id!)} disabled={isSaving}>
+                                        {isSaving ? <Loader2 size={13} className={styles.spinner} /> : <Save size={13} />}
+                                        <span>Save</span>
+                                      </button>
+                                      <button className={styles.cancelBtn} onClick={() => setEditingId(null)}>
+                                        <X size={13} /> Cancel
+                                      </button>
+                                    </div>
+                                  </div>
+                                  {isEditEpisode ? (
+                                    <div className={styles.customEpisodeForm}>
+                                      {renderFieldInput('title', editFields.title || '', v => setEditFields(f => ({ ...f, title: v })), 'Episode Title')}
+                                      {renderFieldInput('description', editFields.description || '', v => setEditFields(f => ({ ...f, description: v })), 'Description')}
+                                      {renderFieldInput('imageUrl', editFields.imageUrl || '', v => setEditFields(f => ({ ...f, imageUrl: v })), 'Cover Image URL')}
+
+                                      <div className={styles.formRowGrid}>
+                                        {renderFieldInput('extra_episodeNumber', editFields.extra_episodeNumber || '', v => setEditFields(f => ({ ...f, extra_episodeNumber: v })), 'Episode Number')}
+
+                                        <div className={styles.fieldRow}>
+                                          <label className={styles.fieldLabel}>Category Tag</label>
+                                          <select className={styles.input} value={editFields.extra_tag || 'Policy'} onChange={e => setEditFields(f => ({ ...f, extra_tag: e.target.value }))}>
+                                            {['Climate Finance', 'Heatwaves', 'Floods', 'Policy', 'Early Warning', 'Glaciers'].map(t => (
+                                              <option key={t} value={t}>{t}</option>
+                                            ))}
+                                          </select>
+                                        </div>
+                                      </div>
+
+                                      <div className={styles.formRowGrid}>
+                                        {renderFieldInput('extra_speaker', editFields.extra_speaker || '', v => setEditFields(f => ({ ...f, extra_speaker: v })), 'Guest Speaker')}
+                                        {renderFieldInput('extra_speakerTitle', editFields.extra_speakerTitle || '', v => setEditFields(f => ({ ...f, extra_speakerTitle: v })), 'Speaker Title/Org')}
+                                      </div>
+
+                                      <div className={styles.formRowGrid}>
+                                        {renderFieldInput('extra_date', editFields.extra_date || '', v => setEditFields(f => ({ ...f, extra_date: v })), 'Publish Date')}
+                                        {renderFieldInput('extra_duration', editFields.extra_duration || '', v => setEditFields(f => ({ ...f, extra_duration: v })), 'Duration (e.g. 42 min)')}
+                                      </div>
+
+                                      {/* Media Type Selector */}
+                                      <div className={styles.mediaTypeSelectorRow}>
+                                        <label className={styles.fieldLabel}>Media Type</label>
+                                        <div className={styles.mediaTypeButtons}>
+                                          <button
+                                            type="button"
+                                            className={`${styles.mediaTypeBtn} ${editMediaType === 'audio' ? styles.mediaTypeBtnActive : ''}`}
+                                            onClick={() => {
+                                              setEditMediaType('audio');
+                                              setEditFields(f => ({ ...f, extra_videoUrl: '' }));
+                                            }}
+                                          >
+                                            🎙️ Audio Episode
+                                          </button>
+                                          <button
+                                            type="button"
+                                            className={`${styles.mediaTypeBtn} ${editMediaType === 'video' ? styles.mediaTypeBtnActive : ''}`}
+                                            onClick={() => {
+                                              setEditMediaType('video');
+                                              setEditFields(f => ({ ...f, extra_audioUrl: '' }));
+                                            }}
+                                          >
+                                            🎥 Video Episode
+                                          </button>
+                                        </div>
+                                      </div>
+
+                                      {editMediaType === 'audio' ? (
+                                        renderFieldInput('extra_audioUrl', editFields.extra_audioUrl || '', v => setEditFields(f => ({ ...f, extra_audioUrl: v, extra_videoUrl: '' })), 'Audio URL (MP3)', (dur) => setEditFields(f => ({ ...f, extra_duration: dur })))
+                                      ) : (
+                                        renderFieldInput('extra_videoUrl', editFields.extra_videoUrl || '', v => setEditFields(f => ({ ...f, extra_videoUrl: v, extra_audioUrl: '' })), 'Video URL (MP4 / YouTube)', (dur) => setEditFields(f => ({ ...f, extra_duration: dur })))
+                                      )}
+
+                                      <div className={styles.fieldRow}>
+                                        <label className={styles.checkboxLabel}>
+                                          <input
+                                            type="checkbox"
+                                            checked={editFields.extra_isFeatured === 'true'}
+                                            onChange={e => setEditFields(f => ({ ...f, extra_isFeatured: e.target.checked ? 'true' : 'false' }))}
+                                          />
+                                          <span>Featured Episode (displays at top of the player)</span>
+                                        </label>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    Object.entries(editFields).map(([key, val]) => {
+                                      const isMediaKey = key.includes('video') || key.includes('Video') || key.includes('embed') || key.includes('Embed') || key.includes('audio') || key.includes('Audio');
+                                      return renderFieldInput(
+                                        key, val,
+                                        v => setEditFields(f => ({ ...f, [key]: v })),
+                                        undefined,
+                                        isMediaKey ? (dur: string) => setEditFields(f => ({ ...f, extra_duration: dur })) : undefined
+                                      );
+                                    })
+                                  )}
+                                </div>
+                              ) : isEpisodeCard ? (
+                                /* ── EPISODE CUSTOM VIEW MODE ── */
+                                <div className={styles.itemView}>
+                                  {/* Episode Cover Image */}
+                                  {item.imageUrl && (
+                                    <div className={styles.episodeThumbLarge}>
+                                      <img src={item.imageUrl} alt={item.title} />
+                                    </div>
+                                  )}
+
+                                  <div className={styles.itemBody}>
+                                    <div className={styles.itemTopRow}>
+                                      <span className={styles.episodeNumBadge}>Ep. {item.extraData?.episodeNumber}</span>
+                                      <span className={styles.sectionBadge}>{item.extraData?.tag || 'Podcast'}</span>
+                                      {item.extraData?.isFeatured && <span className={styles.featuredBadge}>★ Featured</span>}
+                                      <h4 className={styles.itemTitle}>{item.title || '(untitled)'}</h4>
+                                    </div>
+
+                                    {item.description && <p className={styles.itemDesc}>{item.description}</p>}
+
+                                    {/* Beautiful structured meta details grid */}
+                                    <div className={styles.episodeMetaGrid}>
+                                      <div><strong>Guest Speaker:</strong> {item.extraData?.speaker || 'N/A'} {item.extraData?.speakerTitle ? `(${item.extraData.speakerTitle})` : ''}</div>
+                                      <div><strong>Publish Date:</strong> {item.extraData?.date || 'N/A'}</div>
+                                      <div><strong>Duration:</strong> {item.extraData?.duration || 'N/A'}</div>
+                                      <div>
+                                        <strong>Media:</strong> {item.extraData?.videoUrl ? (
+                                          <span className={styles.mediaTypeSpan}>🎥 Video</span>
+                                        ) : (
+                                          <span className={styles.mediaTypeSpan}>🎙️ Audio</span>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    {/* Render Player cleanly with spacing */}
+                                    <div className={styles.adminPlayerContainer}>
+                                      <MediaElementPlayer url={item.extraData?.videoUrl || item.extraData?.audioUrl || ''} />
+                                    </div>
+                                  </div>
+
+                                  {/* Actions */}
+                                  <div className={styles.itemActions}>
+                                    <button className={styles.editBtn} onClick={() => {
+                                      setEditingId(item.id!);
+                                      setEditFields(cardToFields(item));
+                                      setShowAddForm(false);
+                                      const hasVideo = !!item.extraData?.videoUrl;
+                                      setEditMediaType(hasVideo ? 'video' : 'audio');
+                                    }}>
+                                      <Edit3 size={13} /> Edit
+                                    </button>
+                                    <button
+                                      className={`${styles.deleteBtn} ${(role !== 'SUPERADMIN' && role !== 'ADMIN') ? styles.disabledBtn : ''}`}
+                                      disabled={role !== 'SUPERADMIN' && role !== 'ADMIN'}
+                                      title={role !== 'SUPERADMIN' && role !== 'ADMIN' ? 'Only administrators can delete elements' : 'Delete'}
+                                      onClick={() => handleDeleteCard(item.id!)}
+                                    >
+                                      <Trash2 size={13} /> Delete
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                /* ── GENERAL VIEW MODE ── */
+                                <div className={styles.itemView}>
+                                  {/* Image thumbnail */}
+                                  {item.imageUrl && (
+                                    <div className={styles.itemThumb}>
+                                      <img src={item.imageUrl} alt={item.title} />
+                                    </div>
+                                  )}
+
+                                  <div className={styles.itemBody}>
+                                    {/* Section badge + title */}
+                                    <div className={styles.itemTopRow}>
+                                      {item.sectionTitle && sections.length > 1 && (
+                                        <span className={styles.sectionBadge}>{item.sectionTitle}</span>
+                                      )}
+                                      <h4 className={styles.itemTitle}>{item.title || '(untitled)'}</h4>
+                                    </div>
+
+                                    {/* Description */}
+                                    {item.description && (
+                                      <p className={styles.itemDesc}>{item.description.length > 120 ? item.description.slice(0, 120) + '...' : item.description}</p>
+                                    )}
+
+                                    {/* Extra data tags + image previews */}
+                                    {item.extraData && Object.keys(item.extraData).length > 0 && (
+                                      <div className={styles.extraTags}>
+                                        {Object.entries(item.extraData).map(([k, v]) => {
+                                          const val = String(v);
+                                          const isImg = (k.toLowerCase().includes('image') || k.toLowerCase().includes('poster')) && val.startsWith('http');
+                                          if (isImg) {
+                                            return (
+                                              <div key={k} className={styles.inlinePreviewImg}>
+                                                <img src={val} alt={k} />
+                                              </div>
+                                            );
+                                          }
+                                          return (
+                                            <span key={k} className={styles.extraTag}>
+                                              <strong>{k}:</strong> {val.length > 30 ? val.slice(0, 30) + '...' : val}
+                                            </span>
+                                          );
+                                        })}
+                                      </div>
+                                    )}
+
+                                    {/* Media inline preview */}
+                                    {(item.extraData?.audioUrl || item.extraData?.embedUrl || item.extraData?.videoUrl) && (
+                                      <MediaElementPlayer url={item.extraData.audioUrl || item.extraData.embedUrl || item.extraData.videoUrl} />
+                                    )}
+                                  </div>
+
+                                  {/* Actions */}
+                                  <div className={styles.itemActions}>
+                                    <button className={styles.editBtn} onClick={() => {
+                                      setEditingId(item.id!);
+                                      setEditFields(cardToFields(item));
+                                      setShowAddForm(false);
+                                      const hasVideo = !!item.extraData?.videoUrl;
+                                      setEditMediaType(hasVideo ? 'video' : 'audio');
+                                    }}>
+                                      <Edit3 size={13} /> Edit
+                                    </button>
+                                    <button
+                                      className={`${styles.deleteBtn} ${(role !== 'SUPERADMIN' && role !== 'ADMIN') ? styles.disabledBtn : ''}`}
+                                      disabled={role !== 'SUPERADMIN' && role !== 'ADMIN'}
+                                      title={role !== 'SUPERADMIN' && role !== 'ADMIN' ? 'Only administrators can delete elements' : 'Delete'}
+                                      onClick={() => handleDeleteCard(item.id!)}
+                                    >
+                                      <Trash2 size={13} /> Delete
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
                 </>
               )}
             </>
