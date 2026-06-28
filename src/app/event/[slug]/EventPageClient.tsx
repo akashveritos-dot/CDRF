@@ -236,6 +236,23 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
       return () => clearInterval(interval);
     }, [glimpseCards]);
 
+    // Auto-scroll for Video Highlights carousel (only if more than 3 videos)
+    useEffect(() => {
+      if (videoCards.length <= 3 || isVideoDragging) return;
+      const interval = setInterval(() => {
+        if (videoScrollRef.current) {
+          const container = videoScrollRef.current;
+          const maxScroll = container.scrollWidth - container.clientWidth;
+          if (container.scrollLeft >= maxScroll - 10) {
+            container.scrollTo({ left: 0, behavior: 'smooth' });
+          } else {
+            container.scrollBy({ left: 400, behavior: 'smooth' });
+          }
+        }
+      }, 4000); // Auto-scroll every 4 seconds
+      return () => clearInterval(interval);
+    }, [videoCards, isVideoDragging]);
+
     // Agenda download flow — direct open, no gate
     const handleAgendaDownloadClick = (e: React.MouseEvent, url: string) => {
       e.preventDefault();
@@ -665,10 +682,10 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                     </div>
 
                     {videoCards.length > 1 && (
-                      <>
+                      <div className={styles.sliderControls}>
                         <button
                           type="button"
-                          className={`${styles.agendaNavBtn} ${styles.agendaPrev}`}
+                          className={styles.sliderNavBtn}
                           onClick={() => {
                             if (videoScrollRef.current) {
                               videoScrollRef.current.scrollLeft -= 400;
@@ -680,7 +697,7 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                         </button>
                         <button
                           type="button"
-                          className={`${styles.agendaNavBtn} ${styles.agendaNext}`}
+                          className={styles.sliderNavBtn}
                           onClick={() => {
                             if (videoScrollRef.current) {
                               videoScrollRef.current.scrollLeft += 400;
@@ -690,7 +707,7 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                         >
                           <ChevronRight size={20} />
                         </button>
-                      </>
+                      </div>
                     )}
                   </div>
                 </ScrollReveal>
