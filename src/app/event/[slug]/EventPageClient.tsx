@@ -666,7 +666,7 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                     <div
                       className={styles.videoTrack}
                       style={{
-                        transform: `translateX(calc(-${activeVideoIdx * (33.333)}% - ${activeVideoIdx * 8}px))`,
+                        transform: `translateX(calc(-${activeVideoIdx} * (var(--card-width) + 24px)))`,
                         transition: 'transform 600ms cubic-bezier(0.16, 1, 0.3, 1)'
                       }}
                     >
