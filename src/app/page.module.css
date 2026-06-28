@@ -94,7 +94,8 @@
 .heroActions {
   display: flex;
   gap: 16px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  white-space: nowrap;
 }
 
 .btnPrimary {

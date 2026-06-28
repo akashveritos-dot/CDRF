@@ -2265,7 +2265,7 @@
 .marqueeTrack {
   display: flex;
   width: max-content;
-  animation: marqueeRun 30s linear infinite;
+  animation: marqueeRun 12s linear infinite;
 }
 
 .marqueeContainer:hover .marqueeTrack {
