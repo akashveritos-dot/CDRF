@@ -283,6 +283,631 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
         return url.replace('youtu.be/', 'youtube.com/embed/');
       }
       return url;
+    };    const renderSection = (section: any, idx: number) => {
+      switch (section.title) {
+        case 'Banner Images':
+          return (
+            <ScrollReveal key={section.id || idx} direction="up" delay={0.1}>
+              <div className={styles.carouselContainer}>
+                {bannerCards.length > 0 ? (
+                  <div className={styles.carouselTrack} style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
+                    {bannerCards.map((slide: any, sIdx: number) => (
+                      <div key={slide.id || sIdx} className={styles.carouselSlide}>
+                        <img src={slide.imageUrl} alt={slide.title} className={styles.slideImage} />
+                        <div className={styles.slideOverlay}>
+                          <div className={styles.slideContent}>
+                            <h3>{slide.title}</h3>
+                            <p>{slide.description}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className={styles.carouselSlideSingle}>
+                    <img
+                      src="https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80"
+                      alt="Conclave"
+                      className={styles.slideImage}
+                    />
+                    <div className={styles.slideOverlay}>
+                      <div className={styles.slideContent}>
+                        <h3>Disaster & Climate Resilience Conclave 2026</h3>
+                        <p>India’s premier multi-stakeholder alliance driving convergence across climate science, media coordinates, and corporate social investments.</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {bannerCards.length > 1 && (
+                  <>
+                    <button
+                      className={`${styles.carouselArrow} ${styles.arrowLeft}`}
+                      onClick={() => setCurrentSlide((prev) => (prev - 1 + bannerCards.length) % bannerCards.length)}
+                      aria-label="Previous slide"
+                    >
+                      <ChevronLeft size={20} />
+                    </button>
+                    <button
+                      className={`${styles.carouselArrow} ${styles.arrowRight}`}
+                      onClick={() => setCurrentSlide((prev) => (prev + 1) % bannerCards.length)}
+                      aria-label="Next slide"
+                    >
+                      <ChevronRight size={20} />
+                    </button>
+                    <div className={styles.carouselDots}>
+                      {bannerCards.map((_: any, dIdx: number) => (
+                        <button
+                          key={dIdx}
+                          className={`${styles.carouselDot} ${currentSlide === dIdx ? styles.activeDot : ''}`}
+                          onClick={() => setCurrentSlide(dIdx)}
+                          aria-label={`Go to slide ${dIdx + 1}`}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            </ScrollReveal>
+          );
+
+        case 'Action Buttons':
+          return (
+            <ScrollReveal key={section.id || idx} direction="up" delay={0.15}>
+              <div className={styles.actionCardsGrid}>
+                {actionButtonsSection?.cards?.map((btn: any, btnIdx: number) => {
+                  const extra = btn.extraData || {};
+                  const isDownload = extra.isDownload;
+                  const downloadUrl = extra.downloadUrl || btn.linkUrl || '/uploads/conclave_agenda.pdf';
+
+                  let onClickHandler = undefined;
+                  if (extra.isRegistration) {
+                    onClickHandler = (e: React.MouseEvent) => {
+                      e.preventDefault();
+                      document.getElementById('register')?.scrollIntoView({ behavior: 'smooth' });
+                    };
+                  } else if (isDownload) {
+                    onClickHandler = (e: React.MouseEvent) => {
+                      handleAgendaDownloadClick(e, downloadUrl);
+                    };
+                  }
+
+                  const isFileLink = btn.linkUrl?.match(/\.(pdf|png|jpe?g|gif|svg)$/i) || btn.linkUrl?.startsWith('/api/files/');
+                  return (
+                    <a
+                      href={btn.linkUrl || '#'}
+                      key={btn.id || btnIdx}
+                      className={styles.actionCard}
+                      onClick={onClickHandler}
+                      target={isFileLink && !isDownload ? '_blank' : undefined}
+                      rel={isFileLink && !isDownload ? 'noopener noreferrer' : undefined}
+                    >
+                      <div className={styles.actionCardIconBox}>
+                        {isDownload ? <Download size={20} /> : extra.isRegistration ? <Users size={20} /> : <Zap size={20} />}
+                      </div>
+                      <h4 className={styles.actionCardTitle}>{btn.title}</h4>
+                      <p className={styles.actionCardSubtitle}>
+                        {isDownload ? 'Download PDF Document' : extra.isRegistration ? 'Apply for Passes' : btn.description || 'Explore Resource'}
+                      </p>
+                    </a>
+                  );
+                }) || (
+                  <>
+                    <a href="#agenda-gallery" className={styles.actionCard}>
+                      <div className={styles.actionCardIconBox}><Download size={20} /></div>
+                      <h4 className={styles.actionCardTitle}>Agenda</h4>
+                      <p className={styles.actionCardSubtitle}>Download PDF Document</p>
+                    </a>
+                    <a href="#register" className={styles.actionCard}>
+                      <div className={styles.actionCardIconBox}><Users size={20} /></div>
+                      <h4 className={styles.actionCardTitle}>Registration</h4>
+                      <p className={styles.actionCardSubtitle}>Apply for Passes</p>
+                    </a>
+                    <a href="/reports" className={styles.actionCard}>
+                      <div className={styles.actionCardIconBox}><Zap size={20} /></div>
+                      <h4 className={styles.actionCardTitle}>Partner With US</h4>
+                      <p className={styles.actionCardSubtitle}>Explore Resource</p>
+                    </a>
+                    <a href="/charter-10-point-agenda" className={styles.actionCard}>
+                      <div className={styles.actionCardIconBox}><Zap size={20} /></div>
+                      <h4 className={styles.actionCardTitle}>Intrest Form</h4>
+                      <p className={styles.actionCardSubtitle}>Explore Resource</p>
+                    </a>
+                  </>
+                )}
+              </div>
+            </ScrollReveal>
+          );
+
+        case 'Conclave Details':
+          return (
+            <React.Fragment key={section.id || idx}>
+              <ScrollReveal direction="down" delay={0.05}>
+                <div className={styles.detailsStrip}>
+                  <div className={styles.detailsCard}>
+                    <div className={styles.detailsIcon}>
+                      <Calendar size={20} />
+                    </div>
+                    <div className={styles.detailsText}>
+                      <span className={styles.detailsLabel}>{dateCard?.title || 'Date'}</span>
+                      <span className={styles.detailsValue}>{dateCard?.description || 'November 26–27, 2026'}</span>
+                    </div>
+                  </div>
+                  <div className={styles.detailsCard}>
+                    <div className={styles.detailsIcon}>
+                      <Building2 size={20} />
+                    </div>
+                    <div className={styles.detailsText}>
+                      <span className={styles.detailsLabel}>{venueCard?.title || 'Venue'}</span>
+                      <span className={styles.detailsValue}>{venueCard?.description || 'Stein Auditorium, IHC'}</span>
+                    </div>
+                  </div>
+                  <div className={styles.detailsCard}>
+                    <div className={styles.detailsIcon}>
+                      <MapPin size={20} />
+                    </div>
+                    <div className={styles.detailsText}>
+                      <span className={styles.detailsLabel}>{locationCard?.title || 'Location'}</span>
+                      <span className={styles.detailsValue}>{locationCard?.description || 'Lodhi Road, New Delhi'}</span>
+                    </div>
+                  </div>
+                </div>
+              </ScrollReveal>
+
+              <ScrollReveal direction="up">
+                <div className={styles.descriptionBlock}>
+                  <h2 className={styles.sectionTitle}>About Dcrc 2026</h2>
+                  <div className={styles.aboutContentDiv}>
+                    {descriptionCard?.description && <p className={styles.aboutMainDescription}>{descriptionCard.description}</p>}
+                    
+                    {detailsCards.find((c: any) => c.title?.toLowerCase().includes('highlight')) && (
+                      <>
+                        <h3 style={{ marginTop: '24px', marginBottom: '16px', color: 'var(--wine-red-primary)', fontSize: '18px', fontWeight: 600 }}>
+                          Key Highlights
+                        </h3>
+                        <div dangerouslySetInnerHTML={{ 
+                          __html: detailsCards.find((c: any) => c.title?.toLowerCase().includes('highlight'))?.description || '' 
+                        }} />
+                      </>
+                    )}
+                  </div>
+                </div>
+              </ScrollReveal>
+            </React.Fragment>
+          );
+
+        case 'Agenda Images':
+          return agendaCards.length > 0 ? (
+            <section key={section.id || idx} id="agenda-gallery" className={styles.eventSection}>
+              <ScrollReveal direction="up">
+                <h2 className={styles.sectionTitle}>Conclave Agenda</h2>
+                <p className={styles.sectionSub}>Explore the session timelines, panels, and scheduling pages below.</p>
+              </ScrollReveal>
+
+              <ScrollReveal direction="up" delay={0.1}>
+                <div className={styles.agendaCarousel}>
+                  <div className={styles.agendaTrackWrapper}>
+                    <div
+                      className={styles.agendaTrack}
+                      style={{ transform: `translateX(-${activeAgendaIdx * 100}%)` }}
+                    >
+                      {agendaCards.map((agenda: any, aIdx: number) => (
+                        <div key={agenda.id || aIdx} className={styles.agendaSlide}>
+                          <div className={styles.agendaImageWrap}>
+                            <img
+                              src={agenda.imageUrl}
+                              alt={agenda.title}
+                              className={styles.agendaImage}
+                              onClick={() => window.open(agenda.imageUrl, '_blank')}
+                            />
+                          </div>
+                          <div className={styles.agendaCaption}>
+                            <h3>{agenda.title}</h3>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {agendaCards.length > 1 && (
+                      <>
+                        <button
+                          type="button"
+                          className={`${styles.agendaNavBtn} ${styles.agendaPrev}`}
+                          onClick={() => setActiveAgendaIdx(prev => (prev - 1 + agendaCards.length) % agendaCards.length)}
+                          aria-label="Previous agenda page"
+                        >
+                          <ChevronLeft size={20} />
+                        </button>
+                        <button
+                          type="button"
+                          className={`${styles.agendaNavBtn} ${styles.agendaNext}`}
+                          onClick={() => setActiveAgendaIdx(prev => (prev + 1) % agendaCards.length)}
+                          aria-label="Next agenda page"
+                        >
+                          <ChevronRight size={20} />
+                        </button>
+                      </>
+                    )}
+                  </div>
+
+                  {agendaCards.length > 1 && (
+                    <div className={styles.agendaTabs}>
+                      {agendaCards.map((agenda: any, aIdx: number) => (
+                        <button
+                          key={aIdx}
+                          type="button"
+                          className={`${styles.agendaTabBtn} ${aIdx === activeAgendaIdx ? styles.agendaTabActive : ''}`}
+                          onClick={() => setActiveAgendaIdx(aIdx)}
+                        >
+                          {agenda.title || `Page ${aIdx + 1}`}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </ScrollReveal>
+
+              {/* Three Separate Agenda Actions */}
+              <div className={styles.agendaActionsContainer}>
+                <button
+                  type="button"
+                  className={styles.agendaActionBtnSecondary}
+                  onClick={() => {
+                    const url = agendaCards[0]?.extraData?.downloadUrl || '/uploads/conclave_agenda.pdf';
+                    window.open(url, '_blank');
+                  }}
+                >
+                  <Eye size={16} />
+                  <span>View Agenda PDF</span>
+                </button>
+
+                <button
+                  type="button"
+                  className={styles.agendaActionBtnSecondary}
+                  onClick={() => {
+                    const url = agendaCards[0]?.extraData?.downloadUrl || '/uploads/conclave_agenda.pdf';
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.setAttribute('download', 'Dcrc_Conclave_Agenda.pdf');
+                    link.style.display = 'none';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }}
+                >
+                  <Download size={16} />
+                  <span>Download Agenda PDF</span>
+                </button>
+
+                <button
+                  type="button"
+                  className={styles.agendaActionBtnPrimary}
+                  onClick={(e) => {
+                    const url = agendaCards[0]?.extraData?.downloadUrl || '/uploads/conclave_agenda.pdf';
+                    handleAgendaDownloadClick(e, url);
+                  }}
+                >
+                  <Shield size={16} />
+                  <span>Download Full Agenda</span>
+                </button>
+              </div>
+            </section>
+          ) : null;
+
+        case 'Videos':
+          return videoCards.length > 0 ? (
+            <div key={section.id || idx} className={styles.sectionGlowWrapper}>
+              <section className={styles.eventSection}>
+                <ScrollReveal direction="up">
+                  <h2 className={styles.sectionTitle}>Conclave Video Highlights</h2>
+                  <p className={styles.sectionSub}>Drag to browse — watch leader interviews, technical summaries, and event recordings.</p>
+                </ScrollReveal>
+
+                <ScrollReveal direction="up" delay={0.15}>
+                  <div className={styles.videoSectionWrapper}>
+                    <div
+                      ref={videoScrollRef}
+                      className={`${styles.videoTrackWrapper} ${isVideoDragging ? styles.videoDragging : ''}`}
+                      onMouseDown={(e) => {
+                        if (!videoScrollRef.current) return;
+                        setIsVideoDragging(true);
+                        videoDragRef.current = {
+                          startX: e.pageX - videoScrollRef.current.offsetLeft,
+                          scrollLeft: videoScrollRef.current.scrollLeft
+                        };
+                      }}
+                      onMouseMove={(e) => {
+                        if (!isVideoDragging || !videoScrollRef.current) return;
+                        e.preventDefault();
+                        const x = e.pageX - videoScrollRef.current.offsetLeft;
+                        const walk = (x - videoDragRef.current.startX) * 1.5;
+                        videoScrollRef.current.scrollLeft = videoDragRef.current.scrollLeft - walk;
+                      }}
+                      onMouseUp={() => setIsVideoDragging(false)}
+                      onMouseLeave={() => setIsVideoDragging(false)}
+                    >
+                      <div className={styles.videoTrack}>
+                        {videoCards.map((vid: any, vidIdx: number) => (
+                          <div key={vid.id || vidIdx} className={styles.videoCard}>
+                            <div
+                              className={styles.videoThumbWrap}
+                              onClick={() => setActiveVideoUrl(vid.linkUrl || vid.imageUrl)}
+                            >
+                              <img src={vid.imageUrl} alt={vid.title} className={styles.videoThumb} />
+                              <div className={styles.videoPlayOverlay}>
+                                <div className={styles.playBtnCircle}>
+                                  <Play size={20} fill="#fff" style={{ marginLeft: '4px' }} />
+                                </div>
+                              </div>
+                            </div>
+                            <div className={styles.videoCardInfo}>
+                              <h4>{vid.title}</h4>
+                              <p>
+                                {vid.description?.length > 90 ? (
+                                  <>
+                                    {vid.description.slice(0, 90)}...
+                                    <button
+                                      type="button"
+                                      className={styles.readMoreTextBtn}
+                                      onClick={() => setActiveCardDetails({ ...vid, sectionName: 'Videos' })}
+                                    >
+                                      Read More
+                                    </button>
+                                  </>
+                                ) : (
+                                  vid.description
+                                )}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {videoCards.length > 1 && (
+                      <>
+                        <button
+                          type="button"
+                          className={`${styles.agendaNavBtn} ${styles.agendaPrev}`}
+                          onClick={() => {
+                            if (videoScrollRef.current) {
+                              videoScrollRef.current.scrollLeft -= 400;
+                            }
+                          }}
+                          aria-label="Previous video"
+                        >
+                          <ChevronLeft size={20} />
+                        </button>
+                        <button
+                          type="button"
+                          className={`${styles.agendaNavBtn} ${styles.agendaNext}`}
+                          onClick={() => {
+                            if (videoScrollRef.current) {
+                              videoScrollRef.current.scrollLeft += 400;
+                            }
+                          }}
+                          aria-label="Next video"
+                        >
+                          <ChevronRight size={20} />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </ScrollReveal>
+              </section>
+            </div>
+          ) : null;
+
+        case 'Glimpse':
+          return glimpseCards.length > 0 ? (
+            <div key={section.id || idx} className={styles.sectionGlowWrapper}>
+              <section className={styles.eventSection}>
+                <ScrollReveal direction="up">
+                  <h2 className={styles.sectionTitle}>Glimpse of Dcrc</h2>
+                  <p className={styles.sectionSub}>A snapshot of early warning sensor deployments, cool-roof campaigns, and conclave action panels.</p>
+                </ScrollReveal>
+
+                <ScrollReveal direction="up" delay={0.15}>
+                  <div className={styles.coverflowContainer}>
+                    <div className={styles.coverflowStage}>
+                      {glimpseCards.map((g: any, gIdx: number) => {
+                        let offset = gIdx - activeGlimpseIdx;
+                        if (offset > glimpseCards.length / 2) offset -= glimpseCards.length;
+                        if (offset < -glimpseCards.length / 2) offset += glimpseCards.length;
+
+                        const isCenter = offset === 0;
+                        const isVisible = Math.abs(offset) <= 2;
+                        if (!isVisible) return null;
+
+                        const scale = isCenter ? 1 : Math.abs(offset) === 1 ? 0.8 : 0.65;
+                        const translateX = offset * 220;
+                        const rotateY = offset * -25;
+                        const opacity = isCenter ? 1 : Math.abs(offset) === 1 ? 0.65 : 0.35;
+                        const zIndex = 10 - Math.abs(offset);
+
+                        return (
+                          <div
+                            key={g.id || gIdx}
+                            className={`${styles.coverflowCard} ${isCenter ? styles.coverflowCardActive : ''}`}
+                            style={{
+                              transform: `translateX(${translateX}px) scale(${scale}) rotateY(${rotateY}deg)`,
+                              opacity,
+                              zIndex,
+                            }}
+                            onClick={() => {
+                              if (isCenter) {
+                                const urls = glimpseCards.map((c: any) => c.imageUrl);
+                                const captions = glimpseCards.map((c: any) => c.title || 'Conclave Glimpse');
+                                openLightbox(urls, captions, gIdx);
+                              } else {
+                                setActiveGlimpseIdx(gIdx);
+                              }
+                            }}
+                          >
+                            <img src={g.imageUrl} alt={g.title || 'Conclave Glimpse'} />
+                            <div className={styles.coverflowReflection} />
+                            {isCenter && (
+                              <div className={styles.coverflowOverlay}>
+                                <span className={styles.downloadBtn} style={{ padding: '8px 16px', fontSize: '11px' }}>
+                                  View Full Size
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className={styles.viewMoreContainer}>
+                    <a href="/gallery" className={styles.viewMoreBtn}>
+                      <span>View More Gallery</span>
+                      <ExternalLink size={14} />
+                    </a>
+                  </div>
+                </ScrollReveal>
+              </section>
+            </div>
+          ) : null;
+
+        case 'Speakers':
+          return speakerCards.length > 0 ? (
+            <div key={section.id || idx} className={styles.sectionGlowWrapper}>
+              <section className={styles.eventSection}>
+                <ScrollReveal direction="up">
+                  <h2 className={styles.sectionTitle}>Distinguished Speakers</h2>
+                  <p className={styles.sectionSub}>Learn from the domain leaders mapping disaster management and climate adaptation strategies.</p>
+                </ScrollReveal>
+
+                <ScrollReveal direction="up" delay={0.15}>
+                  <div className={styles.sliderContainer}>
+                    <div className={styles.sliderWrapper}>
+                      {speakerCards.map((sp: any, spIdx: number) => {
+                        const isActive = spIdx === activeSpeakerIdx;
+                        const isPrev = spIdx === (activeSpeakerIdx - 1 + speakerCards.length) % speakerCards.length;
+                        const isNext = spIdx === (activeSpeakerIdx + 1) % speakerCards.length;
+
+                        let positionClass = styles.slideCardHidden;
+                        if (isActive) positionClass = styles.slideCardActive;
+                        else if (isPrev) positionClass = styles.slideCardPrev;
+                        else if (isNext) positionClass = styles.slideCardNext;
+
+                        return (
+                          <div
+                            key={sp.id || spIdx}
+                            className={`${styles.slideCard} ${positionClass}`}
+                          >
+                            <div className={styles.speakerPhotoWrap}>
+                              <img src={sp.imageUrl} alt={sp.title} className={styles.speakerPhotoRect} />
+                            </div>
+                            <div className={styles.speakerInfoBlock}>
+                              <span className={styles.speakerRoleTag}>Advisory Panelist</span>
+                              <h4 className={styles.speakerNameTitle}>{sp.title}</h4>
+                              <p className={styles.speakerDescParagraph}>
+                                {sp.description?.length > 90 ? (
+                                  <>
+                                    {sp.description.slice(0, 90)}...
+                                    <button
+                                      type="button"
+                                      className={styles.readMoreTextBtn}
+                                      onClick={() => setActiveCardDetails({ ...sp, sectionName: 'Speakers' })}
+                                    >
+                                      Read More
+                                    </button>
+                                  </>
+                                ) : (
+                                  sp.description
+                                )}
+                              </p>
+                              <div className={styles.speakerFooterRow}>
+                                <div className={styles.speakerSocials}>
+                                  {(sp.extraData?.linkedinUrl || sp.linkUrl) && (
+                                    <a href={sp.extraData?.linkedinUrl || sp.linkUrl} className={styles.socialIconLink} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                                      <Linkedin size={15} />
+                                    </a>
+                                  )}
+                                  {sp.extraData?.twitterUrl && (
+                                    <a href={sp.extraData.twitterUrl} className={styles.socialIconLink} target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+                                      <Twitter size={15} />
+                                    </a>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className={styles.sliderControls}>
+                    <button
+                      type="button"
+                      className={styles.sliderNavBtn}
+                      onClick={() => setActiveSpeakerIdx(prev => (prev - 1 + speakerCards.length) % speakerCards.length)}
+                      aria-label="Previous speaker"
+                    >
+                      <ChevronLeft size={20} />
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.sliderNavBtn}
+                      onClick={() => setActiveSpeakerIdx(prev => (prev + 1) % speakerCards.length)}
+                      aria-label="Next speaker"
+                    >
+                      <ChevronRight size={20} />
+                    </button>
+                  </div>
+
+                  <div className={styles.viewMoreContainer}>
+                    <a href="/event/speakers" className={styles.viewMoreBtn}>
+                      <span>View All Speakers</span>
+                      <ExternalLink size={14} />
+                    </a>
+                  </div>
+                </ScrollReveal>
+              </section>
+            </div>
+          ) : null;
+
+        case 'Partners':
+          return partnerCards.length > 0 ? (
+            <div key={section.id || idx} className={styles.sectionGlowWrapper}>
+              <section className={styles.eventSection}>
+                <ScrollReveal direction="up">
+                  <h2 className={styles.sectionTitle}>Our Partners</h2>
+                  <p className={styles.sectionSub}>Founding and strategic partners driving disaster resilience and ESG initiatives.</p>
+                </ScrollReveal>
+
+                <ScrollReveal direction="up" delay={0.2}>
+                  <div className={styles.marqueeContainer}>
+                    <div className={styles.marqueeTrack}>
+                      {(partnerCards.length >= 3 ? [...partnerCards, ...partnerCards] : partnerCards).map((p: any, pIdx: number) => (
+                        <a
+                          href={p.linkUrl || '#'}
+                          target={p.linkUrl ? '_blank' : undefined}
+                          rel={p.linkUrl ? 'noopener noreferrer' : undefined}
+                          key={pIdx}
+                          className={styles.partnerMarqueeCard}
+                          onClick={(e) => {
+                            if (!p.linkUrl) {
+                              e.preventDefault();
+                            }
+                          }}
+                        >
+                          <img src={p.imageUrl} alt={p.title} />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                </ScrollReveal>
+              </section>
+            </div>
+          ) : null;
+
+        default:
+          return null;
+      }
     };
 
     return (
@@ -299,553 +924,8 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
           />
         </ScrollReveal>
 
-        {/* Location, Date, and Venue Details Strip */}
-        <ScrollReveal direction="down" delay={0.05}>
-          <div className={styles.detailsStrip}>
-            <div className={styles.detailsCard}>
-              <div className={styles.detailsIcon}>
-                <Calendar size={20} />
-              </div>
-              <div className={styles.detailsText}>
-                <span className={styles.detailsLabel}>{dateCard?.title || 'Date'}</span>
-                <span className={styles.detailsValue}>{dateCard?.description || 'November 26–27, 2026'}</span>
-              </div>
-            </div>
-            <div className={styles.detailsCard}>
-              <div className={styles.detailsIcon}>
-                <Building2 size={20} />
-              </div>
-              <div className={styles.detailsText}>
-                <span className={styles.detailsLabel}>{venueCard?.title || 'Venue'}</span>
-                <span className={styles.detailsValue}>{venueCard?.description || 'Stein Auditorium, IHC'}</span>
-              </div>
-            </div>
-            <div className={styles.detailsCard}>
-              <div className={styles.detailsIcon}>
-                <MapPin size={20} />
-              </div>
-              <div className={styles.detailsText}>
-                <span className={styles.detailsLabel}>{locationCard?.title || 'Location'}</span>
-                <span className={styles.detailsValue}>{locationCard?.description || 'Lodhi Road, New Delhi'}</span>
-              </div>
-            </div>
-          </div>
-        </ScrollReveal>
-
-
-        {/* Slideable Banner Carousel Section */}
-        <ScrollReveal direction="up" delay={0.1}>
-          <div className={styles.carouselContainer}>
-            {bannerCards.length > 0 ? (
-              <div className={styles.carouselTrack} style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
-                {bannerCards.map((slide: any, idx: number) => (
-                  <div key={slide.id || idx} className={styles.carouselSlide}>
-                    <img src={slide.imageUrl} alt={slide.title} className={styles.slideImage} />
-                    <div className={styles.slideOverlay}>
-                      <div className={styles.slideContent}>
-                        <h3>{slide.title}</h3>
-                        <p>{slide.description}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className={styles.carouselSlideSingle}>
-                <img
-                  src="https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80"
-                  alt="Conclave"
-                  className={styles.slideImage}
-                />
-                <div className={styles.slideOverlay}>
-                  <div className={styles.slideContent}>
-                    <h3>Disaster & Climate Resilience Conclave 2026</h3>
-                    <p>India’s premier multi-stakeholder alliance driving convergence across climate science, media coordinates, and corporate social investments.</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {bannerCards.length > 1 && (
-              <>
-                <button
-                  className={`${styles.carouselArrow} ${styles.arrowLeft}`}
-                  onClick={() => setCurrentSlide((prev) => (prev - 1 + bannerCards.length) % bannerCards.length)}
-                  aria-label="Previous slide"
-                >
-                  <ChevronLeft size={20} />
-                </button>
-                <button
-                  className={`${styles.carouselArrow} ${styles.arrowRight}`}
-                  onClick={() => setCurrentSlide((prev) => (prev + 1) % bannerCards.length)}
-                  aria-label="Next slide"
-                >
-                  <ChevronRight size={20} />
-                </button>
-                <div className={styles.carouselDots}>
-                  {bannerCards.map((_: any, idx: number) => (
-                    <button
-                      key={idx}
-                      className={`${styles.carouselDot} ${currentSlide === idx ? styles.activeDot : ''}`}
-                      onClick={() => setCurrentSlide(idx)}
-                      aria-label={`Go to slide ${idx + 1}`}
-                    />
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        </ScrollReveal>
-
-        {/* Action Buttons / Cards below Banner */}
-        <ScrollReveal direction="up" delay={0.15}>
-          <div className={styles.actionCardsGrid}>
-            {actionButtonsSection?.cards?.map((btn: any, idx: number) => {
-              const extra = btn.extraData || {};
-              const isDownload = extra.isDownload;
-              const downloadUrl = extra.downloadUrl || btn.linkUrl || '/uploads/conclave_agenda.pdf';
-
-              let onClickHandler = undefined;
-              if (extra.isRegistration) {
-                onClickHandler = (e: React.MouseEvent) => {
-                  e.preventDefault();
-                  document.getElementById('register')?.scrollIntoView({ behavior: 'smooth' });
-                };
-              } else if (isDownload) {
-                onClickHandler = (e: React.MouseEvent) => {
-                  handleAgendaDownloadClick(e, downloadUrl);
-                };
-              }
-
-              const isFileLink = btn.linkUrl?.match(/\.(pdf|png|jpe?g|gif|svg)$/i) || btn.linkUrl?.startsWith('/api/files/');
-              return (
-                <a
-                  href={btn.linkUrl || '#'}
-                  key={btn.id || idx}
-                  className={styles.actionCard}
-                  onClick={onClickHandler}
-                  target={isFileLink && !isDownload ? '_blank' : undefined}
-                  rel={isFileLink && !isDownload ? 'noopener noreferrer' : undefined}
-                >
-                  <div className={styles.actionCardIconBox}>
-                    {isDownload ? <Download size={20} /> : extra.isRegistration ? <Users size={20} /> : <Zap size={20} />}
-                  </div>
-                  <h4 className={styles.actionCardTitle}>{btn.title}</h4>
-                  <p className={styles.actionCardSubtitle}>
-                    {isDownload ? 'Download PDF Document' : extra.isRegistration ? 'Apply for Passes' : btn.description || 'Explore Resource'}
-                  </p>
-                </a>
-              );
-            }) || (
-                <>
-                  <a href="#agenda-gallery" className={styles.actionCard}>
-                    <div className={styles.actionCardIconBox}><Download size={20} /></div>
-                    <h4 className={styles.actionCardTitle}>Agenda</h4>
-                    <p className={styles.actionCardSubtitle}>Download PDF Document</p>
-                  </a>
-                  <a href="#register" className={styles.actionCard}>
-                    <div className={styles.actionCardIconBox}><Users size={20} /></div>
-                    <h4 className={styles.actionCardTitle}>Registration</h4>
-                    <p className={styles.actionCardSubtitle}>Apply for Passes</p>
-                  </a>
-                  <a href="/reports" className={styles.actionCard}>
-                    <div className={styles.actionCardIconBox}><Zap size={20} /></div>
-                    <h4 className={styles.actionCardTitle}>Partner With US</h4>
-                    <p className={styles.actionCardSubtitle}>Explore Resource</p>
-                  </a>
-                  <a href="/charter-10-point-agenda" className={styles.actionCard}>
-                    <div className={styles.actionCardIconBox}><Zap size={20} /></div>
-                    <h4 className={styles.actionCardTitle}>Intrest Form</h4>
-                    <p className={styles.actionCardSubtitle}>Explore Resource</p>
-                  </a>
-                </>
-              )}
-          </div>
-        </ScrollReveal>
-
-        {/* About DCRC 2026 Section - Fully Editable from Conclave Details */}
-        <ScrollReveal direction="up">
-          <div className={styles.descriptionBlock}>
-            <h2 className={styles.sectionTitle}>About Dcrc 2026</h2>
-            <div className={styles.aboutContentDiv}>
-              {/* Introduction paragraph from editable Description card */}
-              {descriptionCard?.description && <p className={styles.aboutMainDescription}>{descriptionCard.description}</p>}
-              
-
-
-              {/* Key Highlights - from card with title "highlights" or "key highlights" */}
-              {detailsCards.find((c: any) => c.title?.toLowerCase().includes('highlight')) && (
-                <>
-                  <h3 style={{ marginTop: '24px', marginBottom: '16px', color: 'var(--wine-red-primary)', fontSize: '18px', fontWeight: 600 }}>
-                    Key Highlights
-                  </h3>
-                  <div dangerouslySetInnerHTML={{ 
-                    __html: detailsCards.find((c: any) => c.title?.toLowerCase().includes('highlight'))?.description || '' 
-                  }} />
-                </>
-              )}
-            </div>
-          </div>
-        </ScrollReveal>
-
-        {/* ── Agenda Section (Clean 2-Button Layout) ── */}
-        {agendaCards.length > 0 && (
-          <section id="agenda-gallery" className={styles.eventSection}>
-            <ScrollReveal direction="up">
-              <h2 className={styles.sectionTitle}>Conclave Agenda</h2>
-              <p className={styles.sectionSub}>Download or view the full session schedule, panels, and timing guide.</p>
-            </ScrollReveal>
-
-            <ScrollReveal direction="up" delay={0.1}>
-              <div className={styles.agendaActionsContainer}>
-                <button
-                  type="button"
-                  className={styles.agendaActionBtnSecondary}
-                  onClick={() => {
-                    const url = agendaCards[0]?.extraData?.downloadUrl || '/uploads/conclave_agenda.pdf';
-                    window.open(url, '_blank');
-                  }}
-                >
-                  <Eye size={18} />
-                  <span>View Full Agenda</span>
-                </button>
-
-                <button
-                  type="button"
-                  className={styles.agendaActionBtnPrimary}
-                  onClick={() => {
-                    const url = agendaCards[0]?.extraData?.downloadUrl || '/uploads/conclave_agenda.pdf';
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.setAttribute('download', 'Dcrc_Conclave_Agenda.pdf');
-                    link.style.display = 'none';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                  }}
-                >
-                  <Download size={18} />
-                  <span>Download Agenda</span>
-                </button>
-              </div>
-            </ScrollReveal>
-          </section>
-        )}
-
-        {/* ── Videos Section (Drag-to-Scroll Carousel) ── */}
-        {videoCards.length > 0 && (
-          <div className={styles.sectionGlowWrapper}>
-            <section className={styles.eventSection}>
-              <ScrollReveal direction="up">
-                <h2 className={styles.sectionTitle}>Conclave Video Highlights</h2>
-                <p className={styles.sectionSub}>Drag to browse — watch leader interviews, technical summaries, and event recordings.</p>
-              </ScrollReveal>
-
-              <ScrollReveal direction="up" delay={0.15}>
-                <div className={styles.videoSectionWrapper}>
-                  <div
-                    ref={videoScrollRef}
-                    className={`${styles.videoTrackWrapper} ${isVideoDragging ? styles.videoDragging : ''}`}
-                    onMouseDown={(e) => {
-                      if (!videoScrollRef.current) return;
-                      setIsVideoDragging(true);
-                      videoDragRef.current = {
-                        startX: e.pageX - videoScrollRef.current.offsetLeft,
-                        scrollLeft: videoScrollRef.current.scrollLeft
-                      };
-                    }}
-                    onMouseMove={(e) => {
-                      if (!isVideoDragging || !videoScrollRef.current) return;
-                      e.preventDefault();
-                      const x = e.pageX - videoScrollRef.current.offsetLeft;
-                      const walk = (x - videoDragRef.current.startX) * 1.5;
-                      videoScrollRef.current.scrollLeft = videoDragRef.current.scrollLeft - walk;
-                    }}
-                    onMouseUp={() => setIsVideoDragging(false)}
-                    onMouseLeave={() => setIsVideoDragging(false)}
-                  >
-                    <div className={styles.videoTrack}>
-                      {videoCards.map((vid: any, idx: number) => (
-                        <div key={vid.id || idx} className={styles.videoCard}>
-                          <div
-                            className={styles.videoThumbWrap}
-                            onClick={() => setActiveVideoUrl(vid.linkUrl || vid.imageUrl)}
-                          >
-                            <img src={vid.imageUrl} alt={vid.title} className={styles.videoThumb} />
-                            <div className={styles.videoPlayOverlay}>
-                              <div className={styles.playBtnCircle}>
-                                <Play size={20} fill="#fff" style={{ marginLeft: '4px' }} />
-                              </div>
-                            </div>
-                          </div>
-                          <div className={styles.videoCardInfo}>
-                            <h4>{vid.title}</h4>
-                            <p>
-                              {vid.description?.length > 90 ? (
-                                <>
-                                  {vid.description.slice(0, 90)}...
-                                  <button
-                                    type="button"
-                                    className={styles.readMoreTextBtn}
-                                    onClick={() => setActiveCardDetails({ ...vid, sectionName: 'Videos' })}
-                                  >
-                                    Read More
-                                  </button>
-                                </>
-                              ) : (
-                                vid.description
-                              )}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {videoCards.length > 1 && (
-                    <>
-                      <button
-                        type="button"
-                        className={`${styles.agendaNavBtn} ${styles.agendaPrev}`}
-                        onClick={() => {
-                          if (videoScrollRef.current) {
-                            videoScrollRef.current.scrollLeft -= 400;
-                          }
-                        }}
-                        aria-label="Previous video"
-                      >
-                        <ChevronLeft size={20} />
-                      </button>
-                      <button
-                        type="button"
-                        className={`${styles.agendaNavBtn} ${styles.agendaNext}`}
-                        onClick={() => {
-                          if (videoScrollRef.current) {
-                            videoScrollRef.current.scrollLeft += 400;
-                          }
-                        }}
-                        aria-label="Next video"
-                      >
-                        <ChevronRight size={20} />
-                      </button>
-                    </>
-                  )}
-                </div>
-              </ScrollReveal>
-            </section>
-          </div>
-        )}
-
-        {/* ── Glimpse Section (3D Coverflow Carousel) ── */}
-        {glimpseCards.length > 0 && (
-          <div className={styles.sectionGlowWrapper}>
-            <section className={styles.eventSection}>
-              <ScrollReveal direction="up">
-                <h2 className={styles.sectionTitle}>Glimpse of Dcrc</h2>
-                <p className={styles.sectionSub}>A snapshot of early warning sensor deployments, cool-roof campaigns, and conclave action panels.</p>
-              </ScrollReveal>
-
-              <ScrollReveal direction="up" delay={0.15}>
-                <div className={styles.coverflowContainer}>
-                  <div className={styles.coverflowStage}>
-                    {glimpseCards.map((g: any, idx: number) => {
-                      // Calculate visual offsets in coverflow relative to activeGlimpseIdx
-                      let offset = idx - activeGlimpseIdx;
-                      if (offset > glimpseCards.length / 2) offset -= glimpseCards.length;
-                      if (offset < -glimpseCards.length / 2) offset += glimpseCards.length;
-
-                      const isCenter = offset === 0;
-                      const isVisible = Math.abs(offset) <= 2;
-                      if (!isVisible) return null;
-
-                      const scale = isCenter ? 1 : Math.abs(offset) === 1 ? 0.8 : 0.65;
-                      const translateX = offset * 220;
-                      const rotateY = offset * -25;
-                      const opacity = isCenter ? 1 : Math.abs(offset) === 1 ? 0.65 : 0.35;
-                      const zIndex = 10 - Math.abs(offset);
-
-                      return (
-                        <div
-                          key={g.id || idx}
-                          className={`${styles.coverflowCard} ${isCenter ? styles.coverflowCardActive : ''}`}
-                          style={{
-                            transform: `translateX(${translateX}px) scale(${scale}) rotateY(${rotateY}deg)`,
-                            opacity,
-                            zIndex,
-                          }}
-                          onClick={() => {
-                            if (isCenter) {
-                              const urls = glimpseCards.map((c: any) => c.imageUrl);
-                              const captions = glimpseCards.map((c: any) => c.title || 'Conclave Glimpse');
-                              openLightbox(urls, captions, idx);
-                            } else {
-                              setActiveGlimpseIdx(idx);
-                            }
-                          }}
-                        >
-                          <img src={g.imageUrl} alt={g.title || 'Conclave Glimpse'} />
-                          <div className={styles.coverflowReflection} />
-                          {isCenter && (
-                            <div className={styles.coverflowOverlay}>
-                              <span className={styles.downloadBtn} style={{ padding: '8px 16px', fontSize: '11px' }}>
-                                View Full Size
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* View More Gallery Button */}
-                <div className={styles.viewMoreContainer}>
-                  <a href="/gallery" className={styles.viewMoreBtn}>
-                    <span>View More Gallery</span>
-                    <ExternalLink size={14} />
-                  </a>
-                </div>
-              </ScrollReveal>
-            </section>
-          </div>
-        )}
-
-        {/* ── Speakers Section (Card Stack Carousel) ── */}
-        {speakerCards.length > 0 && (
-          <div className={styles.sectionGlowWrapper}>
-            <section className={styles.eventSection}>
-              <ScrollReveal direction="up">
-                <h2 className={styles.sectionTitle}>Distinguished Speakers</h2>
-                <p className={styles.sectionSub}>Learn from the domain leaders mapping disaster management and climate adaptation strategies.</p>
-              </ScrollReveal>
-
-              <ScrollReveal direction="up" delay={0.15}>
-                <div className={styles.sliderContainer}>
-                  <div className={styles.sliderWrapper}>
-                    {speakerCards.map((sp: any, idx: number) => {
-                      const isActive = idx === activeSpeakerIdx;
-                      const isPrev = idx === (activeSpeakerIdx - 1 + speakerCards.length) % speakerCards.length;
-                      const isNext = idx === (activeSpeakerIdx + 1) % speakerCards.length;
-
-                      let positionClass = styles.slideCardHidden;
-                      if (isActive) positionClass = styles.slideCardActive;
-                      else if (isPrev) positionClass = styles.slideCardPrev;
-                      else if (isNext) positionClass = styles.slideCardNext;
-
-                      return (
-                        <div
-                          key={sp.id || idx}
-                          className={`${styles.slideCard} ${positionClass}`}
-                        >
-                          <div className={styles.speakerPhotoWrap}>
-                            <img src={sp.imageUrl} alt={sp.title} className={styles.speakerPhotoRect} />
-                          </div>
-                          <div className={styles.speakerInfoBlock}>
-                            <span className={styles.speakerRoleTag}>Advisory Panelist</span>
-                            <h4 className={styles.speakerNameTitle}>{sp.title}</h4>
-                            <p className={styles.speakerDescParagraph}>
-                              {sp.description?.length > 90 ? (
-                                <>
-                                  {sp.description.slice(0, 90)}...
-                                  <button
-                                    type="button"
-                                    className={styles.readMoreTextBtn}
-                                    onClick={() => setActiveCardDetails({ ...sp, sectionName: 'Speakers' })}
-                                  >
-                                    Read More
-                                  </button>
-                                </>
-                              ) : (
-                                sp.description
-                              )}
-                            </p>
-                            <div className={styles.speakerFooterRow}>
-                              <div className={styles.speakerSocials}>
-                                {(sp.extraData?.linkedinUrl || sp.linkUrl) && (
-                                  <a href={sp.extraData?.linkedinUrl || sp.linkUrl} className={styles.socialIconLink} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
-                                    <Linkedin size={15} />
-                                  </a>
-                                )}
-                                {sp.extraData?.twitterUrl && (
-                                  <a href={sp.extraData.twitterUrl} className={styles.socialIconLink} target="_blank" rel="noopener noreferrer" aria-label="Twitter">
-                                    <Twitter size={15} />
-                                  </a>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className={styles.sliderControls}>
-                  <button
-                    type="button"
-                    className={styles.sliderNavBtn}
-                    onClick={() => setActiveSpeakerIdx(prev => (prev - 1 + speakerCards.length) % speakerCards.length)}
-                    aria-label="Previous speaker"
-                  >
-                    <ChevronLeft size={20} />
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.sliderNavBtn}
-                    onClick={() => setActiveSpeakerIdx(prev => (prev + 1) % speakerCards.length)}
-                    aria-label="Next speaker"
-                  >
-                    <ChevronRight size={20} />
-                  </button>
-                </div>
-
-                {/* View More Speakers Button */}
-                <div className={styles.viewMoreContainer}>
-                  <a href="/event/speakers" className={styles.viewMoreBtn}>
-                    <span>View All Speakers</span>
-                    <ExternalLink size={14} />
-                  </a>
-                </div>
-              </ScrollReveal>
-            </section>
-          </div>
-        )}
-
-        {/* ── Our Partners Section (Infinite Marquee Slider) ── */}
-        {partnerCards.length > 0 && (
-          <div className={styles.sectionGlowWrapper}>
-            <section className={styles.eventSection}>
-              <ScrollReveal direction="up">
-                <h2 className={styles.sectionTitle}>Our Partners</h2>
-                <p className={styles.sectionSub}>Founding and strategic partners driving disaster resilience and ESG initiatives.</p>
-              </ScrollReveal>
-
-              <ScrollReveal direction="up" delay={0.2}>
-                <div className={styles.marqueeContainer}>
-                  <div className={styles.marqueeTrack}>
-                    {/* Only duplicate if we have 3+ partners for marquee effect, otherwise show normally */}
-                    {(partnerCards.length >= 3 ? [...partnerCards, ...partnerCards] : partnerCards).map((p: any, idx: number) => (
-                      <a
-                        href={p.linkUrl || '#'}
-                        target={p.linkUrl ? '_blank' : undefined}
-                        rel={p.linkUrl ? 'noopener noreferrer' : undefined}
-                        key={idx}
-                        className={styles.partnerMarqueeCard}
-                        onClick={(e) => {
-                          if (!p.linkUrl) {
-                            e.preventDefault();
-                          }
-                        }}
-                      >
-                        <img src={p.imageUrl} alt={p.title} />
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              </ScrollReveal>
-            </section>
-          </div>
-        )}
+        {/* Dynamically render sections in display_order as saved in the DB */}
+        {pageData.sections?.map((section: any, idx: number) => renderSection(section, idx))}
 
         {/* Registration Section */}
         <ScrollReveal direction="up">
