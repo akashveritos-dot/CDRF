@@ -825,8 +825,8 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
             <ScrollReveal direction="up" delay={0.2}>
               <div className={styles.marqueeContainer}>
                 <div className={styles.marqueeTrack}>
-                  {/* Double the array for a seamless loop marquee */}
-                  {[...partnerCards, ...partnerCards].map((p: any, idx: number) => (
+                  {/* Only duplicate if we have 3+ partners for marquee effect, otherwise show normally */}
+                  {(partnerCards.length >= 3 ? [...partnerCards, ...partnerCards] : partnerCards).map((p: any, idx: number) => (
                     <a
                       href={p.linkUrl || '#'}
                       target={p.linkUrl ? '_blank' : undefined}
