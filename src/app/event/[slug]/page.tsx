@@ -32,6 +32,38 @@ export default async function EventSubpage(props: { params: Promise<{ slug: stri
     );
 
     if (sectionRows.length > 0) {
+      // Self-healing check: ensure 'Description' card exists in 'Conclave Details' section for 'dcrc-26'
+      if (slug === 'dcrc-26') {
+        const conclaveDetailsSec = sectionRows.find((s: any) => s.title === 'Conclave Details');
+        if (conclaveDetailsSec) {
+          try {
+            const descCards = await query<any[]>(
+              `SELECT id FROM cms_page_cards WHERE section_id = ? AND LOWER(title) = 'description'`,
+              [conclaveDetailsSec.id]
+            );
+            if (!descCards || descCards.length === 0) {
+              await query(
+                `INSERT INTO cms_page_cards (section_id, display_order, title, description, image_url, link_text, link_url, extra_data)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                  conclaveDetailsSec.id,
+                  3, // display_order after Date (0), Venue (1), Location (2)
+                  'Description',
+                  "Disaster & Climate Resilience Conclave 2026 is India's premier multi-stakeholder alliance driving convergence across climate science, media coordinates, and corporate social investments.",
+                  '',
+                  '',
+                  '',
+                  '{}'
+                ]
+              );
+              console.log('[SELF-HEALING] Seeded missing Description card in Conclave Details section.');
+            }
+          } catch (err) {
+            console.error('[SELF-HEALING ERROR] Failed to seed Conclave Details Description:', err);
+          }
+        }
+      }
+
       const sectionIds = sectionRows.map((s: any) => s.id);
       const placeholders = sectionIds.map(() => '?').join(',');
       const cardRows = await query<any[]>(

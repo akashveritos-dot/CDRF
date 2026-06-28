@@ -2911,29 +2911,62 @@
   margin-bottom: 20px;
 }
 
-.aboutDetailsTable {
-  margin: 24px 0;
-  padding: 24px;
-  background: var(--bg-surface-alt);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
+.aboutMainDescription {
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--text-default);
+  margin-bottom: 28px;
+  text-align: left;
 }
 
-.aboutDetailRow {
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border-color);
-  font-size: 14px;
-  line-height: 1.6;
+.aboutDetailsList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 24px;
+  margin: 32px 0 16px;
+  padding: 0;
+  background: transparent;
+  border: none;
 }
 
-.aboutDetailRow:last-child {
-  border-bottom: none;
+.aboutDetailItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 8px 0;
+  transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.aboutDetailRow strong {
+.aboutDetailItem:hover {
+  transform: translateY(-2px);
+}
+
+.aboutDetailIcon {
   color: var(--wine-red-primary);
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.aboutDetailContent {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.aboutDetailLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.aboutDetailValue {
+  font-size: 14.5px;
   font-weight: 600;
-  margin-right: 8px;
+  color: var(--text-default);
+  line-height: 1.5;
 }
 
 @media (max-width: 768px) {
@@ -2942,7 +2975,108 @@
     margin: 40px 0;
   }
   
-  .aboutDetailsTable {
-    padding: 16px;
+  .aboutDetailsList {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .aboutDetailItem {
+    padding: 12px 0;
+    border-bottom: 1px dashed var(--border-color);
+  }
+
+  .aboutDetailItem:last-child {
+    border-bottom: none;
+  }
+}
+
+/* Premium Overrides & Glow Effects */
+.sectionGlowWrapper {
+  position: relative;
+  overflow: visible;
+  padding: 16px 0;
+}
+
+.sectionGlowWrapper::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(185, 28, 28, 0.035) 0%, transparent 70%);
+  z-index: -1;
+  pointer-events: none;
+  filter: blur(80px);
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: 30px !important;
+  color: var(--text-default) !important;
+  font-weight: 800 !important;
+  margin-top: 40px !important;
+  margin-bottom: 12px !important;
+  position: relative;
+  display: inline-block;
+  letter-spacing: -0.5px;
+}
+
+.sectionTitle::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -8px;
+  width: 48px;
+  height: 4px;
+  background: linear-gradient(90deg, var(--wine-red-primary), var(--wine-red-light)) !important;
+  border-radius: var(--radius-full);
+}
+
+.descriptionBlock {
+  background: var(--bg-surface);
+  border: 1px solid rgba(15, 23, 42, 0.06) !important;
+  border-radius: var(--radius-xl) !important;
+  padding: 48px !important;
+  margin-bottom: 60px !important;
+  box-shadow: 0 12px 32px -12px rgba(15, 23, 42, 0.05), var(--shadow-sm) !important;
+  transition: all 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.descriptionBlock:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 24px 48px -12px rgba(15, 23, 42, 0.08), var(--shadow-md) !important;
+  border-color: rgba(185, 28, 28, 0.12) !important;
+}
+
+.actionCard {
+  transition: all 400ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.actionCard:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 16px 36px rgba(185, 28, 28, 0.06), 0 4px 12px rgba(0, 0, 0, 0.01) !important;
+  border-color: rgba(185, 28, 28, 0.2) !important;
+}
+
+.videoCard {
+  transition: all 400ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.videoCard:hover {
+  transform: translateY(-6px) scale(1.01) !important;
+  box-shadow: 0 20px 40px rgba(185, 28, 28, 0.08), 0 4px 12px rgba(0, 0, 0, 0.02) !important;
+  border-color: rgba(185, 28, 28, 0.25) !important;
+}
+
+@media (max-width: 768px) {
+  .descriptionBlock {
+    padding: 24px 20px !important;
+    margin-bottom: 40px !important;
+  }
+  
+  .sectionTitle {
+    font-size: 24px !important;
   }
 }

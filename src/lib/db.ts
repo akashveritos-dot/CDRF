@@ -895,7 +895,8 @@ async function upgradeConclaveData(pool: mysql.Pool) {
     await addSectionIfMissing('Conclave Details', 'Date, Location, and Venue metadata strip', [
       { title: 'Date', description: 'November 26–27, 2026', linkUrl: 'Calendar' },
       { title: 'Venue', description: 'Stein Auditorium, IHC', linkUrl: 'Building2' },
-      { title: 'Location', description: 'Lodhi Road, New Delhi', linkUrl: 'MapPin' }
+      { title: 'Location', description: 'Lodhi Road, New Delhi', linkUrl: 'MapPin' },
+      { title: 'Description', description: 'Disaster & Climate Resilience Conclave 2026 is India\'s premier multi-stakeholder alliance driving convergence across climate science, media coordinates, and corporate social investments.' }
     ]);
 
     // Ensure video_url exists for dcrc-26
