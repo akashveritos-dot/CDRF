@@ -25,7 +25,13 @@ const mem = process.memoryUsage();
 console.log(`[SERVER] Memory on start: RSS=${Math.round(mem.rss / 1024 / 1024)}MB, Heap=${Math.round(mem.heapUsed / 1024 / 1024)}MB`);
 
 // Start the Next.js standalone server
-require('./.next/standalone/server.js');
+const app = require('./.next/standalone/server.js');
+
+// Signal to PM2 that the app is ready (for zero-downtime reloads)
+if (process.send) {
+  console.log('[SERVER] Sending ready signal to PM2...');
+  process.send('ready');
+}
 
 // ── Background Scheduler for Automated Scraping ──
 const getISTTime = () => {

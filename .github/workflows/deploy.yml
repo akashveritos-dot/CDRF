@@ -1,4 +1,4 @@
-name: Deploy to Hostinger (Zero Downtime)
+name: Deploy to Hostinger (True Zero Downtime)
 
 on:
   push:
@@ -15,19 +15,6 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            set -e
             cd /home/user/dcrs
-
-            echo "Pulling latest code..."
-            git pull origin main
-
-            echo "Installing dependencies..."
-            npm install --omit=dev
-
-            echo "Building app (old server still running)..."
-            npm run build
-
-            echo "Graceful reload with PM2 (zero downtime)..."
-            pm2 reload all --update-env
-
-            echo "Deploy done!"
+            chmod +x deploy.sh
+            ./deploy.sh
