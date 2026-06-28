@@ -44,7 +44,7 @@ export default function Footer() {
           <div className={styles.footerLogoWrapper}>
             <Link href="/" className={styles.footerLogoLink}>
               <img 
-                src="/dcrf-Photoroom.png" 
+                src="/dcrf orginal logo.png" 
                 alt="DCRF Logo" 
                 className={styles.footerLogo}
                 width="220"
