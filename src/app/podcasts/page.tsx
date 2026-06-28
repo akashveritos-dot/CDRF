@@ -9,7 +9,7 @@ export default async function PodcastsPage() {
   let episodes = fallbackEpisodes;
   let videoInterviews: any[] = [
     { gradient: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0e7a6b 100%)', duration: '18:24', tag: 'Interview Series', title: 'Mobilising Institutional CSR for Disaster Tech', date: 'May 12, 2026', guest: 'Mr. Ashish Jha', guestTitle: 'Secretary General, DCRF', embedUrl: 'https://www.youtube.com/embed/Q8wzIcrqNnE' },
-    { gradient: 'linear-gradient(135deg, #0f172a 0%, #2d1b4e 50%, #991b1b 100%)', duration: '24:15', tag: 'Conclave Preview', title: 'DCRC 2026: Convergence & Policy Objectives', date: 'Apr 28, 2026', guest: 'Dr. Brijender Mishra', guestTitle: 'Convener, DCRF', embedUrl: 'https://www.youtube.com/embed/U7Jsk748t3w' }
+    { gradient: 'linear-gradient(135deg, #0f172a 0%, #2d1b4e 50%, #991b1b 100%)', duration: '24:15', tag: 'Conclave Preview', title: 'Dcrc 2026: Convergence & Policy Objectives', date: 'Apr 28, 2026', guest: 'Dr. Brijender Mishra', guestTitle: 'Convener, DCRF', embedUrl: 'https://www.youtube.com/embed/U7Jsk748t3w' }
   ];
 
   try {

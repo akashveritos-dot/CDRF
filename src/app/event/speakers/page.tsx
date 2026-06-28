@@ -44,7 +44,7 @@ export default async function SpeakersPage() {
       <ScrollReveal direction="down">
         <PageHero
           theme="events"
-          eyebrow="DCRC ’26 Conclave Panelists"
+          eyebrow="Dcrc ’26 Conclave Panelists"
           line1="DISTINGUISHED"
           line2="SPEAKERS"
           subtitle="Meet the policy advisors, scientific researchers, corporate ESG leads, and disaster management executives steering the resilience dialogues."

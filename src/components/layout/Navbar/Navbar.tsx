@@ -37,7 +37,7 @@ const menuLinks: MenuLink[] = [
     name: 'Upcoming Events',
     path: '/event/dcrc-26',
     submenus: [
-      { name: 'DCRC ’26 Conclave', path: '/event/dcrc-26' }
+      { name: 'Dcrc ’26 Conclave', path: '/event/dcrc-26' }
     ]
   },
   {
@@ -748,7 +748,7 @@ export default function Navbar() {
                 <div className={styles.submenuLinksList}>
                   {activeSubmenu === 'Events' && (
                     <>
-                      <Link href="/event/dcrc-26" className={pathname === '/event/dcrc-26' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>DCRC &apos;26 Conclave</Link>
+                      <Link href="/event/dcrc-26" className={pathname === '/event/dcrc-26' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Dcrc &apos;26 Conclave</Link>
                     </>
                   )}
                   {activeSubmenu === 'Insights' && (

@@ -106,7 +106,7 @@ export default function AboutPage() {
             <div className={styles.timelineDot} />
             <div className={styles.timelineDate}>November 26–27, 2026</div>
             <div className={styles.timelineContent}>
-              <h4>DCRC ’26 Conclave Summit</h4>
+              <h4>Dcrc ’26 Conclave Summit</h4>
               <p>
                 Coordinating the flagship Conclave and launches of the Annual Disaster & Climate Action Index Report alongside technical exhibition zones.
               </p>

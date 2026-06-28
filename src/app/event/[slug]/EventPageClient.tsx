@@ -30,7 +30,7 @@ interface EventPageClientProps {
 
 const roleOptions = [
   { value: 'Delegate', label: 'Corporate Delegate', description: 'Accredited industry executive pass' },
-  { value: 'Speaker', label: 'Panelist / Speaker', description: 'DCRC panel speaker invitee' },
+  { value: 'Speaker', label: 'Panelist / Speaker', description: 'Dcrc panel speaker invitee' },
   { value: 'Sponsor', label: 'Sponsor Partner', description: 'Corporate summit sponsor pass' },
   { value: 'Researcher', label: 'Academic Advisor', description: 'Policy researcher / scholar pass' },
   { value: 'Government', label: 'State Official', description: 'Municipal / government authority pass' },
@@ -463,7 +463,7 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
         {/* About DCRC 2026 Section - Fully Editable from Conclave Details */}
         <ScrollReveal direction="up">
           <div className={styles.descriptionBlock}>
-            <h2 className={styles.sectionTitle}>About DCRC 2026</h2>
+            <h2 className={styles.sectionTitle}>About Dcrc 2026</h2>
             <div className={styles.aboutContentDiv}>
               {/* Introduction paragraph from editable Description card */}
               {descriptionCard?.description && <p className={styles.aboutMainDescription}>{descriptionCard.description}</p>}
@@ -625,7 +625,7 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                   const url = agendaCards[0]?.extraData?.downloadUrl || '/uploads/conclave_agenda.pdf';
                   const link = document.createElement('a');
                   link.href = url;
-                  link.setAttribute('download', 'DCRC_Conclave_Agenda.pdf');
+                  link.setAttribute('download', 'Dcrc_Conclave_Agenda.pdf');
                   link.style.display = 'none';
                   document.body.appendChild(link);
                   link.click();
@@ -738,7 +738,7 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
           <div className={styles.sectionGlowWrapper}>
             <section className={styles.eventSection}>
               <ScrollReveal direction="up">
-                <h2 className={styles.sectionTitle}>Glimpse of DCRC</h2>
+                <h2 className={styles.sectionTitle}>Glimpse of Dcrc</h2>
                 <p className={styles.sectionSub}>A snapshot of early warning sensor deployments, cool-roof campaigns, and conclave action panels.</p>
               </ScrollReveal>
 
@@ -962,7 +962,7 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
               </div>
             ) : (
               <>
-                <h3 className={styles.regFormTitle}>Register Interest for DCRC ’26</h3>
+                <h3 className={styles.regFormTitle}>Register Interest for Dcrc ’26</h3>
                 <p className={styles.regFormSubtitle}>
                   Submit credentials to apply for accreditation. Selected delegates will receive passes via email.
                 </p>
