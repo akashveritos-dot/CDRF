@@ -54,9 +54,20 @@ export async function GET(req: NextRequest) {
 
     const downloads = await query<any[]>(sql, params);
 
+    const mappedDownloads = downloads.map(d => {
+      if (d.report_id === 9999) {
+        return {
+          ...d,
+          report_title: "DCRC '26 Conclave Agenda",
+          report_category: "Conclave"
+        };
+      }
+      return d;
+    });
+
     return NextResponse.json({
-      downloads: Array.isArray(downloads) ? downloads : [],
-      total: Array.isArray(downloads) ? downloads.length : 0,
+      downloads: Array.isArray(mappedDownloads) ? mappedDownloads : [],
+      total: Array.isArray(mappedDownloads) ? mappedDownloads.length : 0,
     });
   } catch (error: any) {
     console.error('[ADMIN] Error fetching report downloads:', error);

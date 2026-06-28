@@ -20,14 +20,14 @@ const MIME_TYPES: Record<string, string> = {
   '.webm': 'video/webm',
   '.ogg': 'video/ogg',
   '.mov': 'video/quicktime',
+  '.pdf': 'application/pdf',
 };
 
 /**
  * GET /api/files/[...path]
  * 
- * Securely serves uploaded images and videos.
+ * Securely serves uploaded images, videos and public documents like agendas.
  * - Validates Referer/Origin to ensure request comes from the website
- * - Blocks PDF files (must go through report gate)
  * - Adds no-download, no-cache headers
  * - Never exposes the actual filesystem path
  */
@@ -46,14 +46,6 @@ export async function GET(
     // Reconstruct the filename (handle nested paths safely)
     const fileName = fileParts[fileParts.length - 1];
     const ext = path.extname(fileName).toLowerCase();
-
-    // Block PDFs — they must go through /api/reports/serve/[id]
-    if (ext === '.pdf') {
-      return new NextResponse(
-        JSON.stringify({ error: 'PDF files require authorized access. Use the report viewer.' }),
-        { status: 403, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
 
     // Validate file extension
     const mimeType = MIME_TYPES[ext];

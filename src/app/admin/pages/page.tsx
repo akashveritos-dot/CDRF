@@ -223,6 +223,26 @@ export default function AdminPagesManager() {
   const [addMediaType, setAddMediaType] = useState<'audio' | 'video'>('audio');
   const [editMediaType, setEditMediaType] = useState<'audio' | 'video'>('audio');
 
+  // Drag & drop ordering state
+  const [draggedItemId, setDraggedItemId] = useState<number | null>(null);
+  const [draggedSectionId, setDraggedSectionId] = useState<number | null>(null);
+
+  // Section manager state
+  const [showSectionManager, setShowSectionManager] = useState(false);
+  const [fullSections, setFullSections] = useState<any[]>([]);
+  const [editingSectionId, setEditingSectionId] = useState<number | null>(null);
+  
+  // Section Add fields
+  const [newSecTitle, setNewSecTitle] = useState('');
+  const [newSecDesc, setNewSecDesc] = useState('');
+  const [newSecImg, setNewSecImg] = useState('');
+  const [newSecVideo, setNewSecVideo] = useState('');
+  const [newSecBtnText, setNewSecBtnText] = useState('');
+  const [newSecBtnUrl, setNewSecBtnUrl] = useState('');
+  
+  // Section Edit fields
+  const [editSecFields, setEditSecFields] = useState<any>({});
+
   // Filter
   const [filterSection, setFilterSection] = useState<string>('all');
 
@@ -282,6 +302,7 @@ export default function AdminPagesManager() {
     setSelectedSlug(slug);
     setEditingId(null);
     setShowAddForm(false);
+    setShowSectionManager(false);
     setFilterSection('all');
     setStatus(null);
     loadItems(slug, rawData);
@@ -306,11 +327,10 @@ export default function AdminPagesManager() {
             cardCount: (s.cards || []).length
           }))
         }));
-        const filteredPages = pageMetas.filter(p => p.sections.reduce((sum, s) => sum + s.cardCount, 0) > 0);
-        setPages(filteredPages);
+        setPages(pageMetas);
       }
 
-      if (!pageData) { setItems([]); setSections([]); return; }
+      if (!pageData) { setItems([]); setSections([]); setFullSections([]); return; }
 
       setPageFields({
         title: pageData.title || '',
@@ -326,6 +346,7 @@ export default function AdminPagesManager() {
         cardCount: (s.cards || []).length
       }));
       setSections(secs);
+      setFullSections(pageData.sections || []);
 
       // Flatten all cards from all sections
       const allCards: CardItem[] = [];
@@ -590,6 +611,175 @@ export default function AdminPagesManager() {
     await loadItems(slug);
   };
 
+  /* ── Drag & Drop Event Handlers ── */
+  const handleDragStart = (e: React.DragEvent, id: number) => {
+    setDraggedItemId(id);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent, id: number) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = async (e: React.DragEvent, targetId: number) => {
+    e.preventDefault();
+    if (draggedItemId === null || draggedItemId === targetId) return;
+
+    const draggedIdx = items.findIndex(item => item.id === draggedItemId);
+    const targetIdx = items.findIndex(item => item.id === targetId);
+    if (draggedIdx === -1 || targetIdx === -1) return;
+
+    // Do not drag across different sections to keep consistency
+    if (items[draggedIdx].sectionId !== items[targetIdx].sectionId) return;
+
+    const newItems = [...items];
+    const [draggedItem] = newItems.splice(draggedIdx, 1);
+    newItems.splice(targetIdx, 0, draggedItem);
+
+    setItems(newItems);
+    setDraggedItemId(null);
+
+    // Save reordered list of cards to DB
+    setIsSaving(true);
+    setStatus(null);
+    try {
+      await saveFullPage(selectedSlug!, (existingSections) => {
+        return existingSections.map(sec => {
+          const secCards = newItems
+            .filter(item => item.sectionId === sec.id)
+            .map((item, index) => ({
+              ...item,
+              displayOrder: index
+            }));
+          return { ...sec, cards: secCards };
+        });
+      });
+      setStatus({ type: 'success', msg: 'Item order updated successfully.' });
+    } catch (err: any) {
+      setStatus({ type: 'error', msg: err.message || 'Failed to update order.' });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSectionDragStart = (e: React.DragEvent, id: number) => {
+    setDraggedSectionId(id);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleSectionDrop = async (e: React.DragEvent, targetId: number) => {
+    e.preventDefault();
+    if (draggedSectionId === null || draggedSectionId === targetId) return;
+
+    const draggedIdx = sections.findIndex(sec => sec.id === draggedSectionId);
+    const targetIdx = sections.findIndex(sec => sec.id === targetId);
+    if (draggedIdx === -1 || targetIdx === -1) return;
+
+    const newSections = [...sections];
+    const [draggedSec] = newSections.splice(draggedIdx, 1);
+    newSections.splice(targetIdx, 0, draggedSec);
+
+    setSections(newSections);
+    setDraggedSectionId(null);
+
+    setIsSaving(true);
+    setStatus(null);
+    try {
+      await saveFullPage(selectedSlug!, (existingSections) => {
+        const reordered = newSections.map(ns => {
+          return existingSections.find(es => es.id === ns.id);
+        }).filter(Boolean);
+        return reordered;
+      });
+      setStatus({ type: 'success', msg: 'Section order updated successfully.' });
+    } catch (err: any) {
+      setStatus({ type: 'error', msg: err.message || 'Failed to update section order.' });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const saveAllSections = async (newSections: any[]) => {
+    setIsSaving(true);
+    setStatus(null);
+    try {
+      await saveFullPage(selectedSlug!, () => {
+        return newSections;
+      });
+      setStatus({ type: 'success', msg: 'Sections updated successfully.' });
+    } catch (err: any) {
+      setStatus({ type: 'error', msg: err.message || 'Failed to save sections.' });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleAddSection = () => {
+    if (!newSecTitle.trim()) {
+      alert('Section title is required.');
+      return;
+    }
+    const newSec = {
+      title: newSecTitle,
+      description: newSecDesc,
+      imageUrl: newSecImg,
+      videoUrl: newSecVideo,
+      buttonText: newSecBtnText,
+      buttonUrl: newSecBtnUrl,
+      cards: []
+    };
+    const updated = [...fullSections, newSec];
+    setFullSections(updated);
+    saveAllSections(updated);
+    
+    // Clear inputs
+    setNewSecTitle('');
+    setNewSecDesc('');
+    setNewSecImg('');
+    setNewSecVideo('');
+    setNewSecBtnText('');
+    setNewSecBtnUrl('');
+  };
+
+  const startEditSection = (sec: any) => {
+    setEditingSectionId(sec.id);
+    setEditSecFields({
+      title: sec.title || '',
+      description: sec.description || '',
+      imageUrl: sec.imageUrl || '',
+      videoUrl: sec.videoUrl || '',
+      buttonText: sec.buttonText || '',
+      buttonUrl: sec.buttonUrl || ''
+    });
+  };
+
+  const handleUpdateSection = (secId: number) => {
+    const updated = fullSections.map(sec => {
+      if (sec.id === secId) {
+        return {
+          ...sec,
+          title: editSecFields.title,
+          description: editSecFields.description,
+          imageUrl: editSecFields.imageUrl,
+          videoUrl: editSecFields.videoUrl,
+          buttonText: editSecFields.buttonText,
+          buttonUrl: editSecFields.buttonUrl
+        };
+      }
+      return sec;
+    });
+    setFullSections(updated);
+    saveAllSections(updated);
+    setEditingSectionId(null);
+  };
+
+  const handleDeleteSection = (secId: number) => {
+    if (!confirm('Are you sure you want to delete this section? All its cards will also be permanently deleted.')) return;
+    const updated = fullSections.filter(sec => sec.id !== secId);
+    setFullSections(updated);
+    saveAllSections(updated);
+  };
+
   /* ── Render helpers ──────── */
   const renderFieldInput = (
     key: string,
@@ -603,6 +793,7 @@ export default function AdminPagesManager() {
     const isAudio = key.includes('audio') || key.includes('Audio');
     const isImage = key.includes('image') || key.includes('Image') || key.includes('poster') || key.includes('Poster');
     const isLong = key === 'description' || key === 'content' || key === 'bio';
+    const isUrl = key.toLowerCase().includes('url') || key.toLowerCase().includes('link');
 
     return (
       <div className={styles.fieldRow} key={key}>
@@ -625,6 +816,10 @@ export default function AdminPagesManager() {
             <>
               <UploadField accept="audio/*" value={value} onChange={onChange} placeholder="Audio URL or upload audio" />
               {value && <MediaElementPlayer url={value} onDuration={onDuration} />}
+            </>
+          ) : isUrl ? (
+            <>
+              <UploadField accept=".pdf,image/*,video/*,audio/*" value={value} onChange={onChange} placeholder="Paste URL or upload file (PDF, etc.)" />
             </>
           ) : (
             <input type="text" className={styles.input} value={value} onChange={(e) => onChange(e.target.value)} />
@@ -690,10 +885,13 @@ export default function AdminPagesManager() {
                   {selectedPage.description && <p className={styles.panelDesc}>{selectedPage.description}</p>}
                 </div>
                 <div style={{ display: 'flex', gap: '12px' }}>
-                  <button className={styles.addBtn} style={{ backgroundColor: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-default)' }} onClick={() => { setShowPageSettings(!showPageSettings); setShowAddForm(false); setEditingId(null); }}>
+                  <button className={styles.addBtn} style={{ backgroundColor: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-default)' }} onClick={() => { setShowPageSettings(!showPageSettings); setShowSectionManager(false); setShowAddForm(false); setEditingId(null); }}>
                     Settings
                   </button>
-                  <button className={styles.addBtn} onClick={() => { setShowAddForm(!showAddForm); setShowPageSettings(false); setEditingId(null); }}>
+                  <button className={styles.addBtn} style={{ backgroundColor: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-default)' }} onClick={() => { setShowSectionManager(!showSectionManager); setShowPageSettings(false); setShowAddForm(false); setEditingId(null); }}>
+                    Sections
+                  </button>
+                  <button className={styles.addBtn} onClick={() => { setShowAddForm(!showAddForm); setShowPageSettings(false); setShowSectionManager(false); setEditingId(null); }}>
                     <Plus size={15} />
                     Add New Item
                   </button>
@@ -714,28 +912,151 @@ export default function AdminPagesManager() {
                   {renderFieldInput('videoUrl', pageFields.videoUrl, v => setPageFields(f => ({ ...f, videoUrl: v })), 'Video Embed URL')}
                   {renderFieldInput('content', pageFields.content, v => setPageFields(f => ({ ...f, content: v })), 'Page Main Content')}
 
+                  <div className={styles.sectionOrderArea}>
+                    <label className={styles.fieldLabel}>Drag Sections to Reorder</label>
+                    <div className={styles.sectionsDragList}>
+                      {sections.map((sec, idx) => (
+                        <div
+                          key={sec.id}
+                          className={`${styles.draggableSectionRow} ${draggedSectionId === sec.id ? styles.sectionDragging : ''}`}
+                          draggable
+                          onDragStart={(e) => handleSectionDragStart(e, sec.id)}
+                          onDragOver={(e) => e.preventDefault()}
+                          onDrop={(e) => handleSectionDrop(e, sec.id)}
+                        >
+                          <span className={styles.dragHandleIcon}>☰</span>
+                          <span className={styles.sectionOrderName}>{sec.title}</span>
+                          <span className={styles.sectionOrderIndex}>Index: {idx}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
                   <button className={styles.saveBtn} onClick={handleSavePageSettings} disabled={isSaving}>
                     {isSaving ? <><Loader2 size={14} className={styles.spinner} /> Saving...</> : <><Save size={14} /> Save Page Settings</>}
                   </button>
                 </div>
               )}
 
-              {/* Section filter tabs */}
-              {sections.length > 1 && (
-                <div className={styles.filterBar}>
-                  <button className={`${styles.filterChip} ${filterSection === 'all' ? styles.filterActive : ''}`}
-                    onClick={() => setFilterSection('all')}>
-                    All ({items.length})
-                  </button>
-                  {sections.map(s => (
-                    <button key={s.id}
-                      className={`${styles.filterChip} ${filterSection === String(s.id) ? styles.filterActive : ''}`}
-                      onClick={() => setFilterSection(String(s.id))}>
-                      {s.title} ({s.cardCount})
+              {/* ── SECTION MANAGER PANEL ── */}
+              {showSectionManager && (
+                <div className={styles.addFormCard}>
+                  <div className={styles.addFormHeader}>
+                    <h3>Manage Page Sections</h3>
+                    <button className={styles.closeBtn} onClick={() => setShowSectionManager(false)}><X size={16} /></button>
+                  </div>
+
+                  {/* Section Drag & Drop list */}
+                  <div className={styles.sectionOrderArea} style={{ marginTop: 0, paddingTop: 0, border: 'none' }}>
+                    <div className={styles.dragInfoBanner} style={{ marginBottom: '16px' }}>
+                      💡 Drag sections by the handle (☰) to change their display order, or edit/delete them below.
+                    </div>
+                    <div className={styles.sectionsDragList}>
+                      {fullSections.map((sec, idx) => (
+                        <div key={sec.id || idx} className={styles.sectionManagerItem} style={{ marginBottom: '14px', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px' }}>
+                          {editingSectionId === sec.id ? (
+                            /* Editing Section */
+                            <div className={styles.sectionInlineEditForm}>
+                              <h4 style={{ margin: '0 0 10px', fontSize: '13px', color: 'var(--wine-red-primary)' }}>Edit Section: {sec.title || `Section #${idx + 1}`}</h4>
+                              {renderFieldInput('title', editSecFields.title, v => setEditSecFields((f: any) => ({ ...f, title: v })), 'Section Title')}
+                              {renderFieldInput('description', editSecFields.description, v => setEditSecFields((f: any) => ({ ...f, description: v })), 'Section Description')}
+                              {renderFieldInput('imageUrl', editSecFields.imageUrl, v => setEditSecFields((f: any) => ({ ...f, imageUrl: v })), 'Section Image URL')}
+                              {renderFieldInput('videoUrl', editSecFields.videoUrl, v => setEditSecFields((f: any) => ({ ...f, videoUrl: v })), 'Section Video URL')}
+                              {renderFieldInput('buttonText', editSecFields.buttonText, v => setEditSecFields((f: any) => ({ ...f, buttonText: v })), 'Button Text')}
+                              {renderFieldInput('buttonUrl', editSecFields.buttonUrl, v => setEditSecFields((f: any) => ({ ...f, buttonUrl: v })), 'Button URL')}
+                              
+                              <div className={styles.editActions} style={{ marginTop: '10px', display: 'flex', gap: '8px' }}>
+                                <button className={styles.saveBtn} onClick={() => handleUpdateSection(sec.id)} disabled={isSaving} style={{ padding: '4px 10px', fontSize: '11px' }}>
+                                  <Save size={12} /> Save Changes
+                                </button>
+                                <button className={styles.cancelBtn} onClick={() => setEditingSectionId(null)} style={{ padding: '4px 10px', fontSize: '11px' }}>
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            /* Visualizing Section Row */
+                            <div
+                              className={`${styles.draggableSectionRow} ${draggedSectionId === sec.id ? styles.sectionDragging : ''}`}
+                              draggable
+                              onDragStart={(e) => handleSectionDragStart(e, sec.id)}
+                              onDragOver={(e) => e.preventDefault()}
+                              onDrop={(e) => handleSectionDrop(e, sec.id)}
+                              style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'transparent', border: 'none', padding: 0 }}
+                            >
+                              <span className={styles.dragHandleIcon} style={{ cursor: 'grab', fontSize: '16px', color: 'var(--text-muted)' }}>☰</span>
+                              <div className={styles.sectionInfoBlock} style={{ flex: 1, display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
+                                <span className={styles.sectionOrderName} style={{ fontSize: '13px', fontWeight: '600' }}>{sec.title || `Section #${idx + 1}`}</span>
+                                {sec.description && <span className={styles.sectionOrderDesc} style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{sec.description}</span>}
+                              </div>
+                              <span className={styles.sectionOrderIndex} style={{ fontSize: '11px', color: 'var(--text-muted)', background: 'var(--bg-default)', padding: '2px 6px', borderRadius: '4px' }}>Order: {idx}</span>
+                              <div className={styles.sectionRowActions} style={{ display: 'flex', gap: '6px' }}>
+                                <button
+                                  type="button"
+                                  className={styles.editBtn}
+                                  onClick={() => startEditSection(sec)}
+                                  style={{ padding: '3px 8px', fontSize: '10px' }}
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  type="button"
+                                  className={styles.deleteBtn}
+                                  onClick={() => handleDeleteSection(sec.id)}
+                                  style={{ padding: '3px 8px', fontSize: '10px' }}
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Add New Section Form */}
+                  <div className={styles.addNewSectionBox} style={{ marginTop: '20px', borderTop: '1px solid var(--border-color)', paddingTop: '16px' }}>
+                    <h4 style={{ margin: '0 0 12px', fontSize: '13px', color: 'var(--wine-red-primary)', textAlign: 'left' }}>Create New Section</h4>
+                    {renderFieldInput('title', newSecTitle, setNewSecTitle, 'Section Title')}
+                    {renderFieldInput('description', newSecDesc, setNewSecDesc, 'Section Description')}
+                    {renderFieldInput('imageUrl', newSecImg, setNewSecImg, 'Section Image URL')}
+                    {renderFieldInput('videoUrl', newSecVideo, setNewSecVideo, 'Section Video URL')}
+                    {renderFieldInput('buttonText', newSecBtnText, setNewSecBtnText, 'Button Text')}
+                    {renderFieldInput('buttonUrl', newSecBtnUrl, setNewSecBtnUrl, 'Button URL')}
+
+                    <button
+                      type="button"
+                      className={styles.addBtn}
+                      style={{ marginTop: '12px', width: '100%', justifyContent: 'center' }}
+                      onClick={handleAddSection}
+                      disabled={isSaving}
+                    >
+                      <Plus size={14} /> Add New Section
                     </button>
-                  ))}
+                  </div>
                 </div>
               )}
+
+              {/* Cards filter tabs and cards listing (only shown when not editing settings or sections) */}
+              {!showSectionManager && !showPageSettings && !showAddForm && (
+                <>
+                  {/* Section filter tabs */}
+                  {sections.length > 1 && (
+                    <div className={styles.filterBar}>
+                      <button className={`${styles.filterChip} ${filterSection === 'all' ? styles.filterActive : ''}`}
+                        onClick={() => setFilterSection('all')}>
+                        All ({items.length})
+                      </button>
+                      {sections.map(s => (
+                        <button key={s.id}
+                          className={`${styles.filterChip} ${filterSection === String(s.id) ? styles.filterActive : ''}`}
+                          onClick={() => setFilterSection(String(s.id))}>
+                          {s.title} ({s.cardCount})
+                        </button>
+                      ))}
+                    </div>
+                  )}
 
               {/* Status */}
               {status && (
@@ -877,11 +1198,25 @@ export default function AdminPagesManager() {
                   No items yet. Click "Add New Item" to create your first entry.
                 </div>
               ) : (
-                <div className={styles.itemsList}>
-                  {filteredItems.map((item) => {
-                    const isEpisodeCard = selectedSlug === 'podcasts' && item.sectionTitle === 'Episodes';
-                    return (
-                      <div key={item.id} className={styles.itemCard}>
+                <>
+                  <div className={styles.dragInfoBanner}>
+                    💡 Drag and drop cards by their handle (☰) to reorder items dynamically.
+                  </div>
+                  <div className={styles.itemsList}>
+                    {filteredItems.map((item) => {
+                      const isEpisodeCard = selectedSlug === 'podcasts' && item.sectionTitle === 'Episodes';
+                      return (
+                        <div
+                          key={item.id}
+                          className={`${styles.itemCard} ${draggedItemId === item.id ? styles.itemCardDragging : ''}`}
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, item.id!)}
+                          onDragOver={(e) => handleDragOver(e, item.id!)}
+                          onDrop={(e) => handleDrop(e, item.id!)}
+                        >
+                          <div className={styles.dragHandleCol} title="Drag to reorder">
+                            ☰
+                          </div>
                       {editingId === item.id ? (
                         /* ── EDITING MODE ── */
                         <div className={styles.editForm}>
@@ -1121,6 +1456,9 @@ export default function AdminPagesManager() {
                     );
                   })}
                 </div>
+                </>
+              )}
+                </>
               )}
             </>
           )}

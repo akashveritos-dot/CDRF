@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Loader2, Calendar, MapPin, CheckCircle, AlertTriangle, ChevronDown,
-  Check, Building2, Tag, Users, Award, Shield, Zap, ChevronLeft, ChevronRight, Download
+  Check, Building2, Tag, Users, Award, Shield, Zap, ChevronLeft, ChevronRight, Download, Eye,
+  Linkedin, Twitter, Play, X, ExternalLink
 } from 'lucide-react';
 import styles from './page.module.css';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
@@ -63,6 +64,52 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
   const [currentSlide, setCurrentSlide] = useState(0);
   const registerRef = useRef<HTMLDivElement | null>(null);
   const [formVisible, setFormVisible] = useState(false);
+
+  // --- Premium Carousels State ---
+  const [activeAgendaIdx, setActiveAgendaIdx] = useState(0);
+  const [activeVideoIdx, setActiveVideoIdx] = useState(0);
+  const [activeGlimpseIdx, setActiveGlimpseIdx] = useState(0);
+  const [activeSpeakerIdx, setActiveSpeakerIdx] = useState(0);
+  const [activeVideoUrl, setActiveVideoUrl] = useState<string | null>(null);
+  const [activeCardDetails, setActiveCardDetails] = useState<any | null>(null);
+
+  // --- Fullscreen Lightbox State ---
+  const [lightboxImages, setLightboxImages] = useState<string[]>([]);
+  const [lightboxCaptions, setLightboxCaptions] = useState<string[]>([]);
+  const [activeLightboxIdx, setActiveLightboxIdx] = useState<number | null>(null);
+
+  const openLightbox = (images: string[], captions: string[], index: number) => {
+    setLightboxImages(images);
+    setLightboxCaptions(captions);
+    setActiveLightboxIdx(index);
+  };
+
+  useEffect(() => {
+    if (activeLightboxIdx === null) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        setActiveLightboxIdx((prev) => (prev !== null ? (prev - 1 + lightboxImages.length) % lightboxImages.length : null));
+      } else if (e.key === 'ArrowRight') {
+        setActiveLightboxIdx((prev) => (prev !== null ? (prev + 1) % lightboxImages.length : null));
+      } else if (e.key === 'Escape') {
+        setActiveLightboxIdx(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeLightboxIdx, lightboxImages]);
+
+  // --- Agenda Email Download Gate State ---
+  const [showEmailGate, setShowEmailGate] = useState(false);
+  const [gateEmail, setGateEmail] = useState('');
+  const [gateName, setGateName] = useState('');
+  const [gateDesignation, setGateDesignation] = useState('');
+  const [gateMobile, setGateMobile] = useState('');
+  const [gateOrg, setGateOrg] = useState('');
+  const [gateEntityType, setGateEntityType] = useState('Individual');
+  const [gateSubmitting, setGateSubmitting] = useState(false);
+  const [gateError, setGateError] = useState('');
+  const [pendingDownloadUrl, setPendingDownloadUrl] = useState('');
 
   useEffect(() => {
     const node = registerRef.current;
@@ -140,9 +187,22 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
     const speakersSection = pageData?.sections?.find((s: any) => s.title === 'Speakers');
     const partnersSection = pageData?.sections?.find((s: any) => s.title === 'Partners');
     const glimpseSection = pageData?.sections?.find((s: any) => s.title === 'Glimpse');
+    const videosSection = pageData?.sections?.find((s: any) => s.title === 'Videos');
+
+    const detailsSection = pageData?.sections?.find((s: any) => s.title === 'Conclave Details');
+    const detailsCards = detailsSection?.cards || [];
+    const dateCard = detailsCards.find((c: any) => c.title?.toLowerCase() === 'date');
+    const venueCard = detailsCards.find((c: any) => c.title?.toLowerCase() === 'venue');
+    const locationCard = detailsCards.find((c: any) => c.title?.toLowerCase() === 'location');
 
     const bannerCards = bannerSection?.cards || [];
-    // Slide auto-play
+    const agendaCards = agendaSection?.cards || [];
+    const videoCards = videosSection?.cards || [];
+    const glimpseCards = glimpseSection?.cards || [];
+    const speakerCards = speakersSection?.cards || [];
+    const partnerCards = partnersSection?.cards || [];
+
+    // Slide auto-play for top banner
     useEffect(() => {
       if (bannerCards.length <= 1) return;
       const interval = setInterval(() => {
@@ -150,6 +210,67 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
       }, 5000);
       return () => clearInterval(interval);
     }, [bannerCards]);
+
+    // Agenda download flow
+    const handleAgendaDownloadClick = (e: React.MouseEvent, url: string) => {
+      e.preventDefault();
+      const storedEmail = localStorage.getItem('agenda_downloader_email');
+      if (storedEmail) {
+        // Silently log return download and open
+        fetch('/api/events/agenda-download', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: storedEmail, name: 'Returning Downloader' })
+        }).catch(() => {});
+        window.open(url, '_blank');
+      } else {
+        setPendingDownloadUrl(url);
+        setShowEmailGate(true);
+      }
+    };
+
+    const handleGateSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setGateError('');
+      setGateSubmitting(true);
+      try {
+        const res = await fetch('/api/events/agenda-download', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: gateEmail,
+            name: gateName,
+            designation: gateDesignation,
+            mobile: gateMobile,
+            organizationName: gateOrg,
+            entityType: gateEntityType
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to submit download authorization.');
+
+        localStorage.setItem('agenda_downloader_email', gateEmail);
+        setShowEmailGate(false);
+        window.open(pendingDownloadUrl, '_blank');
+      } catch (err: any) {
+        setGateError(err.message || 'An error occurred.');
+      } finally {
+        setGateSubmitting(false);
+      }
+    };
+
+    // YouTube embed helper
+    const getEmbedUrl = (url: string) => {
+      if (!url) return '';
+      if (url.includes('youtube.com/embed/')) return url;
+      if (url.includes('youtube.com/watch?v=')) {
+        return url.replace('watch?v=', 'embed/');
+      }
+      if (url.includes('youtu.be/')) {
+        return url.replace('youtu.be/', 'youtube.com/embed/');
+      }
+      return url;
+    };
 
     return (
       <div className={styles.page}>
@@ -163,6 +284,39 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
             line2="CONCLAVE"
             subtitle={pageData.description}
           />
+        </ScrollReveal>
+
+        {/* Location, Date, and Venue Details Strip */}
+        <ScrollReveal direction="down" delay={0.05}>
+          <div className={styles.detailsStrip}>
+            <div className={styles.detailsCard}>
+              <div className={styles.detailsIcon}>
+                <Calendar size={20} />
+              </div>
+              <div className={styles.detailsText}>
+                <span className={styles.detailsLabel}>{dateCard?.title || 'Date'}</span>
+                <span className={styles.detailsValue}>{dateCard?.description || 'November 26–27, 2026'}</span>
+              </div>
+            </div>
+            <div className={styles.detailsCard}>
+              <div className={styles.detailsIcon}>
+                <Building2 size={20} />
+              </div>
+              <div className={styles.detailsText}>
+                <span className={styles.detailsLabel}>{venueCard?.title || 'Venue'}</span>
+                <span className={styles.detailsValue}>{venueCard?.description || 'Stein Auditorium, IHC'}</span>
+              </div>
+            </div>
+            <div className={styles.detailsCard}>
+              <div className={styles.detailsIcon}>
+                <MapPin size={20} />
+              </div>
+              <div className={styles.detailsText}>
+                <span className={styles.detailsLabel}>{locationCard?.title || 'Location'}</span>
+                <span className={styles.detailsValue}>{locationCard?.description || 'Lodhi Road, New Delhi'}</span>
+              </div>
+            </div>
+          </div>
         </ScrollReveal>
 
         {/* DCRF Visibility Brand Segment */}
@@ -240,11 +394,18 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
           <div className={styles.actionCardsGrid}>
             {actionButtonsSection?.cards?.map((btn: any, idx: number) => {
               const extra = btn.extraData || {};
+              const isDownload = extra.isDownload;
+              const downloadUrl = extra.downloadUrl || btn.linkUrl || '/uploads/conclave_agenda.pdf';
+
               let onClickHandler = undefined;
               if (extra.isRegistration) {
                 onClickHandler = (e: React.MouseEvent) => {
                   e.preventDefault();
                   document.getElementById('register')?.scrollIntoView({ behavior: 'smooth' });
+                };
+              } else if (isDownload) {
+                onClickHandler = (e: React.MouseEvent) => {
+                  handleAgendaDownloadClick(e, downloadUrl);
                 };
               }
 
@@ -255,47 +416,39 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                   key={btn.id || idx}
                   className={styles.actionCard}
                   onClick={onClickHandler}
-                  target={isFileLink ? '_blank' : undefined}
-                  rel={isFileLink ? 'noopener noreferrer' : undefined}
+                  target={isFileLink && !isDownload ? '_blank' : undefined}
+                  rel={isFileLink && !isDownload ? 'noopener noreferrer' : undefined}
                 >
-                  <div className={styles.actionCardContent}>
-                    <div className={styles.actionCardIcon}>
-                      {extra.isDownload ? <Download size={22} /> : extra.isRegistration ? <Users size={22} /> : <Zap size={22} />}
-                    </div>
-                    <h4>{btn.title}</h4>
-                    <p>{extra.isDownload ? 'Download PDF Document' : extra.isRegistration ? 'Apply for Passes' : 'Explore Resource'}</p>
+                  <div className={styles.actionCardIconBox}>
+                    {isDownload ? <Download size={20} /> : extra.isRegistration ? <Users size={20} /> : <Zap size={20} />}
                   </div>
+                  <h4 className={styles.actionCardTitle}>{btn.title}</h4>
+                  <p className={styles.actionCardSubtitle}>
+                    {isDownload ? 'Download PDF Document' : extra.isRegistration ? 'Apply for Passes' : btn.description || 'Explore Resource'}
+                  </p>
                 </a>
               );
             }) || (
                 <>
                   <a href="#agenda-gallery" className={styles.actionCard}>
-                    <div className={styles.actionCardContent}>
-                      <div className={styles.actionCardIcon}><Download size={22} /></div>
-                      <h4>Agenda</h4>
-                      <p>Download PDF Document</p>
-                    </div>
+                    <div className={styles.actionCardIconBox}><Download size={20} /></div>
+                    <h4 className={styles.actionCardTitle}>Agenda</h4>
+                    <p className={styles.actionCardSubtitle}>Download PDF Document</p>
                   </a>
                   <a href="#register" className={styles.actionCard}>
-                    <div className={styles.actionCardContent}>
-                      <div className={styles.actionCardIcon}><Users size={22} /></div>
-                      <h4>Registration</h4>
-                      <p>Apply for Passes</p>
-                    </div>
+                    <div className={styles.actionCardIconBox}><Users size={20} /></div>
+                    <h4 className={styles.actionCardTitle}>Registration</h4>
+                    <p className={styles.actionCardSubtitle}>Apply for Passes</p>
                   </a>
                   <a href="/reports" className={styles.actionCard}>
-                    <div className={styles.actionCardContent}>
-                      <div className={styles.actionCardIcon}><Zap size={22} /></div>
-                      <h4>Policy Briefs</h4>
-                      <p>Explore Resources</p>
-                    </div>
+                    <div className={styles.actionCardIconBox}><Zap size={20} /></div>
+                    <h4 className={styles.actionCardTitle}>Partner With US</h4>
+                    <p className={styles.actionCardSubtitle}>Explore Resource</p>
                   </a>
                   <a href="/charter-10-point-agenda" className={styles.actionCard}>
-                    <div className={styles.actionCardContent}>
-                      <div className={styles.actionCardIcon}><Zap size={22} /></div>
-                      <h4>Core Charter</h4>
-                      <p>Explore Resources</p>
-                    </div>
+                    <div className={styles.actionCardIconBox}><Zap size={20} /></div>
+                    <h4 className={styles.actionCardTitle}>Intrest Form</h4>
+                    <p className={styles.actionCardSubtitle}>Explore Resource</p>
                   </a>
                 </>
               )}
@@ -306,127 +459,405 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
         <ScrollReveal direction="up">
           <div className={styles.descriptionBlock}>
             <h2 className={styles.sectionTitle}>About DCRC 2026</h2>
-            <p dangerouslySetInnerHTML={{ __html: pageData.content }} />
+            <div className={styles.aboutContentDiv} dangerouslySetInnerHTML={{ __html: pageData.content }} />
           </div>
         </ScrollReveal>
 
-        {/* Speakers Section */}
-        {speakersSection && speakersSection.cards?.length > 0 && (
-          <section className={styles.eventSection}>
+        {/* ── Agenda Section (Horizontal Slide Carousel) ── */}
+        {agendaCards.length > 0 && (
+          <section id="agenda-gallery" className={styles.eventSection}>
             <ScrollReveal direction="up">
-              <h2 className={styles.sectionTitle}>Distinguished Speakers</h2>
+              <h2 className={styles.sectionTitle}>Conclave Agenda</h2>
+              <p className={styles.sectionSub}>Explore the session timelines, panels, and scheduling pages below.</p>
             </ScrollReveal>
-            <div className={styles.speakersGrid}>
-              {speakersSection.cards.map((sp: any, idx: number) => (
-                <ScrollReveal direction="up" delay={idx * 0.05} key={sp.id || idx}>
-                  <div className={styles.speakerCard}>
-                    <img src={sp.imageUrl} alt={sp.title} className={styles.speakerPhoto} />
-                    <div className={styles.speakerInfo}>
-                      <h4>{sp.title}</h4>
-                      <p>{sp.description}</p>
-                    </div>
-                  </div>
-                </ScrollReveal>
-              ))}
-            </div>
-          </section>
-        )}
 
-        {/* Partners Section */}
-        {partnersSection && partnersSection.cards?.length > 0 && (
-          <section className={styles.eventSection}>
-            <ScrollReveal direction="up">
-              <h2 className={styles.sectionTitle}>Our Partners</h2>
-            </ScrollReveal>
-            <div className={styles.partnersGrid}>
-              {partnersSection.cards.map((p: any, idx: number) => (
-                <ScrollReveal direction="up" delay={idx * 0.05} key={p.id || idx}>
-                  <div className={styles.partnerCard}>
-                    <img src={p.imageUrl} alt={p.title} className={styles.partnerLogo} />
-                    <h4>{p.title}</h4>
+            <ScrollReveal direction="up" delay={0.1}>
+              <div className={styles.agendaCarousel}>
+                <div className={styles.agendaTrackWrapper}>
+                  <div
+                    className={styles.agendaTrack}
+                    style={{ transform: `translateX(-${activeAgendaIdx * 100}%)` }}
+                  >
+                    {agendaCards.map((agenda: any, idx: number) => (
+                      <div key={agenda.id || idx} className={styles.agendaSlide}>
+                        <div className={styles.agendaImageWrap}>
+                          <img
+                            src={agenda.imageUrl}
+                            alt={agenda.title}
+                            className={styles.agendaImage}
+                            onClick={() => window.open(agenda.imageUrl, '_blank')}
+                          />
+                        </div>
+                        <div className={styles.agendaCaption}>
+                          <h3>{agenda.title}</h3>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                </ScrollReveal>
-              ))}
-            </div>
-          </section>
-        )}
 
-        {/* Glimpse Section */}
-        {glimpseSection && glimpseSection.cards?.length > 0 && (
-          <section className={styles.eventSection}>
-            <ScrollReveal direction="up">
-              <h2 className={styles.sectionTitle}>Glimpse of DCRC</h2>
-            </ScrollReveal>
-            <div className={styles.glimpseGrid}>
-              {glimpseSection.cards.map((g: any, idx: number) => (
-                <ScrollReveal direction="up" delay={idx * 0.05} key={g.id || idx}>
-                  <div className={styles.glimpseCard}>
-                    <img src={g.imageUrl} alt={g.title || 'Conclave Glimpse'} className={styles.glimpsePhoto} />
-                  </div>
-                </ScrollReveal>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Agenda Images / Visual Gallery section (Replaces Timeline) */}
-        <section id="agenda-gallery" className={styles.eventSection}>
-          <ScrollReveal direction="up">
-            <h2 className={styles.sectionTitle}>Conclave Agenda</h2>
-            <p className={styles.sectionSub}>Explore the planned roadmap, session timelines, and event schedules below.</p>
-          </ScrollReveal>
-
-          <div className={styles.agendaGallery}>
-            {agendaSection?.cards?.map((agenda: any, idx: number) => (
-              <ScrollReveal direction="up" delay={idx * 0.1} key={agenda.id || idx}>
-                <div className={styles.agendaImgContainer}>
-                  <img src={agenda.imageUrl} alt={agenda.title} className={styles.agendaImg} />
-                  <div className={styles.agendaImgCaption}>
-                    <h4>{agenda.title}</h4>
-                  </div>
+                  {agendaCards.length > 1 && (
+                    <>
+                      <button
+                        type="button"
+                        className={`${styles.agendaNavBtn} ${styles.agendaPrev}`}
+                        onClick={() => setActiveAgendaIdx(prev => (prev - 1 + agendaCards.length) % agendaCards.length)}
+                        aria-label="Previous agenda page"
+                      >
+                        <ChevronLeft size={20} />
+                      </button>
+                      <button
+                        type="button"
+                        className={`${styles.agendaNavBtn} ${styles.agendaNext}`}
+                        onClick={() => setActiveAgendaIdx(prev => (prev + 1) % agendaCards.length)}
+                        aria-label="Next agenda page"
+                      >
+                        <ChevronRight size={20} />
+                      </button>
+                    </>
+                  )}
                 </div>
-              </ScrollReveal>
-            )) || (
-                <div className={styles.agendaImgContainerSingle}>
-                  <img
-                    src="https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=800&q=80"
-                    alt="Conclave Schedule Agenda"
-                    className={styles.agendaImg}
-                  />
-                </div>
-              )}
-          </div>
 
-          {/* Download Agenda Button */}
-          <div className={styles.downloadContainer}>
-            <a
-              href={agendaSection?.cards?.[0]?.extraData?.downloadUrl || '/reports'}
-              className={styles.downloadBtn}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Download size={16} />
-              <span>Download Full Agenda (PDF)</span>
-            </a>
-          </div>
-        </section>
+                {agendaCards.length > 1 && (
+                  <div className={styles.agendaTabs}>
+                    {agendaCards.map((agenda: any, idx: number) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        className={`${styles.agendaTabBtn} ${idx === activeAgendaIdx ? styles.agendaTabActive : ''}`}
+                        onClick={() => setActiveAgendaIdx(idx)}
+                      >
+                        {agenda.title || `Page ${idx + 1}`}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
 
-        {/* Responsive YouTube Clip Section */}
-        {pageData?.videoUrl && (
+              {/* Dots removed in favor of Agenda Tabs */}
+            </ScrollReveal>
+
+            {/* Three Separate Agenda Actions */}
+            <div className={styles.agendaActionsContainer}>
+              <button
+                type="button"
+                className={styles.agendaActionBtnSecondary}
+                onClick={() => {
+                  const url = agendaCards[0]?.extraData?.downloadUrl || '/uploads/conclave_agenda.pdf';
+                  window.open(url, '_blank');
+                }}
+              >
+                <Eye size={16} />
+                <span>View Agenda PDF</span>
+              </button>
+
+              <button
+                type="button"
+                className={styles.agendaActionBtnSecondary}
+                onClick={() => {
+                  const url = agendaCards[0]?.extraData?.downloadUrl || '/uploads/conclave_agenda.pdf';
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.setAttribute('download', 'DCRC_Conclave_Agenda.pdf');
+                  link.style.display = 'none';
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                }}
+              >
+                <Download size={16} />
+                <span>Download Agenda PDF</span>
+              </button>
+
+              <button
+                type="button"
+                className={styles.agendaActionBtnPrimary}
+                onClick={(e) => {
+                  const url = agendaCards[0]?.extraData?.downloadUrl || '/uploads/conclave_agenda.pdf';
+                  handleAgendaDownloadClick(e, url);
+                }}
+              >
+                <Shield size={16} />
+                <span>Download Full Agenda</span>
+              </button>
+            </div>
+          </section>
+        )}
+
+        {/* ── Videos Section (Infinite Loop Carousel) ── */}
+        {videoCards.length > 0 && (
           <section className={styles.eventSection}>
             <ScrollReveal direction="up">
               <h2 className={styles.sectionTitle}>Conclave Video Highlights</h2>
+              <p className={styles.sectionSub}>Watch leader interviews, technical summaries, and event recordings.</p>
             </ScrollReveal>
-            <ScrollReveal direction="up" delay={0.1}>
-              <div className={styles.youtubeSec}>
-                <iframe
-                  src={pageData.videoUrl}
-                  title="DCRC Conclave Highlight Video"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className={styles.youtubeEmbed}
-                />
+
+            <ScrollReveal direction="up" delay={0.15}>
+              <div className={styles.videoSectionWrapper}>
+                <div className={styles.videoTrackWrapper}>
+                  <div
+                    className={styles.videoTrack}
+                    style={{
+                      transform: `translateX(calc(-${activeVideoIdx * (33.333)}% - ${activeVideoIdx * 8}px))`,
+                      transition: 'transform 500ms ease'
+                    }}
+                  >
+                    {videoCards.map((vid: any, idx: number) => (
+                      <div key={vid.id || idx} className={styles.videoCard}>
+                        <div
+                          className={styles.videoThumbWrap}
+                          onClick={() => setActiveVideoUrl(vid.linkUrl || vid.imageUrl)}
+                        >
+                          <img src={vid.imageUrl} alt={vid.title} className={styles.videoThumb} />
+                          <div className={styles.videoPlayOverlay}>
+                            <div className={styles.playBtnCircle}>
+                              <Play size={20} fill="#fff" style={{ marginLeft: '4px' }} />
+                            </div>
+                          </div>
+                        </div>
+                        <div className={styles.videoCardInfo}>
+                          <h4>{vid.title}</h4>
+                          <p>
+                            {vid.description?.length > 90 ? (
+                              <>
+                                {vid.description.slice(0, 90)}...
+                                <button
+                                  type="button"
+                                  className={styles.readMoreTextBtn}
+                                  onClick={() => setActiveCardDetails({ ...vid, sectionName: 'Videos' })}
+                                >
+                                  Read More
+                                </button>
+                              </>
+                            ) : (
+                              vid.description
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {videoCards.length > 3 && (
+                  <>
+                    <button
+                      type="button"
+                      className={`${styles.agendaNavBtn} ${styles.agendaPrev}`}
+                      onClick={() => setActiveVideoIdx(prev => (prev - 1 + videoCards.length) % videoCards.length)}
+                      aria-label="Previous video"
+                    >
+                      <ChevronLeft size={20} />
+                    </button>
+                    <button
+                      type="button"
+                      className={`${styles.agendaNavBtn} ${styles.agendaNext}`}
+                      onClick={() => setActiveVideoIdx(prev => (prev + 1) % videoCards.length)}
+                      aria-label="Next video"
+                    >
+                      <ChevronRight size={20} />
+                    </button>
+                  </>
+                )}
+              </div>
+            </ScrollReveal>
+          </section>
+        )}
+
+        {/* ── Glimpse Section (3D Coverflow Carousel) ── */}
+        {glimpseCards.length > 0 && (
+          <section className={styles.eventSection}>
+            <ScrollReveal direction="up">
+              <h2 className={styles.sectionTitle}>Glimpse of DCRC</h2>
+              <p className={styles.sectionSub}>A snapshot of early warning sensor deployments, cool-roof campaigns, and conclave action panels.</p>
+            </ScrollReveal>
+
+            <ScrollReveal direction="up" delay={0.15}>
+              <div className={styles.coverflowContainer}>
+                <div className={styles.coverflowStage}>
+                  {glimpseCards.map((g: any, idx: number) => {
+                    // Calculate visual offsets in coverflow relative to activeGlimpseIdx
+                    let offset = idx - activeGlimpseIdx;
+                    if (offset > glimpseCards.length / 2) offset -= glimpseCards.length;
+                    if (offset < -glimpseCards.length / 2) offset += glimpseCards.length;
+
+                    const isCenter = offset === 0;
+                    const isVisible = Math.abs(offset) <= 2;
+                    if (!isVisible) return null;
+
+                    const scale = isCenter ? 1 : Math.abs(offset) === 1 ? 0.8 : 0.65;
+                    const translateX = offset * 220;
+                    const rotateY = offset * -25;
+                    const opacity = isCenter ? 1 : Math.abs(offset) === 1 ? 0.65 : 0.35;
+                    const zIndex = 10 - Math.abs(offset);
+
+                    return (
+                      <div
+                        key={g.id || idx}
+                        className={`${styles.coverflowCard} ${isCenter ? styles.coverflowCardActive : ''}`}
+                        style={{
+                          transform: `translateX(${translateX}px) scale(${scale}) rotateY(${rotateY}deg)`,
+                          opacity,
+                          zIndex,
+                        }}
+                        onClick={() => {
+                          if (isCenter) {
+                            const urls = glimpseCards.map((c: any) => c.imageUrl);
+                            const captions = glimpseCards.map((c: any) => c.title || 'Conclave Glimpse');
+                            openLightbox(urls, captions, idx);
+                          } else {
+                            setActiveGlimpseIdx(idx);
+                          }
+                        }}
+                      >
+                        <img src={g.imageUrl} alt={g.title || 'Conclave Glimpse'} />
+                        <div className={styles.coverflowReflection} />
+                        {isCenter && (
+                          <div className={styles.coverflowOverlay}>
+                            <span className={styles.downloadBtn} style={{ padding: '8px 16px', fontSize: '11px' }}>
+                              View Full Size
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* View More Gallery Button */}
+              <div className={styles.viewMoreContainer}>
+                <a href="/gallery" className={styles.viewMoreBtn}>
+                  <span>View More Gallery</span>
+                  <ExternalLink size={14} />
+                </a>
+              </div>
+            </ScrollReveal>
+          </section>
+        )}
+
+        {/* ── Speakers Section (Card Stack Carousel) ── */}
+        {speakerCards.length > 0 && (
+          <section className={styles.eventSection}>
+            <ScrollReveal direction="up">
+              <h2 className={styles.sectionTitle}>Distinguished Speakers</h2>
+              <p className={styles.sectionSub}>Learn from the domain leaders mapping disaster management and climate adaptation strategies.</p>
+            </ScrollReveal>
+
+            <ScrollReveal direction="up" delay={0.15}>
+              <div className={styles.sliderContainer}>
+                <div className={styles.sliderWrapper}>
+                  {speakerCards.map((sp: any, idx: number) => {
+                    const isActive = idx === activeSpeakerIdx;
+                    const isPrev = idx === (activeSpeakerIdx - 1 + speakerCards.length) % speakerCards.length;
+                    const isNext = idx === (activeSpeakerIdx + 1) % speakerCards.length;
+
+                    let positionClass = styles.slideCardHidden;
+                    if (isActive) positionClass = styles.slideCardActive;
+                    else if (isPrev) positionClass = styles.slideCardPrev;
+                    else if (isNext) positionClass = styles.slideCardNext;
+
+                    return (
+                      <div
+                        key={sp.id || idx}
+                        className={`${styles.slideCard} ${positionClass}`}
+                      >
+                        <div className={styles.speakerPhotoWrap}>
+                          <img src={sp.imageUrl} alt={sp.title} className={styles.speakerPhotoRect} />
+                        </div>
+                        <div className={styles.speakerInfoBlock}>
+                          <span className={styles.speakerRoleTag}>Advisory Panelist</span>
+                          <h4 className={styles.speakerNameTitle}>{sp.title}</h4>
+                          <p className={styles.speakerDescParagraph}>
+                            {sp.description?.length > 90 ? (
+                              <>
+                                {sp.description.slice(0, 90)}...
+                                <button
+                                  type="button"
+                                  className={styles.readMoreTextBtn}
+                                  onClick={() => setActiveCardDetails({ ...sp, sectionName: 'Speakers' })}
+                                >
+                                  Read More
+                                </button>
+                              </>
+                            ) : (
+                              sp.description
+                            )}
+                          </p>
+                          <div className={styles.speakerFooterRow}>
+                            <div className={styles.speakerSocials}>
+                              <a href="https://linkedin.com" className={styles.socialIconLink} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                                <Linkedin size={15} />
+                              </a>
+                              <a href="https://twitter.com" className={styles.socialIconLink} target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+                                <Twitter size={15} />
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className={styles.sliderControls}>
+                <button
+                  type="button"
+                  className={styles.sliderNavBtn}
+                  onClick={() => setActiveSpeakerIdx(prev => (prev - 1 + speakerCards.length) % speakerCards.length)}
+                  aria-label="Previous speaker"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <button
+                  type="button"
+                  className={styles.sliderNavBtn}
+                  onClick={() => setActiveSpeakerIdx(prev => (prev + 1) % speakerCards.length)}
+                  aria-label="Next speaker"
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </div>
+
+              {/* View More Speakers Button */}
+              <div className={styles.viewMoreContainer}>
+                <a href="/event/speakers" className={styles.viewMoreBtn}>
+                  <span>View All Speakers</span>
+                  <ExternalLink size={14} />
+                </a>
+              </div>
+            </ScrollReveal>
+          </section>
+        )}
+
+        {/* ── Our Partners Section (Infinite Marquee Slider) ── */}
+        {partnerCards.length > 0 && (
+          <section className={styles.eventSection}>
+            <ScrollReveal direction="up">
+              <h2 className={styles.sectionTitle}>Our Partners</h2>
+              <p className={styles.sectionSub}>Founding and strategic partners driving disaster resilience and ESG initiatives.</p>
+            </ScrollReveal>
+
+            <ScrollReveal direction="up" delay={0.2}>
+              <div className={styles.marqueeContainer}>
+                <div className={styles.marqueeTrack}>
+                  {/* Double the array for a seamless loop marquee */}
+                  {[...partnerCards, ...partnerCards].map((p: any, idx: number) => (
+                    <a
+                      href="#"
+                      key={idx}
+                      className={styles.partnerMarqueeCard}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const urls = partnerCards.map((c: any) => c.imageUrl);
+                        const captions = partnerCards.map((c: any) => c.title || 'Partner Logo');
+                        openLightbox(urls, captions, idx % partnerCards.length);
+                      }}
+                    >
+                      <img src={p.imageUrl} alt={p.title} />
+                    </a>
+                  ))}
+                </div>
               </div>
             </ScrollReveal>
           </section>
@@ -589,6 +1020,233 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
             )}
           </div>
         </ScrollReveal>
+
+        {/* ── GATING EMAIL DOWNLOAD MODAL ── */}
+        {showEmailGate && (
+          <div className={styles.modalOverlay} onClick={() => setShowEmailGate(false)}>
+            <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+              <button
+                type="button"
+                className={styles.modalClose}
+                onClick={() => setShowEmailGate(false)}
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
+              <h3 className={styles.modalTitle}>Download Conclave Agenda</h3>
+              <p className={styles.modalSubtitle}>
+                Please authorize download by entering your official coordinates. The PDF will open automatically.
+              </p>
+              <form onSubmit={handleGateSubmit} className={styles.modalForm}>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Official Email</label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="name@organization.org"
+                    className={styles.input}
+                    value={gateEmail}
+                    onChange={(e) => setGateEmail(e.target.value)}
+                    disabled={gateSubmitting}
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Full Name</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Priyanjali Sen"
+                    className={styles.input}
+                    value={gateName}
+                    onChange={(e) => setGateName(e.target.value)}
+                    disabled={gateSubmitting}
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Mobile Number (10 digits)</label>
+                  <input
+                    type="tel"
+                    required
+                    pattern="\d{10}"
+                    placeholder="e.g. 9876543210"
+                    className={styles.input}
+                    value={gateMobile}
+                    onChange={(e) => setGateMobile(e.target.value)}
+                    disabled={gateSubmitting}
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Designation</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Climate Finance Lead"
+                    className={styles.input}
+                    value={gateDesignation}
+                    onChange={(e) => setGateDesignation(e.target.value)}
+                    disabled={gateSubmitting}
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Organization</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. TCU Impact Foundation"
+                    className={styles.input}
+                    value={gateOrg}
+                    onChange={(e) => setGateOrg(e.target.value)}
+                    disabled={gateSubmitting}
+                  />
+                </div>
+
+                {gateError && (
+                  <div className={styles.errorText}>
+                    <AlertTriangle size={14} />
+                    <span>{gateError}</span>
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={gateSubmitting}
+                  className={styles.submitBtn}
+                >
+                  {gateSubmitting ? (
+                    <>
+                      <Loader2 size={16} className={styles.spinner} />
+                      Authorizing...
+                    </>
+                  ) : (
+                    'Download Agenda'
+                  )}
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* ── CINEMA-STYLE VIDEO LIGHTBOX MODAL ── */}
+        {activeVideoUrl && (
+          <div className={styles.videoLightboxOverlay} onClick={() => setActiveVideoUrl(null)}>
+            <div className={styles.videoLightboxContent} onClick={(e) => e.stopPropagation()}>
+              <button
+                type="button"
+                className={styles.videoLightboxClose}
+                onClick={() => setActiveVideoUrl(null)}
+              >
+                <X size={18} />
+                <span>Close Player</span>
+              </button>
+              {activeVideoUrl.includes('youtube.com') || activeVideoUrl.includes('youtu.be') ? (
+                <iframe
+                  src={getEmbedUrl(activeVideoUrl)}
+                  title="Conclave Video Player"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className={styles.videoLightboxPlayer}
+                />
+              ) : (
+                <video
+                  src={activeVideoUrl}
+                  controls
+                  autoPlay
+                  className={styles.videoLightboxPlayer}
+                />
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ── CARD DETAILS MODAL (READ MORE IN OVERLAY) ── */}
+        {activeCardDetails && (
+          <div className={styles.modalOverlay} onClick={() => setActiveCardDetails(null)}>
+            <div className={styles.modalContent} onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px' }}>
+              <button
+                type="button"
+                className={styles.modalClose}
+                onClick={() => setActiveCardDetails(null)}
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
+              
+              <div className={styles.modalDetailsHeader}>
+                <span className={styles.modalDetailsBadge} style={{ display: 'inline-block', backgroundColor: 'var(--wine-red-pale)', color: 'var(--wine-red-primary)', fontSize: '10px', fontWeight: '700', textTransform: 'uppercase', padding: '3px 8px', borderRadius: '4px', letterSpacing: '0.5px' }}>
+                  {activeCardDetails.sectionName}
+                </span>
+                <h3 className={styles.modalTitle} style={{ marginTop: '8px', marginBottom: '16px' }}>{activeCardDetails.title}</h3>
+              </div>
+
+              {activeCardDetails.imageUrl && (
+                <div className={styles.modalDetailsImageWrap} style={{ width: '100%', height: '260px', borderRadius: '12px', overflow: 'hidden', marginBottom: '20px' }}>
+                  <img src={activeCardDetails.imageUrl} alt={activeCardDetails.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+              )}
+
+              <div className={styles.modalDetailsDesc} style={{ fontSize: '14px', lineHeight: '1.6', color: 'var(--text-default)', maxHeight: '200px', overflowY: 'auto', paddingRight: '8px' }}>
+                {activeCardDetails.description}
+              </div>
+            </div>
+          </div>
+        )}
+        {/* ── FULLSCREEN IMAGE LIGHTBOX MODAL ── */}
+        {activeLightboxIdx !== null && lightboxImages.length > 0 && (
+          <div className={styles.lightboxOverlay} onClick={() => setActiveLightboxIdx(null)}>
+            <button
+              type="button"
+              className={styles.lightboxCloseBtn}
+              onClick={() => setActiveLightboxIdx(null)}
+              aria-label="Close Lightbox"
+            >
+              <X size={24} />
+            </button>
+
+            {/* Left navigation arrow */}
+            <button
+              type="button"
+              className={`${styles.lightboxNavBtn} ${styles.lightboxNavPrev}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveLightboxIdx((prev) => (prev !== null ? (prev - 1 + lightboxImages.length) % lightboxImages.length : null));
+              }}
+              aria-label="Previous Image"
+            >
+              <ChevronLeft size={30} />
+            </button>
+
+            {/* Main Image content */}
+            <div className={styles.lightboxContent} onClick={(e) => e.stopPropagation()}>
+              <img
+                src={lightboxImages[activeLightboxIdx]}
+                alt={lightboxCaptions[activeLightboxIdx] || "Lightbox Image"}
+                className={styles.lightboxImage}
+              />
+              {lightboxCaptions[activeLightboxIdx] && (
+                <div className={styles.lightboxCaptionPanel}>
+                  <p className={styles.lightboxCaptionText}>{lightboxCaptions[activeLightboxIdx]}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Right navigation arrow */}
+            <button
+              type="button"
+              className={`${styles.lightboxNavBtn} ${styles.lightboxNavNext}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveLightboxIdx((prev) => (prev !== null ? (prev + 1) % lightboxImages.length : null));
+              }}
+              aria-label="Next Image"
+            >
+              <ChevronRight size={30} />
+            </button>
+          </div>
+        )}
       </div>
     );
   }

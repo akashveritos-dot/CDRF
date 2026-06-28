@@ -20,6 +20,7 @@ const MIME_TYPES: Record<string, string> = {
   '.webm': 'video/webm',
   '.ogg': 'video/ogg',
   '.mov': 'video/quicktime',
+  '.pdf': 'application/pdf',
 };
 
 /**
@@ -84,11 +85,6 @@ export async function GET(
 
     // ── 4. File validation ───────────────────────────────────────────
     const ext = path.extname(filename).toLowerCase();
-
-    // Block PDFs — they must go through /api/reports/serve/[id]
-    if (ext === '.pdf') {
-      return new NextResponse(null, { status: 403 });
-    }
 
     const mimeType = MIME_TYPES[ext];
     if (!mimeType) {

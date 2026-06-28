@@ -116,6 +116,7 @@ async function runMigration(pool: mysql.Pool) {
     // ── Seed all hardcoded page data into sections + cards ──
     await seedPageData(pool);
     await upgradePodcastData(pool);
+    await upgradeConclaveData(pool);
 
     // Create pricing and discount tables if they don't exist
     const createPricingTable = `
@@ -867,10 +868,40 @@ async function upgradeConclaveData(pool: mysql.Pool) {
       { title: 'Past Conclave 3', imageUrl: 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=400&q=80' }
     ]);
 
+    // 11. Videos (Video highlights of past conclaves and interviews)
+    await addSectionIfMissing('Videos', 'Conclave Video Highlights', [
+      { title: 'Conclave Opening Keynote', description: 'Opening address detailing multi-stakeholder disaster mitigation frameworks.', imageUrl: 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=400&q=80', linkUrl: 'https://www.youtube.com/embed/Q8wzIcrqNnE' },
+      { title: 'Himalayan Glacial Sensors & Flood Telemetry', description: 'Technical demonstration of satellite warning triggers and sensor deployments.', imageUrl: 'https://images.unsplash.com/photo-1486915309851-b0cc1f8a0084?auto=format&fit=crop&w=400&q=80', linkUrl: 'https://www.youtube.com/embed/yVwA1Kk76yI' },
+      { title: 'Designing Cool Roof Initiatives for Urban Heat Mitigation', description: 'Urban planning working group panel outlining reflector parameters.', imageUrl: 'https://images.unsplash.com/photo-1504370805625-d32c54b16100?auto=format&fit=crop&w=400&q=80', linkUrl: 'https://www.youtube.com/embed/U7Jsk748t3w' }
+    ]);
+
+    // 12. Conclave Details (Date, Location, and Venue metadata strip)
+    await addSectionIfMissing('Conclave Details', 'Date, Location, and Venue metadata strip', [
+      { title: 'Date', description: 'November 26–27, 2026', linkUrl: 'Calendar' },
+      { title: 'Venue', description: 'Stein Auditorium, IHC', linkUrl: 'Building2' },
+      { title: 'Location', description: 'Lodhi Road, New Delhi', linkUrl: 'MapPin' }
+    ]);
+
     // Ensure video_url exists for dcrc-26
     await pool.execute(
       "UPDATE cms_pages SET video_url = COALESCE(video_url, 'https://www.youtube.com/embed/Q8wzIcrqNnE') WHERE slug = 'dcrc-26'"
     );
+
+    // Fix incorrect Agenda redirect links
+    try {
+      await pool.execute(
+        `UPDATE cms_page_cards SET link_url = '#agenda-gallery', extra_data = '{"isDownload":true,"downloadUrl":"/uploads/conclave_agenda.pdf"}' 
+         WHERE section_id = (SELECT id FROM cms_page_sections WHERE page_slug = 'dcrc-26' AND title = 'Action Buttons' LIMIT 1) 
+           AND title = 'Agenda'`
+      );
+      await pool.execute(
+        `UPDATE cms_page_cards SET extra_data = '{"downloadUrl":"/uploads/conclave_agenda.pdf"}' 
+         WHERE section_id = (SELECT id FROM cms_page_sections WHERE page_slug = 'dcrc-26' AND title = 'Agenda Images' LIMIT 1)`
+      );
+      console.log("[DB UPGRADE] Fixed Agenda action cards links and downloads in database.");
+    } catch (sqlErr) {
+      console.warn("Could not patch Action Cards redirect URLs:", sqlErr);
+    }
 
     console.log("[DB UPGRADE] Conclave dcrc-26 sections and visual components upgraded successfully.");
   } catch (err) {
