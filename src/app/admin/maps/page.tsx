@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Loader2, Save, Plus, Trash2, CheckCircle, AlertTriangle, Edit3, X } from 'lucide-react';
 import styles from './page.module.css';
+import ActionLoader from '@/components/ui/ActionLoader/ActionLoader';
 
 interface MapMetadata {
   id: string;
@@ -26,6 +27,7 @@ export default function AdminMapsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   // Map metadata state
   const [meta, setMeta] = useState<MapMetadata>({
@@ -82,6 +84,7 @@ export default function AdminMapsPage() {
     setSubmitting(true);
     setSuccessMsg('');
     setErrorMsg('');
+    setActionLoading('Saving map metadata...');
 
     try {
       const res = await fetch('/api/admin/maps', {
@@ -104,6 +107,7 @@ export default function AdminMapsPage() {
       setErrorMsg(err.message || 'Something went wrong.');
     } finally {
       setSubmitting(false);
+      setActionLoading(null);
     }
   };
 
@@ -112,6 +116,7 @@ export default function AdminMapsPage() {
     setSubmitting(true);
     setSuccessMsg('');
     setErrorMsg('');
+    setActionLoading('Saving hazard record...');
 
     try {
       const res = await fetch('/api/admin/maps', {
@@ -143,6 +148,7 @@ export default function AdminMapsPage() {
       setErrorMsg(err.message || 'Something went wrong.');
     } finally {
       setSubmitting(false);
+      setActionLoading(null);
     }
   };
 
@@ -185,6 +191,7 @@ export default function AdminMapsPage() {
     setSubmitting(true);
     setSuccessMsg('');
     setErrorMsg('');
+    setActionLoading('Deleting hazard details...');
 
     try {
       const res = await fetch(`/api/admin/maps?id=${id}`, {
@@ -200,6 +207,7 @@ export default function AdminMapsPage() {
       setErrorMsg(err.message || 'Something went wrong.');
     } finally {
       setSubmitting(false);
+      setActionLoading(null);
     }
   };
 
@@ -451,6 +459,7 @@ export default function AdminMapsPage() {
           )}
         </div>
       </div>
+      <ActionLoader message={actionLoading} />
     </div>
   );
 }

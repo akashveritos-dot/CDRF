@@ -16,6 +16,7 @@ import {
   QrCode
 } from 'lucide-react';
 import styles from './page.module.css';
+import ActionLoader from '@/components/ui/ActionLoader/ActionLoader';
 
 export default function AdminEvents() {
   const [role, setRole] = useState<string>('ADMIN');
@@ -44,6 +45,7 @@ export default function AdminEvents() {
 
   // Action State
   const [updatingId, setUpdatingId] = useState<number | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const fetchRegistrations = useCallback(async () => {
     setLoading(true);
@@ -73,6 +75,7 @@ export default function AdminEvents() {
 
   const handleUpdateStatus = async (id: number, newStatus: string) => {
     setUpdatingId(id);
+    setActionLoading('Updating attendee status...');
     try {
       const res = await fetch(`/api/admin/events/${id}`, {
         method: 'PUT',
@@ -87,6 +90,7 @@ export default function AdminEvents() {
       alert('Error updating attendee status');
     } finally {
       setUpdatingId(null);
+      setActionLoading(null);
     }
   };
 
@@ -94,6 +98,7 @@ export default function AdminEvents() {
     // eslint-disable-next-line no-alert
     if (!confirm('Are you sure you want to permanently delete this event registration record?')) return;
 
+    setActionLoading('Deleting registration record...');
     try {
       const res = await fetch(`/api/admin/events/${id}`, {
         method: 'DELETE'
@@ -107,6 +112,8 @@ export default function AdminEvents() {
     } catch (err: any) {
       // eslint-disable-next-line no-alert
       alert(err.message || 'Error deleting registration record');
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -309,6 +316,7 @@ export default function AdminEvents() {
           <p>Modify filters or register test attendees on the public Conclave site.</p>
         </div>
       )}
+      <ActionLoader message={actionLoading} />
     </div>
   );
 }

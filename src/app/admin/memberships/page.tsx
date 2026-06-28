@@ -21,6 +21,7 @@ import {
   Shield
 } from 'lucide-react';
 import styles from './page.module.css';
+import ActionLoader from '@/components/ui/ActionLoader/ActionLoader';
 
 export default function AdminMemberships() {
   const [registrations, setRegistrations] = useState<any[]>([]);
@@ -44,6 +45,7 @@ export default function AdminMemberships() {
     payment_details: ''
   });
   const [isSaving, setIsSaving] = useState(false);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   // Reminder state
   const [isSendingReminders, setIsSendingReminders] = useState(false);
@@ -178,6 +180,7 @@ export default function AdminMemberships() {
     e.preventDefault();
     if (!editingItem) return;
     setIsSaving(true);
+    setActionLoading('Saving changes...');
     try {
       const res = await fetch(`/api/admin/memberships/${editingItem.id}`, {
         method: 'PUT',
@@ -193,6 +196,7 @@ export default function AdminMemberships() {
       alert('Error updating application details');
     } finally {
       setIsSaving(false);
+      setActionLoading(null);
     }
   };
 
@@ -200,6 +204,7 @@ export default function AdminMemberships() {
     // eslint-disable-next-line no-alert
     if (!confirm('Are you sure you want to permanently delete this registration record?')) return;
     setIsSaving(true);
+    setActionLoading('Deleting registration record...');
     try {
       const res = await fetch(`/api/admin/memberships/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to delete');
@@ -209,12 +214,14 @@ export default function AdminMemberships() {
       alert('Error deleting application record');
     } finally {
       setIsSaving(false);
+      setActionLoading(null);
     }
   };
 
   const handleSendReminders = async () => {
     setIsSendingReminders(true);
     setReminderResult(null);
+    setActionLoading('Sending reminders...');
     try {
       const res = await fetch('/api/admin/send-reminders', { method: 'POST' });
       const data = await res.json();
@@ -223,6 +230,7 @@ export default function AdminMemberships() {
       setReminderResult({ success: false, message: 'Failed to send reminders' });
     } finally {
       setIsSendingReminders(false);
+      setActionLoading(null);
     }
   };
 
@@ -606,6 +614,7 @@ export default function AdminMemberships() {
           </div>
         </div>
       )}
+      <ActionLoader message={actionLoading} />
     </div>
   );
 }

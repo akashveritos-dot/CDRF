@@ -16,6 +16,7 @@ import {
   GripVertical
 } from 'lucide-react';
 import styles from './page.module.css';
+import ActionLoader from '@/components/ui/ActionLoader/ActionLoader';
 
 function getFriendlyError(err: any, fallback: string): string {
   const msg = err?.message || '';
@@ -49,6 +50,7 @@ export default function AdminCouncils() {
   const [error, setError] = useState('');
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [imageUploadSuccess, setImageUploadSuccess] = useState('');
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   // Drag-and-drop / display limit states
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -75,6 +77,7 @@ export default function AdminCouncils() {
     setDraggedIndex(null);
 
     const orderedIds = reordered.map(item => item.id);
+    setActionLoading('Reordering council profiles...');
     try {
       const res = await fetch('/api/admin/reorder', {
         method: 'PUT',
@@ -85,6 +88,8 @@ export default function AdminCouncils() {
     } catch (err: any) {
       console.error(err);
       fetchMembers(); // Revert on failure
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -99,6 +104,7 @@ export default function AdminCouncils() {
     setIsUploadingImage(true);
     setImageUploadSuccess('');
     setError('');
+    setActionLoading('Uploading profile image...');
 
     const uploadData = new FormData();
     uploadData.append('file', file);
@@ -118,6 +124,7 @@ export default function AdminCouncils() {
       setError(err.message || 'Image upload failed.');
     } finally {
       setIsUploadingImage(false);
+      setActionLoading(null);
     }
   };
 
@@ -182,6 +189,7 @@ export default function AdminCouncils() {
     // eslint-disable-next-line no-alert
     if (!confirm('Are you sure you want to permanently delete this council member?')) return;
     setIsSaving(true);
+    setActionLoading('Deleting council member...');
     try {
       const res = await fetch(`/api/admin/councils/${id}`, {
         method: 'DELETE'
@@ -197,6 +205,7 @@ export default function AdminCouncils() {
       alert(getFriendlyError(err, 'Error deleting council member. Please try again.'));
     } finally {
       setIsSaving(false);
+      setActionLoading(null);
     }
   };
 
@@ -217,6 +226,7 @@ export default function AdminCouncils() {
     e.preventDefault();
     setError('');
     setIsSaving(true);
+    setActionLoading(editingId ? 'Saving profile...' : 'Creating profile...');
 
     try {
       const url = editingId ? `/api/admin/councils/${editingId}` : '/api/councils';
@@ -237,6 +247,7 @@ export default function AdminCouncils() {
       setError(getFriendlyError(err, 'Error occurred while saving council member. Please try again.'));
     } finally {
       setIsSaving(false);
+      setActionLoading(null);
     }
   };
 
@@ -658,6 +669,7 @@ export default function AdminCouncils() {
           </div>
         </div>
       )}
+      <ActionLoader message={actionLoading} />
     </div>
   );
 }

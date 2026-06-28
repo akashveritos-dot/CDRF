@@ -17,6 +17,7 @@ import {
   Check
 } from 'lucide-react';
 import styles from './page.module.css';
+import ActionLoader from '@/components/ui/ActionLoader/ActionLoader';
 
 // Fixed list of available benefits to toggle
 const BENEFIT_LIST = [
@@ -77,6 +78,7 @@ export default function AdminPricingPage() {
   });
 
   const [isSaving, setIsSaving] = useState(false);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   // Fetch Pricing Data
   const fetchData = async () => {
@@ -157,6 +159,7 @@ export default function AdminPricingPage() {
 
     setError('');
     setIsSaving(true);
+    setActionLoading('Saving pricing tier changes...');
     try {
       const res = await fetch('/api/admin/pricing', {
         method: 'PUT',
@@ -177,6 +180,7 @@ export default function AdminPricingPage() {
       setError(err.message || 'Failed to save plan changes.');
     } finally {
       setIsSaving(false);
+      setActionLoading(null);
     }
   };
 
@@ -215,7 +219,7 @@ export default function AdminPricingPage() {
     e.preventDefault();
     setError('');
     setIsSaving(true);
-
+    setActionLoading('Saving discount campaign...');
     try {
       const res = await fetch('/api/admin/pricing', {
         method: 'POST',
@@ -233,6 +237,7 @@ export default function AdminPricingPage() {
       setError(err.message || 'Failed to save discount campaign.');
     } finally {
       setIsSaving(false);
+      setActionLoading(null);
     }
   };
 
@@ -240,6 +245,7 @@ export default function AdminPricingPage() {
   const handleDeleteDiscount = async (tierName: string) => {
     if (!confirm(`Are you sure you want to permanently clear the discount campaign for the ${tierName} tier?`)) return;
     setIsSaving(true);
+    setActionLoading('Deleting discount campaign...');
     try {
       const res = await fetch(`/api/admin/pricing?tierName=${encodeURIComponent(tierName)}`, {
         method: 'DELETE'
@@ -255,6 +261,7 @@ export default function AdminPricingPage() {
       alert(err.message || 'Failed to clear campaign.');
     } finally {
       setIsSaving(false);
+      setActionLoading(null);
     }
   };
 
@@ -718,6 +725,7 @@ export default function AdminPricingPage() {
           </div>
         </div>
       )}
+      <ActionLoader message={actionLoading} />
     </div>
   );
 }

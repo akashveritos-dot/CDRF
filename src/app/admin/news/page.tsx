@@ -16,6 +16,7 @@ import {
   GripVertical
 } from 'lucide-react';
 import styles from './page.module.css';
+import ActionLoader from '@/components/ui/ActionLoader/ActionLoader';
 
 function getFriendlyError(err: any, fallback: string): string {
   const msg = err?.message || '';
@@ -51,6 +52,7 @@ export default function AdminNews() {
   const [error, setError] = useState('');
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [imageUploadSuccess, setImageUploadSuccess] = useState('');
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
   
   // Gallery upload state
   const [isUploadingGallery, setIsUploadingGallery] = useState(false);
@@ -61,6 +63,7 @@ export default function AdminNews() {
 
     setIsUploadingGallery(true);
     setError('');
+    setActionLoading('Uploading gallery images...');
 
     try {
       const urls: string[] = [];
@@ -87,6 +90,7 @@ export default function AdminNews() {
       setError(err.message || 'Gallery image upload failed.');
     } finally {
       setIsUploadingGallery(false);
+      setActionLoading(null);
     }
   };
 
@@ -122,6 +126,7 @@ export default function AdminNews() {
     setDraggedIndex(null);
 
     const orderedIds = reordered.map(item => item.id);
+    setActionLoading('Reordering news stories...');
     try {
       const res = await fetch('/api/admin/reorder', {
         method: 'PUT',
@@ -132,6 +137,8 @@ export default function AdminNews() {
     } catch (err: any) {
       console.error(err);
       fetchStories(); // Revert on failure
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -146,6 +153,7 @@ export default function AdminNews() {
     setIsUploadingImage(true);
     setImageUploadSuccess('');
     setError('');
+    setActionLoading('Uploading thumbnail image...');
 
     const uploadData = new FormData();
     uploadData.append('file', file);
@@ -165,6 +173,7 @@ export default function AdminNews() {
       setError(err.message || 'Image upload failed.');
     } finally {
       setIsUploadingImage(false);
+      setActionLoading(null);
     }
   };
 
@@ -275,6 +284,7 @@ export default function AdminNews() {
     // eslint-disable-next-line no-alert
     if (!confirm('Are you sure you want to permanently delete this news story?')) return;
     setIsSaving(true);
+    setActionLoading('Deleting news story...');
     try {
       const res = await fetch(`/api/news/${id}`, {
         method: 'DELETE'
@@ -287,6 +297,7 @@ export default function AdminNews() {
       alert('Error deleting news story');
     } finally {
       setIsSaving(false);
+      setActionLoading(null);
     }
   };
 
@@ -299,6 +310,7 @@ export default function AdminNews() {
     e.preventDefault();
     setError('');
     setIsSaving(true);
+    setActionLoading(editingId ? 'Saving news story...' : 'Publishing news story...');
 
     try {
       const url = editingId ? `/api/news/${editingId}` : '/api/news';
@@ -319,6 +331,7 @@ export default function AdminNews() {
       setError(getFriendlyError(err, 'Error occurred while saving news. Please try again.'));
     } finally {
       setIsSaving(false);
+      setActionLoading(null);
     }
   };
 
@@ -794,6 +807,7 @@ export default function AdminNews() {
           </div>
         </div>
       )}
+      <ActionLoader message={actionLoading} />
     </div>
   );
 }

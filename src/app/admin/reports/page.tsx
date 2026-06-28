@@ -15,6 +15,7 @@ import {
   GripVertical
 } from 'lucide-react';
 import styles from './page.module.css';
+import ActionLoader from '@/components/ui/ActionLoader/ActionLoader';
 
 function getFriendlyError(err: any, fallback: string): string {
   const msg = err?.message || '';
@@ -49,6 +50,7 @@ export default function AdminReports() {
   const [pdfUploadSuccess, setPdfUploadSuccess] = useState('');
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [imageUploadSuccess, setImageUploadSuccess] = useState('');
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -57,6 +59,7 @@ export default function AdminReports() {
     setIsUploadingPdf(true);
     setPdfUploadSuccess('');
     setError('');
+    setActionLoading('Uploading PDF...');
 
     const uploadData = new FormData();
     uploadData.append('file', file);
@@ -76,6 +79,7 @@ export default function AdminReports() {
       setError(err.message || 'PDF upload failed.');
     } finally {
       setIsUploadingPdf(false);
+      setActionLoading(null);
     }
   };
 
@@ -86,6 +90,7 @@ export default function AdminReports() {
     setIsUploadingImage(true);
     setImageUploadSuccess('');
     setError('');
+    setActionLoading('Uploading image...');
 
     const uploadData = new FormData();
     uploadData.append('file', file);
@@ -105,6 +110,7 @@ export default function AdminReports() {
       setError(err.message || 'Image upload failed.');
     } finally {
       setIsUploadingImage(false);
+      setActionLoading(null);
     }
   };
 
@@ -133,6 +139,7 @@ export default function AdminReports() {
     setDraggedIndex(null);
 
     const orderedIds = reordered.map(item => item.id);
+    setActionLoading('Reordering reports...');
     try {
       const res = await fetch('/api/admin/reorder', {
         method: 'PUT',
@@ -143,6 +150,8 @@ export default function AdminReports() {
     } catch (err: any) {
       console.error(err);
       fetchReports(); // Revert on failure
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -232,6 +241,7 @@ export default function AdminReports() {
     // eslint-disable-next-line no-alert
     if (!confirm('Are you sure you want to permanently delete this report brief?')) return;
     setIsSaving(true);
+    setActionLoading('Deleting report...');
     try {
       const res = await fetch(`/api/reports/${id}`, {
         method: 'DELETE'
@@ -244,6 +254,7 @@ export default function AdminReports() {
       alert('Error deleting report');
     } finally {
       setIsSaving(false);
+      setActionLoading(null);
     }
   };
 
@@ -256,6 +267,7 @@ export default function AdminReports() {
     e.preventDefault();
     setError('');
     setIsSaving(true);
+    setActionLoading(editingId ? 'Saving report...' : 'Publishing report...');
 
     try {
       const url = editingId ? `/api/reports/${editingId}` : '/api/reports';
@@ -276,6 +288,7 @@ export default function AdminReports() {
       setError(getFriendlyError(err, 'Error occurred while saving report. Please try again.'));
     } finally {
       setIsSaving(false);
+      setActionLoading(null);
     }
   };
 
@@ -692,6 +705,7 @@ export default function AdminReports() {
           </div>
         </div>
       )}
+      <ActionLoader message={actionLoading} />
     </div>
   );
 }

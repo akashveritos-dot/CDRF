@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Loader2, Plus, Trash2, CheckCircle, AlertTriangle, Image as ImageIcon, GripVertical } from 'lucide-react';
 import styles from './page.module.css';
+import ActionLoader from '@/components/ui/ActionLoader/ActionLoader';
 
 interface GalleryItem {
   id: number;
@@ -30,6 +31,7 @@ export default function AdminGalleryManager() {
   const [success, setSuccess] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState('');
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -38,6 +40,7 @@ export default function AdminGalleryManager() {
     setIsUploading(true);
     setUploadSuccess('');
     setError('');
+    setActionLoading('Uploading photo...');
 
     const uploadData = new FormData();
     uploadData.append('file', file);
@@ -57,6 +60,7 @@ export default function AdminGalleryManager() {
       setError(err.message || 'Photo upload failed.');
     } finally {
       setIsUploading(false);
+      setActionLoading(null);
     }
   };
 
@@ -85,6 +89,7 @@ export default function AdminGalleryManager() {
     setDraggedIndex(null);
 
     const orderedIds = reordered.map(item => item.id);
+    setActionLoading('Reordering photos...');
     try {
       const res = await fetch('/api/admin/reorder', {
         method: 'PUT',
@@ -95,6 +100,8 @@ export default function AdminGalleryManager() {
     } catch (err: any) {
       console.error(err);
       loadGallery(); // Revert on failure
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -126,6 +133,7 @@ export default function AdminGalleryManager() {
     setError('');
     setSuccess(false);
     setIsSubmitting(true);
+    setActionLoading('Adding photo to gallery...');
 
     if (!imageUrl || !caption) {
       setError('Image URL and Caption are required.');
@@ -158,6 +166,7 @@ export default function AdminGalleryManager() {
       setError(err.message || 'Error occurred while saving item.');
     } finally {
       setIsSubmitting(false);
+      setActionLoading(null);
     }
   };
 
@@ -166,6 +175,7 @@ export default function AdminGalleryManager() {
       return;
     }
 
+    setActionLoading('Deleting gallery photo...');
     try {
       const res = await fetch(`/api/admin/gallery?id=${id}`, {
         method: 'DELETE'
@@ -180,6 +190,8 @@ export default function AdminGalleryManager() {
     } catch (err) {
       console.error('Failed to delete item:', err);
       alert('An error occurred during deletion.');
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -417,6 +429,7 @@ export default function AdminGalleryManager() {
           )}
         </div>
       </div>
+      <ActionLoader message={actionLoading} />
     </div>
   );
 }

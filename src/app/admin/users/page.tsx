@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Users, UserPlus, Edit2, Trash2, Lock, Check, X, Shield, Loader2 } from 'lucide-react';
 import styles from './page.module.css';
+import ActionLoader from '@/components/ui/ActionLoader/ActionLoader';
 
 function getFriendlyError(err: any, fallback: string): string {
   const msg = err?.message || '';
@@ -31,6 +32,7 @@ export default function UsersManagementPage() {
   const [currentUserRole, setCurrentUserRole] = useState<string>('');
   const [error, setError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -127,6 +129,7 @@ export default function UsersManagementPage() {
     e.preventDefault();
     setError('');
     setIsSaving(true);
+    setActionLoading(editingUser ? 'Saving changes...' : 'Creating new user...');
 
     // Validate password for new users
     if (!editingUser && formData.password) {
@@ -163,10 +166,12 @@ export default function UsersManagementPage() {
       setError(getFriendlyError(err, 'Failed to save user. Please try again.'));
     } finally {
       setIsSaving(false);
+      setActionLoading(null);
     }
   };
 
   const handleToggleActive = async (userId: number, currentStatus: boolean) => {
+    setActionLoading('Updating user status...');
     try {
       const res = await fetch(`/api/admin/users/${userId}`, {
         method: 'PUT',
@@ -182,6 +187,8 @@ export default function UsersManagementPage() {
       fetchUsers();
     } catch (err: any) {
       setError(getFriendlyError(err, 'Failed to update status. Please try again.'));
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -191,6 +198,7 @@ export default function UsersManagementPage() {
       return;
     }
 
+    setActionLoading('Deleting user...');
     try {
       const res = await fetch(`/api/admin/users/${userId}`, {
         method: 'DELETE'
@@ -205,6 +213,8 @@ export default function UsersManagementPage() {
       fetchUsers();
     } catch (err: any) {
       setError(getFriendlyError(err, 'Failed to delete user. Please try again.'));
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -233,6 +243,7 @@ export default function UsersManagementPage() {
       return;
     }
 
+    setActionLoading('Updating password...');
     try {
       const res = await fetch(`/api/admin/users/${passwordData.userId}/password`, {
         method: 'PUT',
@@ -251,6 +262,8 @@ export default function UsersManagementPage() {
       alert('Password updated successfully');
     } catch (err: any) {
       setError(getFriendlyError(err, 'Failed to update password. Please try again.'));
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -504,6 +517,7 @@ export default function UsersManagementPage() {
           </div>
         </div>
       )}
+      <ActionLoader message={actionLoading} />
     </div>
   );
 }

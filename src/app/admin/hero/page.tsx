@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Loader2, Save, Plus, Trash2, CheckCircle, AlertTriangle, Edit3, X, Upload } from 'lucide-react';
 import styles from './page.module.css';
+import ActionLoader from '@/components/ui/ActionLoader/ActionLoader';
 
 interface HeroSettings {
   eyebrow: string;
@@ -28,6 +29,7 @@ export default function AdminHeroPage() {
   const [submitting, setSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   // Hero settings form state
   const [settings, setSettings] = useState<HeroSettings>({
@@ -86,6 +88,7 @@ export default function AdminHeroPage() {
     setSubmitting(true);
     setSuccessMsg('');
     setErrorMsg('');
+    setActionLoading('Saving hero layout changes...');
 
     try {
       const res = await fetch('/api/admin/hero', {
@@ -112,6 +115,7 @@ export default function AdminHeroPage() {
       setErrorMsg(err.message || 'Something went wrong.');
     } finally {
       setSubmitting(false);
+      setActionLoading(null);
     }
   };
 
@@ -120,6 +124,7 @@ export default function AdminHeroPage() {
     setSubmitting(true);
     setSuccessMsg('');
     setErrorMsg('');
+    setActionLoading('Saving statistics card details...');
 
     try {
       const res = await fetch('/api/admin/hero', {
@@ -150,6 +155,7 @@ export default function AdminHeroPage() {
       setErrorMsg(err.message || 'Something went wrong.');
     } finally {
       setSubmitting(false);
+      setActionLoading(null);
     }
   };
 
@@ -188,6 +194,7 @@ export default function AdminHeroPage() {
     setSubmitting(true);
     setSuccessMsg('');
     setErrorMsg('');
+    setActionLoading('Deleting stats card...');
 
     try {
       const res = await fetch(`/api/admin/hero?id=${id}`, {
@@ -203,6 +210,7 @@ export default function AdminHeroPage() {
       setErrorMsg(err.message || 'Something went wrong.');
     } finally {
       setSubmitting(false);
+      setActionLoading(null);
     }
   };
 
@@ -212,6 +220,7 @@ export default function AdminHeroPage() {
     setUploading(true);
     const fd = new FormData();
     fd.append('file', file);
+    setActionLoading('Uploading background image...');
     try {
       const res = await fetch('/api/upload', { method: 'POST', body: fd });
       const data = await res.json();
@@ -222,6 +231,7 @@ export default function AdminHeroPage() {
       setErrorMsg(err.message || 'Upload failed');
     } finally {
       setUploading(false);
+      setActionLoading(null);
     }
   };
 
@@ -480,6 +490,7 @@ export default function AdminHeroPage() {
           )}
         </div>
       </div>
+      <ActionLoader message={actionLoading} />
     </div>
   );
 }

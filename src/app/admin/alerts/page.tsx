@@ -12,6 +12,7 @@ import {
   Megaphone
 } from 'lucide-react';
 import styles from './page.module.css';
+import ActionLoader from '@/components/ui/ActionLoader/ActionLoader';
 
 function getFriendlyError(err: any, fallback: string): string {
   const msg = err?.message || '';
@@ -33,6 +34,7 @@ export default function AdminAlerts() {
   });
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const fetchAlerts = async () => {
     setLoading(true);
@@ -69,6 +71,7 @@ export default function AdminAlerts() {
     // eslint-disable-next-line no-alert
     if (!confirm('Are you sure you want to permanently delete this ticker alert entry?')) return;
     setIsSaving(true);
+    setActionLoading('Deleting alert...');
     try {
       const res = await fetch(`/api/admin/alerts/${id}`, {
         method: 'DELETE'
@@ -84,6 +87,7 @@ export default function AdminAlerts() {
       alert(getFriendlyError(err, 'Error deleting ticker alert. Please try again.'));
     } finally {
       setIsSaving(false);
+      setActionLoading(null);
     }
   };
 
@@ -96,6 +100,7 @@ export default function AdminAlerts() {
     e.preventDefault();
     setError('');
     setIsSaving(true);
+    setActionLoading(editingId ? 'Saving alert...' : 'Publishing alert...');
 
     try {
       const url = editingId ? `/api/admin/alerts/${editingId}` : '/api/admin/alerts';
@@ -116,6 +121,7 @@ export default function AdminAlerts() {
       setError(getFriendlyError(err, 'Error occurred while saving alert. Please try again.'));
     } finally {
       setIsSaving(false);
+      setActionLoading(null);
     }
   };
 
@@ -262,6 +268,7 @@ export default function AdminAlerts() {
           </div>
         </div>
       )}
+      <ActionLoader message={actionLoading} />
     </div>
   );
 }

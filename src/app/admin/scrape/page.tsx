@@ -16,6 +16,7 @@ import {
   RotateCcw
 } from 'lucide-react';
 import styles from './page.module.css';
+import ActionLoader from '@/components/ui/ActionLoader/ActionLoader';
 
 export default function AdminScrapeQueue() {
   const [activeTab, setActiveTab] = useState<'Pending' | 'Published' | 'Rejected'>('Pending');
@@ -47,6 +48,7 @@ export default function AdminScrapeQueue() {
   const [isUploadingPdf, setIsUploadingPdf] = useState(false);
   const [pdfUploadSuccess, setPdfUploadSuccess] = useState('');
   const [uploadError, setUploadError] = useState('');
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -55,6 +57,7 @@ export default function AdminScrapeQueue() {
     setIsUploadingImage(true);
     setImageUploadSuccess('');
     setUploadError('');
+    setActionLoading('Uploading image...');
 
     const uploadData = new FormData();
     uploadData.append('file', file);
@@ -74,6 +77,7 @@ export default function AdminScrapeQueue() {
       setUploadError(err.message || 'Image upload failed.');
     } finally {
       setIsUploadingImage(false);
+      setActionLoading(null);
     }
   };
 
@@ -84,6 +88,7 @@ export default function AdminScrapeQueue() {
     setIsUploadingPdf(true);
     setPdfUploadSuccess('');
     setUploadError('');
+    setActionLoading('Uploading PDF...');
 
     const uploadData = new FormData();
     uploadData.append('file', file);
@@ -103,6 +108,7 @@ export default function AdminScrapeQueue() {
       setUploadError(err.message || 'PDF upload failed.');
     } finally {
       setIsUploadingPdf(false);
+      setActionLoading(null);
     }
   };
 
@@ -152,6 +158,7 @@ export default function AdminScrapeQueue() {
     if (!publishingItem) return;
     
     setIsProcessing(true);
+    setActionLoading('Publishing and deploying content...');
     try {
       const payload = {
         scrapedId: publishingItem.id,
@@ -175,6 +182,7 @@ export default function AdminScrapeQueue() {
       alert('Error publishing content item.');
     } finally {
       setIsProcessing(false);
+      setActionLoading(null);
     }
   };
 
@@ -182,6 +190,7 @@ export default function AdminScrapeQueue() {
     // eslint-disable-next-line no-alert
     if (!confirm('Are you sure you want to reject this item? It will be removed from the review queue.')) return;
     setIsProcessing(true);
+    setActionLoading('Rejecting queue item...');
     try {
       const res = await fetch('/api/admin/scrape/publish', {
         method: 'POST',
@@ -199,6 +208,7 @@ export default function AdminScrapeQueue() {
       alert('Error rejecting queue item.');
     } finally {
       setIsProcessing(false);
+      setActionLoading(null);
     }
   };
 
@@ -206,6 +216,7 @@ export default function AdminScrapeQueue() {
     // eslint-disable-next-line no-alert
     if (!confirm('Are you sure you want to unpublish this item? It will be removed from the live website and restored to the review queue.')) return;
     setIsProcessing(true);
+    setActionLoading('Unpublishing item...');
     try {
       const res = await fetch('/api/admin/scrape/publish', {
         method: 'POST',
@@ -223,11 +234,13 @@ export default function AdminScrapeQueue() {
       alert('Error unpublishing item.');
     } finally {
       setIsProcessing(false);
+      setActionLoading(null);
     }
   };
 
   const handleRestore = async (id: number) => {
     setIsProcessing(true);
+    setActionLoading('Restoring queue item...');
     try {
       const res = await fetch('/api/admin/scrape/publish', {
         method: 'POST',
@@ -245,6 +258,7 @@ export default function AdminScrapeQueue() {
       alert('Error restoring item.');
     } finally {
       setIsProcessing(false);
+      setActionLoading(null);
     }
   };
 
@@ -252,6 +266,7 @@ export default function AdminScrapeQueue() {
     // eslint-disable-next-line no-alert
     if (!confirm('Are you sure you want to permanently delete this item from the database? This action is irreversible.')) return;
     setIsProcessing(true);
+    setActionLoading('Permanently deleting item...');
     try {
       const res = await fetch('/api/admin/scrape/publish', {
         method: 'POST',
@@ -269,6 +284,7 @@ export default function AdminScrapeQueue() {
       alert('Error deleting item.');
     } finally {
       setIsProcessing(false);
+      setActionLoading(null);
     }
   };
 
@@ -741,6 +757,7 @@ export default function AdminScrapeQueue() {
           </div>
         </div>
       )}
+      <ActionLoader message={actionLoading} />
     </div>
   );
 }
