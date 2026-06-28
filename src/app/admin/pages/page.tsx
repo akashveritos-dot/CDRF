@@ -285,7 +285,12 @@ export default function AdminPagesManager() {
               cardCount: (s.cards || []).length
             }))
           }));
-          const filteredPages = pageMetas.filter(p => p.sections.reduce((sum, s) => sum + s.cardCount, 0) > 0);
+          // Filter to show only pages with content (cards > 0) or pages with at least 1 section
+          const filteredPages = pageMetas.filter(p => {
+            const totalCards = p.sections.reduce((sum, s) => sum + s.cardCount, 0);
+            const hasSections = p.sections.length > 0;
+            return totalCards > 0 || hasSections;
+          });
           setPages(filteredPages);
           if (filteredPages.length > 0 && !selectedSlug) {
             selectPage(filteredPages[0].slug, data);
@@ -320,7 +325,7 @@ export default function AdminPagesManager() {
         if (!res.ok) throw new Error('Failed to load');
         const data = await res.json();
         pageData = data.find((p: any) => p.slug === slug);
-        // Also update page list
+        // Also update page list - filter to show only pages with content
         const pageMetas: PageMeta[] = data.map((p: any) => ({
           slug: p.slug, title: p.title, category: p.category, description: p.description || '',
           sections: (p.sections || []).map((s: any) => ({
@@ -328,7 +333,12 @@ export default function AdminPagesManager() {
             cardCount: (s.cards || []).length
           }))
         }));
-        setPages(pageMetas);
+        const filteredPages = pageMetas.filter(p => {
+          const totalCards = p.sections.reduce((sum, s) => sum + s.cardCount, 0);
+          const hasSections = p.sections.length > 0;
+          return totalCards > 0 || hasSections;
+        });
+        setPages(filteredPages);
       }
 
       if (!pageData) { setItems([]); setSections([]); setFullSections([]); return; }

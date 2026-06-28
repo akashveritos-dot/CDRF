@@ -319,11 +319,47 @@ CREATE TABLE IF NOT EXISTS cms_pages (
     title VARCHAR(255) NOT NULL,
     category VARCHAR(100) NOT NULL,
     description TEXT DEFAULT NULL,
+    eyebrow VARCHAR(255) DEFAULT NULL,
     video_url VARCHAR(512) DEFAULT NULL,
     image_url VARCHAR(512) DEFAULT NULL,
+    main_image_url VARCHAR(512) DEFAULT NULL,
     content LONGTEXT DEFAULT NULL,
+    display_order INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- 15a. CMS Page Sections Table
+CREATE TABLE IF NOT EXISTS cms_page_sections (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    page_slug VARCHAR(100) NOT NULL,
+    display_order INT DEFAULT 0,
+    title VARCHAR(255) DEFAULT NULL,
+    description TEXT DEFAULT NULL,
+    image_url VARCHAR(512) DEFAULT NULL,
+    video_url VARCHAR(512) DEFAULT NULL,
+    content LONGTEXT DEFAULT NULL,
+    button_text VARCHAR(100) DEFAULT NULL,
+    button_url VARCHAR(512) DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (page_slug) REFERENCES cms_pages(slug) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- 15b. CMS Page Cards Table
+CREATE TABLE IF NOT EXISTS cms_page_cards (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    section_id INT NOT NULL,
+    display_order INT DEFAULT 0,
+    title VARCHAR(255) DEFAULT NULL,
+    description TEXT DEFAULT NULL,
+    image_url VARCHAR(512) DEFAULT NULL,
+    link_text VARCHAR(100) DEFAULT NULL,
+    link_url VARCHAR(512) DEFAULT NULL,
+    extra_data JSON DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (section_id) REFERENCES cms_page_sections(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 -- 16. Gallery Items Table
@@ -356,7 +392,7 @@ CREATE TABLE IF NOT EXISTS event_registrations (
     company VARCHAR(255) NOT NULL,
     designation VARCHAR(255) DEFAULT NULL,
     role VARCHAR(100) NOT NULL,
-    status ENUM('Pending', 'Approved', 'Rejected') NOT NULL DEFAULT 'Pending',
+    status ENUM('Pending', 'Approved', 'Rejected', 'Checked-In') NOT NULL DEFAULT 'Pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
