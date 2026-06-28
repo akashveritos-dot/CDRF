@@ -94,10 +94,9 @@ export async function GET(
     // Sanitize filename
     const safeName = path.basename(filename).replace(/\.\./g, '');
 
-    // ── 5. Find and serve the file ───────────────────────────────────
+    // public/uploads is the single persistent location — never wiped by builds
     const possiblePaths = [
       path.join(process.cwd(), 'public', 'uploads', safeName),
-      path.join(process.cwd(), '.next', 'standalone', 'public', 'uploads', safeName),
     ];
 
     let filePath: string | null = null;

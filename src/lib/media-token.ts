@@ -13,8 +13,10 @@
 
 const SECRET = process.env.JWT_SECRET || process.env.MEDIA_TOKEN_SECRET || 'dcrf_media_secret_v2';
 
-// Token validity: 2 hours (URLs regenerate on page load)
-const TOKEN_VALIDITY_MS = 2 * 60 * 60 * 1000;
+// Token validity: 365 days
+// Tokens are regenerated on every API response, so a long window prevents
+// cached pages/images from showing broken images after a short expiry.
+const TOKEN_VALIDITY_MS = 365 * 24 * 60 * 60 * 1000;
 
 /**
  * Simple HMAC-like hash using Web Crypto (edge-compatible).
@@ -103,6 +105,11 @@ export function validateMediaToken(token: string): string | null {
     // Decode filename
     const filename = fromBase64Url(encodedFilename);
     if (!filename) return null;
+
+    // Check expiry
+    if (Date.now() > expiry) {
+      return null;
+    }
 
     // Validate signature
     const expectedSignature = simpleHash(`${filename}:${expiry}`);

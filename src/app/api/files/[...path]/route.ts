@@ -74,10 +74,9 @@ export async function GET(
       return new NextResponse(null, { status: 400 });
     }
 
-    // Look for the file on disk
+    // public/uploads is the single persistent location — never wiped by builds
     const possiblePaths = [
       path.join(process.cwd(), 'public', 'uploads', safeName),
-      path.join(process.cwd(), '.next', 'standalone', 'public', 'uploads', safeName),
     ];
 
     let filePath: string | null = null;

@@ -65,6 +65,9 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
   const [currentSlide, setCurrentSlide] = useState(0);
   const registerRef = useRef<HTMLDivElement | null>(null);
   const [formVisible, setFormVisible] = useState(false);
+  const videoScrollRef = useRef<HTMLDivElement | null>(null);
+  const [isVideoDragging, setIsVideoDragging] = useState(false);
+  const videoDragRef = useRef<{ startX: number; scrollLeft: number }>({ startX: 0, scrollLeft: 0 });
 
   // --- Premium Carousels State ---
   const [activeAgendaIdx, setActiveAgendaIdx] = useState(0);
@@ -468,53 +471,7 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
               {/* Introduction paragraph from editable Description card */}
               {descriptionCard?.description && <p className={styles.aboutMainDescription}>{descriptionCard.description}</p>}
               
-              <div className={styles.aboutDetailsList}>
-                {/* Date */}
-                {dateCard && (
-                  <div className={styles.aboutDetailItem}>
-                    <Calendar size={18} className={styles.aboutDetailIcon} />
-                    <div className={styles.aboutDetailContent}>
-                      <span className={styles.aboutDetailLabel}>Date</span>
-                      <span className={styles.aboutDetailValue}>{dateCard.description}</span>
-                    </div>
-                  </div>
-                )}
-                
-                {/* Venue */}
-                {venueCard && (
-                  <div className={styles.aboutDetailItem}>
-                    <Building2 size={18} className={styles.aboutDetailIcon} />
-                    <div className={styles.aboutDetailContent}>
-                      <span className={styles.aboutDetailLabel}>Venue</span>
-                      <span className={styles.aboutDetailValue}>{venueCard.description}</span>
-                    </div>
-                  </div>
-                )}
-                
-                {/* Location */}
-                {locationCard && (
-                  <div className={styles.aboutDetailItem}>
-                    <MapPin size={18} className={styles.aboutDetailIcon} />
-                    <div className={styles.aboutDetailContent}>
-                      <span className={styles.aboutDetailLabel}>Location</span>
-                      <span className={styles.aboutDetailValue}>{locationCard.description}</span>
-                    </div>
-                  </div>
-                )}
-                
-                {/* Theme - from extra card or extraData */}
-                {detailsCards.find((c: any) => c.title?.toLowerCase() === 'theme') && (
-                  <div className={styles.aboutDetailItem}>
-                    <Tag size={18} className={styles.aboutDetailIcon} />
-                    <div className={styles.aboutDetailContent}>
-                      <span className={styles.aboutDetailLabel}>Theme</span>
-                      <span className={styles.aboutDetailValue}>
-                        {detailsCards.find((c: any) => c.title?.toLowerCase() === 'theme')?.description}
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </div>
+
 
               {/* Key Highlights - from card with title "highlights" or "key highlights" */}
               {detailsCards.find((c: any) => c.title?.toLowerCase().includes('highlight')) && (
@@ -531,145 +488,83 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
           </div>
         </ScrollReveal>
 
-        {/* ── Agenda Section (Horizontal Slide Carousel) ── */}
+        {/* ── Agenda Section (Clean 2-Button Layout) ── */}
         {agendaCards.length > 0 && (
           <section id="agenda-gallery" className={styles.eventSection}>
             <ScrollReveal direction="up">
               <h2 className={styles.sectionTitle}>Conclave Agenda</h2>
-              <p className={styles.sectionSub}>Explore the session timelines, panels, and scheduling pages below.</p>
+              <p className={styles.sectionSub}>Download or view the full session schedule, panels, and timing guide.</p>
             </ScrollReveal>
 
             <ScrollReveal direction="up" delay={0.1}>
-              <div className={styles.agendaCarousel}>
-                <div className={styles.agendaTrackWrapper}>
-                  <div
-                    className={styles.agendaTrack}
-                    style={{ transform: `translateX(-${activeAgendaIdx * 100}%)` }}
-                  >
-                    {agendaCards.map((agenda: any, idx: number) => (
-                      <div key={agenda.id || idx} className={styles.agendaSlide}>
-                        <div className={styles.agendaImageWrap}>
-                          <img
-                            src={agenda.imageUrl}
-                            alt={agenda.title}
-                            className={styles.agendaImage}
-                            onClick={() => window.open(agenda.imageUrl, '_blank')}
-                          />
-                        </div>
-                        <div className={styles.agendaCaption}>
-                          <h3>{agenda.title}</h3>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+              <div className={styles.agendaActionsContainer}>
+                <button
+                  type="button"
+                  className={styles.agendaActionBtnSecondary}
+                  onClick={() => {
+                    const url = agendaCards[0]?.extraData?.downloadUrl || '/uploads/conclave_agenda.pdf';
+                    window.open(url, '_blank');
+                  }}
+                >
+                  <Eye size={18} />
+                  <span>View Full Agenda</span>
+                </button>
 
-                  {agendaCards.length > 1 && (
-                    <>
-                      <button
-                        type="button"
-                        className={`${styles.agendaNavBtn} ${styles.agendaPrev}`}
-                        onClick={() => setActiveAgendaIdx(prev => (prev - 1 + agendaCards.length) % agendaCards.length)}
-                        aria-label="Previous agenda page"
-                      >
-                        <ChevronLeft size={20} />
-                      </button>
-                      <button
-                        type="button"
-                        className={`${styles.agendaNavBtn} ${styles.agendaNext}`}
-                        onClick={() => setActiveAgendaIdx(prev => (prev + 1) % agendaCards.length)}
-                        aria-label="Next agenda page"
-                      >
-                        <ChevronRight size={20} />
-                      </button>
-                    </>
-                  )}
-                </div>
-
-                {agendaCards.length > 1 && (
-                  <div className={styles.agendaTabs}>
-                    {agendaCards.map((agenda: any, idx: number) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        className={`${styles.agendaTabBtn} ${idx === activeAgendaIdx ? styles.agendaTabActive : ''}`}
-                        onClick={() => setActiveAgendaIdx(idx)}
-                      >
-                        {agenda.title || `Page ${idx + 1}`}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                <button
+                  type="button"
+                  className={styles.agendaActionBtnPrimary}
+                  onClick={() => {
+                    const url = agendaCards[0]?.extraData?.downloadUrl || '/uploads/conclave_agenda.pdf';
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.setAttribute('download', 'Dcrc_Conclave_Agenda.pdf');
+                    link.style.display = 'none';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }}
+                >
+                  <Download size={18} />
+                  <span>Download Agenda</span>
+                </button>
               </div>
-
-              {/* Dots removed in favor of Agenda Tabs */}
             </ScrollReveal>
-
-            {/* Three Separate Agenda Actions */}
-            <div className={styles.agendaActionsContainer}>
-              <button
-                type="button"
-                className={styles.agendaActionBtnSecondary}
-                onClick={() => {
-                  const url = agendaCards[0]?.extraData?.downloadUrl || '/uploads/conclave_agenda.pdf';
-                  window.open(url, '_blank');
-                }}
-              >
-                <Eye size={16} />
-                <span>View Agenda PDF</span>
-              </button>
-
-              <button
-                type="button"
-                className={styles.agendaActionBtnSecondary}
-                onClick={() => {
-                  const url = agendaCards[0]?.extraData?.downloadUrl || '/uploads/conclave_agenda.pdf';
-                  const link = document.createElement('a');
-                  link.href = url;
-                  link.setAttribute('download', 'Dcrc_Conclave_Agenda.pdf');
-                  link.style.display = 'none';
-                  document.body.appendChild(link);
-                  link.click();
-                  document.body.removeChild(link);
-                }}
-              >
-                <Download size={16} />
-                <span>Download Agenda PDF</span>
-              </button>
-
-              <button
-                type="button"
-                className={styles.agendaActionBtnPrimary}
-                onClick={(e) => {
-                  const url = agendaCards[0]?.extraData?.downloadUrl || '/uploads/conclave_agenda.pdf';
-                  handleAgendaDownloadClick(e, url);
-                }}
-              >
-                <Shield size={16} />
-                <span>Download Full Agenda</span>
-              </button>
-            </div>
           </section>
         )}
 
-        {/* ── Videos Section (Infinite Loop Carousel) ── */}
+        {/* ── Videos Section (Drag-to-Scroll Carousel) ── */}
         {videoCards.length > 0 && (
           <div className={styles.sectionGlowWrapper}>
             <section className={styles.eventSection}>
               <ScrollReveal direction="up">
                 <h2 className={styles.sectionTitle}>Conclave Video Highlights</h2>
-                <p className={styles.sectionSub}>Watch leader interviews, technical summaries, and event recordings.</p>
+                <p className={styles.sectionSub}>Drag to browse — watch leader interviews, technical summaries, and event recordings.</p>
               </ScrollReveal>
 
               <ScrollReveal direction="up" delay={0.15}>
                 <div className={styles.videoSectionWrapper}>
-                  <div className={styles.videoTrackWrapper}>
-                    <div
-                      className={styles.videoTrack}
-                      style={{
-                        transform: `translateX(calc(-${activeVideoIdx} * (var(--card-width) + 24px)))`,
-                        transition: 'transform 600ms cubic-bezier(0.16, 1, 0.3, 1)'
-                      }}
-                    >
+                  <div
+                    ref={videoScrollRef}
+                    className={`${styles.videoTrackWrapper} ${isVideoDragging ? styles.videoDragging : ''}`}
+                    onMouseDown={(e) => {
+                      if (!videoScrollRef.current) return;
+                      setIsVideoDragging(true);
+                      videoDragRef.current = {
+                        startX: e.pageX - videoScrollRef.current.offsetLeft,
+                        scrollLeft: videoScrollRef.current.scrollLeft
+                      };
+                    }}
+                    onMouseMove={(e) => {
+                      if (!isVideoDragging || !videoScrollRef.current) return;
+                      e.preventDefault();
+                      const x = e.pageX - videoScrollRef.current.offsetLeft;
+                      const walk = (x - videoDragRef.current.startX) * 1.5;
+                      videoScrollRef.current.scrollLeft = videoDragRef.current.scrollLeft - walk;
+                    }}
+                    onMouseUp={() => setIsVideoDragging(false)}
+                    onMouseLeave={() => setIsVideoDragging(false)}
+                  >
+                    <div className={styles.videoTrack}>
                       {videoCards.map((vid: any, idx: number) => (
                         <div key={vid.id || idx} className={styles.videoCard}>
                           <div
@@ -707,12 +602,16 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                     </div>
                   </div>
 
-                  {videoCards.length > 3 && (
+                  {videoCards.length > 1 && (
                     <>
                       <button
                         type="button"
                         className={`${styles.agendaNavBtn} ${styles.agendaPrev}`}
-                        onClick={() => setActiveVideoIdx(prev => (prev - 1 + videoCards.length) % videoCards.length)}
+                        onClick={() => {
+                          if (videoScrollRef.current) {
+                            videoScrollRef.current.scrollLeft -= 400;
+                          }
+                        }}
                         aria-label="Previous video"
                       >
                         <ChevronLeft size={20} />
@@ -720,7 +619,11 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                       <button
                         type="button"
                         className={`${styles.agendaNavBtn} ${styles.agendaNext}`}
-                        onClick={() => setActiveVideoIdx(prev => (prev + 1) % videoCards.length)}
+                        onClick={() => {
+                          if (videoScrollRef.current) {
+                            videoScrollRef.current.scrollLeft += 400;
+                          }
+                        }}
                         aria-label="Next video"
                       >
                         <ChevronRight size={20} />

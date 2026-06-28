@@ -27,31 +27,22 @@ export async function POST(req: NextRequest) {
     const fileNameWithoutExt = path.basename(file.name, fileExtension).replace(/[^a-zA-Z0-9]/g, '_');
     const safeFileName = `${fileNameWithoutExt}_${Date.now()}${fileExtension}`;
 
-    // Target paths in the public directory and standalone copy
-    const uploadDirs = [
-      path.join(process.cwd(), 'public', 'uploads'),
-      path.join(process.cwd(), '.next', 'standalone', 'public', 'uploads')
-    ];
+    // Upload directory: public/uploads is the single source of truth.
+    // This directory is NEVER wiped by `npm run build` (only .next/ is rebuilt).
+    // Do NOT write to .next/standalone/public/uploads — it gets destroyed on every deployment.
+    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
 
     // Internal storage path for database (always /uploads/filename)
     const internalPath = `/uploads/${safeFileName}`;
 
-    for (const dir of uploadDirs) {
-      try {
-        // Only write to the directory if its parent exists (for standalone builds)
-        if (dir.includes('standalone') && !fs.existsSync(path.dirname(path.dirname(dir)))) {
-          continue;
-        }
-
-        if (!fs.existsSync(dir)) {
-          fs.mkdirSync(dir, { recursive: true });
-        }
-
-        const filePath = path.join(dir, safeFileName);
-        fs.writeFileSync(filePath, buffer);
-      } catch (err) {
-        console.warn(`[UPLOAD WARNING] Failed to write to ${dir}:`, err);
+    try {
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
       }
+      const filePath = path.join(uploadDir, safeFileName);
+      fs.writeFileSync(filePath, buffer);
+    } catch (err) {
+      console.warn(`[UPLOAD WARNING] Failed to write to ${uploadDir}:`, err);
     }
 
     // Always store the internal /uploads/ path in the database.
