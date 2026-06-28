@@ -88,9 +88,10 @@ const ollamaClient = new OpenAI({
   baseURL: 'http://127.0.0.1:11434/v1',
 });
 
-// Cache variables for news and reports to eliminate remote database query latency (5+ seconds per request)
+// Cache variables for news, reports, and conclave data to eliminate remote database query latency (5+ seconds per request)
 let cachedNewsText = '';
 let cachedReportsText = '';
+let cachedConclaveText = '';
 let lastFetchTime = 0;
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
 
@@ -203,11 +204,11 @@ export async function POST(req: NextRequest) {
         adminContext = 'Failed to fetch database context. Proceed with normal system assistance.';
       }
     } else {
-      // 3. Regular Public user path: Maintain cached news/reports TTL context
+      // 3. Regular Public user path: Maintain cached news/reports/conclave TTL context
       const now = Date.now();
-      if (!cachedNewsText || !cachedReportsText || now - lastFetchTime > CACHE_TTL) {
+      if (!cachedNewsText || !cachedReportsText || !cachedConclaveText || now - lastFetchTime > CACHE_TTL) {
         try {
-          const [newsStories, reportsList] = await Promise.all([
+          const [newsStories, reportsList, conclaveSections] = await Promise.all([
             query<any[]>(
               'SELECT headline, excerpt, category, published_date, source FROM news ORDER BY published_date DESC, id DESC LIMIT 5'
             ).catch((err) => {
@@ -220,6 +221,15 @@ export async function POST(req: NextRequest) {
               console.warn('DB reports fetch failed, using fallback:', err);
               return [];
             }),
+            query<any[]>(
+              `SELECT id, title, description, content, button_text as buttonText, button_url as buttonUrl 
+               FROM cms_page_sections 
+               WHERE page_slug = 'dcrc-26' 
+               ORDER BY display_order ASC`
+            ).catch((err) => {
+              console.warn('DB conclave sections fetch failed:', err);
+              return [];
+            })
           ]);
 
           if (newsStories && newsStories.length > 0) {
@@ -244,11 +254,57 @@ export async function POST(req: NextRequest) {
             cachedReportsText = 'No recent reports/publications found in the database.';
           }
 
+          // Fetch cards for the conclave sections if any sections exist
+          let conclaveCards: any[] = [];
+          if (conclaveSections && conclaveSections.length > 0) {
+            const secIds = conclaveSections.map(s => s.id);
+            const placeholders = secIds.map(() => '?').join(',');
+            try {
+              conclaveCards = await query<any[]>(
+                `SELECT section_id as sectionId, title, description, link_text as linkText, link_url as linkUrl 
+                 FROM cms_page_cards 
+                 WHERE section_id IN (${placeholders}) 
+                 ORDER BY display_order ASC`,
+                secIds
+              );
+            } catch (cardErr) {
+              console.warn('DB conclave cards fetch failed:', cardErr);
+            }
+          }
+
+          if (conclaveSections && conclaveSections.length > 0) {
+            let tempConclave = '[CONCLAVE & EVENT SECTIONS, CONTENT, AND NAVIGATION LINKS]:\n';
+            for (const sec of conclaveSections) {
+              tempConclave += `\n### Section: "${sec.title}"`;
+              if (sec.description) tempConclave += ` (Description: "${sec.description}")`;
+              tempConclave += `\n`;
+              if (sec.content) tempConclave += `- Content: ${sec.content}\n`;
+              if (sec.buttonText && sec.buttonUrl) {
+                tempConclave += `- Navigation Button/Link: [${sec.buttonText}](${sec.buttonUrl})\n`;
+              }
+              const cards = conclaveCards.filter(c => c.sectionId === sec.id);
+              if (cards.length > 0) {
+                tempConclave += `- Card Details:\n`;
+                for (const c of cards) {
+                  tempConclave += `  * "${c.title}": ${c.description || ''}`;
+                  if (c.linkText && c.linkUrl) {
+                    tempConclave += ` (Link: [${c.linkText}](${c.linkUrl}))`;
+                  }
+                  tempConclave += `\n`;
+                }
+              }
+            }
+            cachedConclaveText = tempConclave;
+          } else {
+            cachedConclaveText = 'No dynamic conclave sections found in the database.';
+          }
+
           lastFetchTime = now;
         } catch (err) {
           console.error('Failed to update database context cache:', err);
           if (!cachedNewsText) cachedNewsText = 'No recent news articles available.';
           if (!cachedReportsText) cachedReportsText = 'No recent reports available.';
+          if (!cachedConclaveText) cachedConclaveText = 'No conclave sections available.';
         }
       }
     }
@@ -297,6 +353,8 @@ export async function POST(req: NextRequest) {
 
 Role and Guidelines:
 - You are speaking to a verified administrator (${adminName}, role: ${adminRole}, email: ${adminEmail}).
+- **Greeting Rule**: If the admin says a simple greeting (e.g. "hi", "hello", "hey"), respond with a very short, professional, and friendly 1-sentence greeting (e.g. "Hello ${adminName}! How can I assist you with the dashboard today?") without dumping metrics or context until they ask.
+- **Dynamic Response Length**: Match the length and detail of your response directly to the admin's query. Quick requests/greetings get short, 1-sentence answers. Complex dashboard analysis or drafting tasks get full, detailed responses.
 - You have access to real-time database modules (Queries, Memberships, Conclave Passes, Scraped queue, News, Reports, Audit Logs).
 - Help the administrator review dashboard metrics, draft email responses, and prepare news/reports/alerts drafts.
 - Suggest useful follow-up actions and questions.
@@ -335,9 +393,10 @@ Scope of Assistance (STRICT RULE):
 Role and Persona Guidelines:
 - You are a proud, warm representative of DCRF. Speak from the federation's perspective using first-person plural pronouns ("we", "us", "our") to make the user feel at home and build trust.
 - Make users feel welcome, supported, and satisfied. Be friendly, exceptionally hospitable, empathetic, and natural.
+- **Greeting Rule**: If the user says a simple greeting (e.g. "hi", "hello", "hey", "good morning"), respond with a very short, friendly, and natural 1-sentence greeting (e.g. "Hello! I am Dcrf. How can I help you today?") and do NOT dump any navigation links, news lists, or membership pitches.
+- **Dynamic Response Length**: Tailor your response length directly to the user's message. Casual remarks or quick greetings get a 1-sentence reply. Only provide longer, structured responses or pitches when the user asks a detailed question.
 - Actively connect user interests (such as climate concerns, disaster preparedness, or social impact) into DCRF's offerings and community.
 - Smartly and enthusiastically encourage users to apply for or purchase a membership. If they show interest in joining, participating in events, or taking action, pitch the tremendous value of joining our federation and guide them to [Join DCRF](/membership#join).
-- Keep responses engaging and of medium length (2 to 4 sentences or a couple of short paragraphs), tailoring it to the user's query.
 - You have expert knowledge of overall India disaster news, disaster preparedness, mitigation, and climate resilience.
 
 Useful Navigation Links (Use EXACTLY these markdown link formats if relevant to the user's query, and include at most 1 relevant link per response):
@@ -357,7 +416,9 @@ Useful Navigation Links (Use EXACTLY these markdown link formats if relevant to 
 - Gallery: [Gallery](/gallery)
 - Contact Us: [Contact Us](/contact)
 
-If the user asks about news, newsletters, or reports, reference this database context:
+If the user asks about news, newsletters, reports, or conclave details (including dynamic agenda events, date, venue, speakers, partners, or dynamic links), reference this database context:
+${cachedConclaveText}
+
 ${matchedCategory ? `LATEST NEWS FOR "${matchedCategory.toUpperCase()}":\n${categoryNewsText}\n\n` : ''}NEWS:
 ${cachedNewsText}
 
