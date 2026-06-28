@@ -280,9 +280,9 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
           <PageHero
             theme="events"
             eyebrow="Nov 26–27, 2026 · New Delhi"
-            line1="DCRF DCRC ’26"
-            line2="CONCLAVE"
-            subtitle={pageData.description}
+            line1="DCRF"
+            line2="Dcrc ’26 Conclave"
+            subtitle=""
           />
         </ScrollReveal>
 
@@ -319,11 +319,6 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
           </div>
         </ScrollReveal>
 
-        {/* DCRF Visibility Brand Segment */}
-        <div className={styles.brandVisibilityBadge}>
-          <span className={styles.dcrfText}>DCRF</span>
-          <span className={styles.subText}>DISASTER & CLIMATE RESILIENCE FEDERATION</span>
-        </div>
 
         {/* Slideable Banner Carousel Section */}
         <ScrollReveal direction="up" delay={0.1}>
