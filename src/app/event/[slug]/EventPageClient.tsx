@@ -212,22 +212,10 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
       return () => clearInterval(interval);
     }, [bannerCards]);
 
-    // Agenda download flow
+    // Agenda download flow — direct open, no gate
     const handleAgendaDownloadClick = (e: React.MouseEvent, url: string) => {
       e.preventDefault();
-      const storedEmail = localStorage.getItem('agenda_downloader_email');
-      if (storedEmail) {
-        // Silently log return download and open
-        fetch('/api/events/agenda-download', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: storedEmail, name: 'Returning Downloader' })
-        }).catch(() => {});
-        window.open(url, '_blank');
-      } else {
-        setPendingDownloadUrl(url);
-        setShowEmailGate(true);
-      }
+      window.open(url, '_blank');
     };
 
     const handleGateSubmit = async (e: React.FormEvent) => {
