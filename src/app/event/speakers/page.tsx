@@ -73,24 +73,28 @@ export default async function SpeakersPage() {
                 <h3 className={styles.speakerName}>{sp.title}</h3>
                 <p className={styles.speakerDesc}>{sp.description}</p>
                 <div className={styles.speakerSocials}>
-                  <a
-                    href="https://linkedin.com"
-                    className={styles.socialLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="LinkedIn"
-                  >
-                    <Linkedin size={16} />
-                  </a>
-                  <a
-                    href="https://twitter.com"
-                    className={styles.socialLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Twitter / X"
-                  >
-                    <Twitter size={16} />
-                  </a>
+                  {(sp.extraData?.linkedinUrl || sp.linkUrl) && (
+                    <a
+                      href={sp.extraData?.linkedinUrl || sp.linkUrl}
+                      className={styles.socialLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="LinkedIn"
+                    >
+                      <Linkedin size={16} />
+                    </a>
+                  )}
+                  {sp.extraData?.twitterUrl && (
+                    <a
+                      href={sp.extraData.twitterUrl}
+                      className={styles.socialLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="Twitter / X"
+                    >
+                      <Twitter size={16} />
+                    </a>
+                  )}
                 </div>
               </div>
             </div>

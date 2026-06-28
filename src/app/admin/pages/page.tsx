@@ -1164,8 +1164,16 @@ export default function AdminPagesManager() {
                       {renderFieldInput('linkText', addFields.linkText || '', v => setAddFields(f => ({ ...f, linkText: v })), 'Link Text (optional)')}
                       {renderFieldInput('linkUrl', addFields.linkUrl || '', v => setAddFields(f => ({ ...f, linkUrl: v })), 'Link URL (optional)')}
 
+                      {/* Social Media Links for Speakers/People */}
+                      {(addSectionId && sections.find(s => s.id === addSectionId)?.title?.toLowerCase().includes('speaker')) && (
+                        <>
+                          {renderFieldInput('extra_linkedinUrl', addFields.extra_linkedinUrl || '', v => setAddFields(f => ({ ...f, extra_linkedinUrl: v })), 'LinkedIn URL')}
+                          {renderFieldInput('extra_twitterUrl', addFields.extra_twitterUrl || '', v => setAddFields(f => ({ ...f, extra_twitterUrl: v })), 'Twitter / X URL (optional)')}
+                        </>
+                      )}
+
                       {/* Show extra fields based on existing items */}
-                      {extraKeys.map(k => {
+                      {extraKeys.filter(k => k !== 'linkedinUrl' && k !== 'twitterUrl').map(k => {
                         const isMediaKey = k.includes('video') || k.includes('Video') || k.includes('embed') || k.includes('Embed') || k.includes('audio') || k.includes('Audio');
                         return renderFieldInput(`extra_${k}`, addFields[`extra_${k}`] || '',
                           v => setAddFields(f => ({ ...f, [`extra_${k}`]: v })),
@@ -1329,6 +1337,18 @@ export default function AdminPagesManager() {
                                   ) : (
                                     Object.entries(editFields).map(([key, val]) => {
                                       const isMediaKey = key.includes('video') || key.includes('Video') || key.includes('embed') || key.includes('Embed') || key.includes('audio') || key.includes('Audio');
+                                      
+                                      // Add LinkedIn and Twitter fields for speaker sections
+                                      if (key === 'title' && item.sectionTitle?.toLowerCase().includes('speaker')) {
+                                        return (
+                                          <React.Fragment key={key}>
+                                            {renderFieldInput(key, val, v => setEditFields(f => ({ ...f, [key]: v })), undefined, isMediaKey ? (dur: string) => setEditFields(f => ({ ...f, extra_duration: dur })) : undefined)}
+                                            {!editFields.extra_linkedinUrl && renderFieldInput('extra_linkedinUrl', '', v => setEditFields(f => ({ ...f, extra_linkedinUrl: v })), 'LinkedIn URL')}
+                                            {!editFields.extra_twitterUrl && renderFieldInput('extra_twitterUrl', '', v => setEditFields(f => ({ ...f, extra_twitterUrl: v })), 'Twitter / X URL (optional)')}
+                                          </React.Fragment>
+                                        );
+                                      }
+                                      
                                       return renderFieldInput(
                                         key, val,
                                         v => setEditFields(f => ({ ...f, [key]: v })),

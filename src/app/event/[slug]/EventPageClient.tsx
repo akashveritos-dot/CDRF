@@ -212,6 +212,24 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
       return () => clearInterval(interval);
     }, [bannerCards]);
 
+    // Auto-scroll for Speakers carousel
+    useEffect(() => {
+      if (speakerCards.length <= 1) return;
+      const interval = setInterval(() => {
+        setActiveSpeakerIdx((prev) => (prev + 1) % speakerCards.length);
+      }, 4000); // Change every 4 seconds
+      return () => clearInterval(interval);
+    }, [speakerCards]);
+
+    // Auto-scroll for Glimpse carousel
+    useEffect(() => {
+      if (glimpseCards.length <= 1) return;
+      const interval = setInterval(() => {
+        setActiveGlimpseIdx((prev) => (prev + 1) % glimpseCards.length);
+      }, 3500); // Change every 3.5 seconds
+      return () => clearInterval(interval);
+    }, [glimpseCards]);
+
     // Agenda download flow — direct open, no gate
     const handleAgendaDownloadClick = (e: React.MouseEvent, url: string) => {
       e.preventDefault();
@@ -769,12 +787,16 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                           </p>
                           <div className={styles.speakerFooterRow}>
                             <div className={styles.speakerSocials}>
-                              <a href="https://linkedin.com" className={styles.socialIconLink} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
-                                <Linkedin size={15} />
-                              </a>
-                              <a href="https://twitter.com" className={styles.socialIconLink} target="_blank" rel="noopener noreferrer" aria-label="Twitter">
-                                <Twitter size={15} />
-                              </a>
+                              {(sp.extraData?.linkedinUrl || sp.linkUrl) && (
+                                <a href={sp.extraData?.linkedinUrl || sp.linkUrl} className={styles.socialIconLink} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                                  <Linkedin size={15} />
+                                </a>
+                              )}
+                              {sp.extraData?.twitterUrl && (
+                                <a href={sp.extraData.twitterUrl} className={styles.socialIconLink} target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+                                  <Twitter size={15} />
+                                </a>
+                              )}
                             </div>
                           </div>
                         </div>
