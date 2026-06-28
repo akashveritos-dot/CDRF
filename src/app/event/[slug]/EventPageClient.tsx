@@ -189,6 +189,7 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
     const partnersSection = pageData?.sections?.find((s: any) => s.title === 'Partners');
     const glimpseSection = pageData?.sections?.find((s: any) => s.title === 'Glimpse');
     const videosSection = pageData?.sections?.find((s: any) => s.title === 'Videos');
+    const aboutSection = pageData?.sections?.find((s: any) => s.title === 'About Details');
 
     const detailsSection = pageData?.sections?.find((s: any) => s.title === 'Conclave Details');
     const detailsCards = detailsSection?.cards || [];
@@ -202,6 +203,7 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
     const glimpseCards = glimpseSection?.cards || [];
     const speakerCards = speakersSection?.cards || [];
     const partnerCards = partnersSection?.cards || [];
+    const aboutCards = aboutSection?.cards || [];
 
     // Slide auto-play for top banner
     useEffect(() => {
@@ -457,11 +459,56 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
           </div>
         </ScrollReveal>
 
-        {/* Description Section */}
+        {/* About DCRC 2026 Section - Fully Editable from Conclave Details */}
         <ScrollReveal direction="up">
           <div className={styles.descriptionBlock}>
             <h2 className={styles.sectionTitle}>About DCRC 2026</h2>
-            <div className={styles.aboutContentDiv} dangerouslySetInnerHTML={{ __html: pageData.content }} />
+            <div className={styles.aboutContentDiv}>
+              {/* Introduction paragraph from section description or first card */}
+              {detailsSection?.description && <p>{detailsSection.description}</p>}
+              
+              <div className={styles.aboutDetailsTable}>
+                {/* Date */}
+                {dateCard && (
+                  <div className={styles.aboutDetailRow}>
+                    <strong>Date:</strong> {dateCard.description}
+                  </div>
+                )}
+                
+                {/* Venue */}
+                {venueCard && (
+                  <div className={styles.aboutDetailRow}>
+                    <strong>Venue:</strong> {venueCard.description}
+                  </div>
+                )}
+                
+                {/* Location */}
+                {locationCard && (
+                  <div className={styles.aboutDetailRow}>
+                    <strong>Location:</strong> {locationCard.description}
+                  </div>
+                )}
+                
+                {/* Theme - from extra card or extraData */}
+                {detailsCards.find((c: any) => c.title?.toLowerCase() === 'theme') && (
+                  <div className={styles.aboutDetailRow}>
+                    <strong>Theme:</strong> {detailsCards.find((c: any) => c.title?.toLowerCase() === 'theme')?.description}
+                  </div>
+                )}
+              </div>
+
+              {/* Key Highlights - from card with title "highlights" or "key highlights" */}
+              {detailsCards.find((c: any) => c.title?.toLowerCase().includes('highlight')) && (
+                <>
+                  <h3 style={{ marginTop: '24px', marginBottom: '16px', color: 'var(--wine-red-primary)', fontSize: '18px', fontWeight: 600 }}>
+                    Key Highlights
+                  </h3>
+                  <div dangerouslySetInnerHTML={{ 
+                    __html: detailsCards.find((c: any) => c.title?.toLowerCase().includes('highlight'))?.description || '' 
+                  }} />
+                </>
+              )}
+            </div>
           </div>
         </ScrollReveal>
 

@@ -2889,3 +2889,60 @@
     max-width: 95%;
   }
 }
+
+
+/* ── About DCRC 2026 Section ────────────────────────────────────── */
+.descriptionBlock {
+  margin: 60px 0;
+  padding: 40px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.aboutContentDiv {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text-default);
+}
+
+.aboutContentDiv p {
+  margin-bottom: 20px;
+}
+
+.aboutDetailsTable {
+  margin: 24px 0;
+  padding: 24px;
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.aboutDetailRow {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.aboutDetailRow:last-child {
+  border-bottom: none;
+}
+
+.aboutDetailRow strong {
+  color: var(--wine-red-primary);
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+@media (max-width: 768px) {
+  .descriptionBlock {
+    padding: 24px 20px;
+    margin: 40px 0;
+  }
+  
+  .aboutDetailsTable {
+    padding: 16px;
+  }
+}
