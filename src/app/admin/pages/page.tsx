@@ -870,18 +870,29 @@ export default function AdminPagesManager() {
       <div className={styles.workspace}>
         {/* ─── LEFT: Page List ─── */}
         <div className={styles.sidebar}>
-          <h3 className={styles.sidebarTitle}>Pages</h3>
+          <h3 className={styles.sidebarTitle}>Pages ({pages.length})</h3>
           <div className={styles.pageList}>
-            {pages.map(p => (
-              <button key={p.slug} type="button"
-                className={`${styles.pageItem} ${selectedSlug === p.slug ? styles.pageItemActive : ''}`}
-                onClick={() => selectPage(p.slug)}>
-                <span className={styles.pageItemTitle}>{p.title}</span>
-                <span className={styles.pageItemMeta}>
-                  {p.sections.reduce((sum, s) => sum + s.cardCount, 0)} items
-                </span>
-              </button>
-            ))}
+            {pages
+              .sort((a, b) => {
+                // Sort by total items descending, then by title
+                const aItems = a.sections.reduce((sum, s) => sum + s.cardCount, 0);
+                const bItems = b.sections.reduce((sum, s) => sum + s.cardCount, 0);
+                if (bItems !== aItems) return bItems - aItems;
+                return a.title.localeCompare(b.title);
+              })
+              .map(p => {
+                const totalItems = p.sections.reduce((sum, s) => sum + s.cardCount, 0);
+                return (
+                  <button key={p.slug} type="button"
+                    className={`${styles.pageItem} ${selectedSlug === p.slug ? styles.pageItemActive : ''}`}
+                    onClick={() => selectPage(p.slug)}>
+                    <span className={styles.pageItemTitle}>{p.title}</span>
+                    <span className={styles.pageItemMeta}>
+                      {totalItems} {totalItems === 1 ? 'item' : 'items'}
+                    </span>
+                  </button>
+                );
+              })}
           </div>
         </div>
 
