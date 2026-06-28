@@ -22,7 +22,7 @@ const SUGGESTIONS = [
 function parseAssistantDrafts(content: string) {
   let cleanContent = content;
   let draftData: {
-    type: 'email' | 'news' | 'report' | 'alert';
+    type: 'email' | 'news' | 'report' | 'alert' | 'section' | 'card';
     data: any;
   } | null = null;
 
@@ -30,6 +30,8 @@ function parseAssistantDrafts(content: string) {
   const newsRegex = /:::news_draft(\{[\s\S]*?\}):::/;
   const reportRegex = /:::report_draft(\{[\s\S]*?\}):::/;
   const alertRegex = /:::alert_draft(\{[\s\S]*?\}):::/;
+  const sectionRegex = /:::section_draft(\{[\s\S]*?\}):::/;
+  const cardRegex = /:::card_draft(\{[\s\S]*?\}):::/;
 
   let match;
   if ((match = content.match(emailRegex))) {
@@ -60,6 +62,20 @@ function parseAssistantDrafts(content: string) {
     } catch (e) {
       console.error('Failed to parse alert draft JSON:', e);
     }
+  } else if ((match = content.match(sectionRegex))) {
+    try {
+      draftData = { type: 'section', data: JSON.parse(match[1]) };
+      cleanContent = content.replace(sectionRegex, '').trim();
+    } catch (e) {
+      console.error('Failed to parse section draft JSON:', e);
+    }
+  } else if ((match = content.match(cardRegex))) {
+    try {
+      draftData = { type: 'card', data: JSON.parse(match[1]) };
+      cleanContent = content.replace(cardRegex, '').trim();
+    } catch (e) {
+      console.error('Failed to parse card draft JSON:', e);
+    }
   }
 
   return { cleanContent, draftData };
@@ -67,7 +83,7 @@ function parseAssistantDrafts(content: string) {
 
 // Editable card for Reviewing and Approving Admin actions
 interface DraftCardProps {
-  type: 'email' | 'news' | 'report' | 'alert';
+  type: 'email' | 'news' | 'report' | 'alert' | 'section' | 'card';
   initialData: any;
 }
 
@@ -121,6 +137,12 @@ function DraftCard({ type, initialData }: DraftCardProps) {
       } else if (type === 'alert') {
         endpoint = '/api/admin/alerts';
         payload = { text: formData.text };
+      } else if (type === 'section') {
+        endpoint = '/api/admin/chat-actions';
+        payload = { actionType: 'section', data: formData };
+      } else if (type === 'card') {
+        endpoint = '/api/admin/chat-actions';
+        payload = { actionType: 'card', data: formData };
       }
 
       const res = await fetch(endpoint, {
@@ -162,7 +184,17 @@ function DraftCard({ type, initialData }: DraftCardProps) {
     <div className={styles.draftCard}>
       <div className={styles.draftCardHeader}>
         <span className={styles.draftCardBadge}>
-          {type === 'email' ? '✉ Email Draft' : type === 'news' ? '📰 News Draft' : type === 'report' ? '📙 Report Draft' : '⚠️ Alert Draft'}
+          {type === 'email' 
+            ? '✉ Email Draft' 
+            : type === 'news' 
+            ? '📰 News Draft' 
+            : type === 'report' 
+            ? '📙 Report Draft' 
+            : type === 'alert' 
+            ? '⚠️ Alert Draft'
+            : type === 'section'
+            ? '🧱 Section Draft'
+            : '🎴 Card Draft'}
         </span>
         <span className={styles.draftCardActionLabel}>Super Admin Review Required</span>
       </div>
@@ -322,6 +354,146 @@ function DraftCard({ type, initialData }: DraftCardProps) {
                 required
                 rows={3}
                 className={styles.draftTextarea}
+              />
+            </label>
+          </>
+        )}
+
+        {type === 'section' && (
+          <>
+            <div className={styles.draftRow}>
+              <label className={styles.draftLabel}>
+                Page Slug
+                <input
+                  type="text"
+                  value={formData.page_slug || ''}
+                  onChange={e => setFormData({ ...formData, page_slug: e.target.value })}
+                  required
+                  className={styles.draftInput}
+                />
+              </label>
+              <label className={styles.draftLabel}>
+                Section Title
+                <input
+                  type="text"
+                  value={formData.title || ''}
+                  onChange={e => setFormData({ ...formData, title: e.target.value })}
+                  required
+                  className={styles.draftInput}
+                />
+              </label>
+            </div>
+            <label className={styles.draftLabel}>
+              Description
+              <input
+                type="text"
+                value={formData.description || ''}
+                onChange={e => setFormData({ ...formData, description: e.target.value })}
+                className={styles.draftInput}
+              />
+            </label>
+            <label className={styles.draftLabel}>
+              Content (HTML/Text)
+              <textarea
+                value={formData.content || ''}
+                onChange={e => setFormData({ ...formData, content: e.target.value })}
+                rows={3}
+                className={styles.draftTextarea}
+              />
+            </label>
+            <div className={styles.draftRow}>
+              <label className={styles.draftLabel}>
+                Button Text
+                <input
+                  type="text"
+                  value={formData.button_text || ''}
+                  onChange={e => setFormData({ ...formData, button_text: e.target.value })}
+                  className={styles.draftInput}
+                />
+              </label>
+              <label className={styles.draftLabel}>
+                Button Link URL
+                <input
+                  type="text"
+                  value={formData.button_url || ''}
+                  onChange={e => setFormData({ ...formData, button_url: e.target.value })}
+                  className={styles.draftInput}
+                />
+              </label>
+            </div>
+          </>
+        )}
+
+        {type === 'card' && (
+          <>
+            <div className={styles.draftRow}>
+              <label className={styles.draftLabel}>
+                Page Slug
+                <input
+                  type="text"
+                  value={formData.page_slug || ''}
+                  onChange={e => setFormData({ ...formData, page_slug: e.target.value })}
+                  required
+                  className={styles.draftInput}
+                />
+              </label>
+              <label className={styles.draftLabel}>
+                Target Section Title
+                <input
+                  type="text"
+                  value={formData.section_title || ''}
+                  onChange={e => setFormData({ ...formData, section_title: e.target.value })}
+                  required
+                  className={styles.draftInput}
+                />
+              </label>
+            </div>
+            <label className={styles.draftLabel}>
+              Card Title
+              <input
+                type="text"
+                value={formData.title || ''}
+                onChange={e => setFormData({ ...formData, title: e.target.value })}
+                required
+                className={styles.draftInput}
+              />
+            </label>
+            <label className={styles.draftLabel}>
+              Description / Text
+              <textarea
+                value={formData.description || ''}
+                onChange={e => setFormData({ ...formData, description: e.target.value })}
+                rows={3}
+                className={styles.draftTextarea}
+              />
+            </label>
+            <div className={styles.draftRow}>
+              <label className={styles.draftLabel}>
+                Link Text
+                <input
+                  type="text"
+                  value={formData.link_text || ''}
+                  onChange={e => setFormData({ ...formData, link_text: e.target.value })}
+                  className={styles.draftInput}
+                />
+              </label>
+              <label className={styles.draftLabel}>
+                Link URL
+                <input
+                  type="text"
+                  value={formData.link_url || ''}
+                  onChange={e => setFormData({ ...formData, link_url: e.target.value })}
+                  className={styles.draftInput}
+                />
+              </label>
+            </div>
+            <label className={styles.draftLabel}>
+              Image URL
+              <input
+                type="text"
+                value={formData.image_url || ''}
+                onChange={e => setFormData({ ...formData, image_url: e.target.value })}
+                className={styles.draftInput}
               />
             </label>
           </>
