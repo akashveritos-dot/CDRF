@@ -263,17 +263,17 @@ export default function HomeClient({
 
   const dashboardStatsList = telemetryData.heroStripStats && telemetryData.heroStripStats.length > 0
     ? telemetryData.heroStripStats.map((s: any) => ({
-        id: `stat-${s.id}`,
-        count: s.count,
-        suffix: s.suffix,
-        label: s.label
-      }))
+      id: `stat-${s.id}`,
+      count: s.count,
+      suffix: s.suffix,
+      label: s.label
+    }))
     : [
-        { id: 'incidents', count: homeStats.activeIncidents, suffix: '+', label: 'Active Incidents' },
-        { id: 'countries', count: homeStats.countriesAffected, suffix: '', label: 'Countries Affected' },
-        { id: 'reports', count: homeStats.reportsPublished, suffix: '+', label: 'Reports Published' },
-        { id: 'alerts', count: homeStats.alertsIssued, suffix: '+', label: 'Alerts Issued' }
-      ];
+      { id: 'incidents', count: homeStats.activeIncidents, suffix: '+', label: 'Active Incidents' },
+      { id: 'countries', count: homeStats.countriesAffected, suffix: '', label: 'Countries Affected' },
+      { id: 'reports', count: homeStats.reportsPublished, suffix: '+', label: 'Reports Published' },
+      { id: 'alerts', count: homeStats.alertsIssued, suffix: '+', label: 'Alerts Issued' }
+    ];
 
   return (
     <div>
@@ -456,47 +456,6 @@ export default function HomeClient({
           </ScrollReveal>
         </div>
 
-        {isSuperAdmin && telemetryData.apiConfigs && telemetryData.apiConfigs.length > 0 && (
-          <ScrollReveal direction="up" delay={0.4}>
-            <div className={styles.apiPanelCard}>
-              <div className={styles.apiPanelHeader}>
-                <div className={styles.apiPanelTitleBlock}>
-                  <ShieldAlert size={18} className={styles.apiPanelIcon} />
-                  <h3>API Command Center (Super Admin View)</h3>
-                </div>
-                <span className={styles.apiPanelBadge}>Secure Telemetry Configs</span>
-              </div>
-              <p className={styles.apiPanelSubtitle}>
-                Active external and internal endpoints utilized to drive the composite climate hazard dashboard and weather models.
-              </p>
-              
-              <div className={styles.apiConfigsGrid}>
-                {telemetryData.apiConfigs.map((api: any) => (
-                  <div key={api.id} className={styles.apiConfigItem}>
-                    <div className={styles.apiConfigHeader}>
-                      <span className={styles.apiConfigName}>{api.api_name}</span>
-                      <span className={`${styles.apiConfigMethod} ${api.method === 'POST' ? styles.methodPost : styles.methodGet}`}>
-                        {api.method}
-                      </span>
-                    </div>
-                    <div className={styles.apiConfigUrl}>
-                      <code>{api.api_url}</code>
-                    </div>
-                    <div className={styles.apiConfigDesc}>
-                      {api.description}
-                    </div>
-                    <div className={styles.apiConfigFooter}>
-                      <span><strong>Source:</strong> {api.data_source}</span>
-                      <span className={`${styles.apiConfigStatus} ${api.status === 'Active' ? styles.statusActive : styles.statusInactive}`}>
-                        ● {api.status}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </ScrollReveal>
-        )}
       </section>
 
       {/* LATEST NEWS FEED SECTION */}
