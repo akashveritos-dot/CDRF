@@ -199,14 +199,16 @@ export default function AdminMemberships() {
   const handleDelete = async (id: number) => {
     // eslint-disable-next-line no-alert
     if (!confirm('Are you sure you want to permanently delete this registration record?')) return;
+    setIsSaving(true);
     try {
       const res = await fetch(`/api/admin/memberships/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to delete');
-      fetchRegistrations();
-      fetchStats();
+      await Promise.all([fetchRegistrations(), fetchStats()]);
     } catch (err) {
       // eslint-disable-next-line no-alert
       alert('Error deleting application record');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -493,10 +495,10 @@ export default function AdminMemberships() {
                     </td>
                     <td>
                       <div className={styles.actionCell}>
-                        <button onClick={() => handleEditClick(item)} className={styles.editBtn} title="Edit Registration">
+                        <button onClick={() => handleEditClick(item)} disabled={isSaving} className={styles.editBtn} title="Edit Registration">
                           <Edit size={14} />
                         </button>
-                        <button onClick={() => handleDelete(item.id)} className={styles.deleteBtn} title="Delete Record">
+                        <button onClick={() => handleDelete(item.id)} disabled={isSaving} className={styles.deleteBtn} title="Delete Record">
                           <Trash2 size={14} />
                         </button>
                       </div>

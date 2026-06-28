@@ -239,7 +239,7 @@ export default function AdminPricingPage() {
   // Clear / Delete Discount
   const handleDeleteDiscount = async (tierName: string) => {
     if (!confirm(`Are you sure you want to permanently clear the discount campaign for the ${tierName} tier?`)) return;
-
+    setIsSaving(true);
     try {
       const res = await fetch(`/api/admin/pricing?tierName=${encodeURIComponent(tierName)}`, {
         method: 'DELETE'
@@ -250,9 +250,11 @@ export default function AdminPricingPage() {
         throw new Error(data.error || 'Failed to delete');
       }
 
-      fetchData();
+      await fetchData();
     } catch (err: any) {
       alert(err.message || 'Failed to clear campaign.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -425,10 +427,10 @@ export default function AdminPricingPage() {
                       </div>
 
                       <div className={styles.discountActions}>
-                        <button onClick={() => handleEditDiscount(d)} className={styles.editMiniBtn}>
+                        <button onClick={() => handleEditDiscount(d)} disabled={isSaving} className={styles.editMiniBtn}>
                           <Edit size={12} /> Edit Campaign
                         </button>
-                        <button onClick={() => handleDeleteDiscount(d.tierName)} className={styles.deleteMiniBtn}>
+                        <button onClick={() => handleDeleteDiscount(d.tierName)} disabled={isSaving} className={styles.deleteMiniBtn}>
                           <Trash2 size={12} /> Clear Campaign
                         </button>
                       </div>

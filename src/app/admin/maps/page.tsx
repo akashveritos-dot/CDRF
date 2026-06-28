@@ -323,13 +323,13 @@ export default function AdminMapsPage() {
                     <td>{hazard.affected_count || 'N/A'}</td>
                     <td>
                       <div className={styles.statActions}>
-                        <button onClick={() => handleEditHazard(hazard)} className={styles.editBtn} aria-label={`Edit ${hazard.name}`}>
+                        <button onClick={() => handleEditHazard(hazard)} disabled={submitting} className={styles.editBtn} aria-label={`Edit ${hazard.name}`}>
                           <Edit3 size={14} />
                         </button>
                         <button
                           onClick={() => handleDeleteHazard(hazard.id, hazard.name)}
                           className={`${styles.deleteBtn} ${(role !== 'SUPERADMIN' && role !== 'ADMIN') ? styles.disabledBtn : ''}`}
-                          disabled={role !== 'SUPERADMIN' && role !== 'ADMIN'}
+                          disabled={submitting || role !== 'SUPERADMIN' && role !== 'ADMIN'}
                           title={role !== 'SUPERADMIN' && role !== 'ADMIN' ? 'Only administrators can delete states' : `Delete ${hazard.name}`}
                           aria-label={`Delete ${hazard.name}`}
                         >

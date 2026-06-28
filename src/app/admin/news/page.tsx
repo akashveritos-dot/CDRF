@@ -274,17 +274,19 @@ export default function AdminNews() {
   const handleDelete = async (id: number) => {
     // eslint-disable-next-line no-alert
     if (!confirm('Are you sure you want to permanently delete this news story?')) return;
-
+    setIsSaving(true);
     try {
       const res = await fetch(`/api/news/${id}`, {
         method: 'DELETE'
       });
 
       if (!res.ok) throw new Error('Failed to delete');
-      fetchStories();
+      await fetchStories();
     } catch (err) {
       // eslint-disable-next-line no-alert
       alert('Error deleting news story');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -429,6 +431,7 @@ export default function AdminNews() {
                     <div className={styles.actionCell}>
                       <button 
                         onClick={() => handleEdit(story)} 
+                        disabled={isSaving}
                         className={styles.editBtn}
                         title="Edit Article"
                       >
@@ -437,7 +440,7 @@ export default function AdminNews() {
                       <button 
                         onClick={() => handleDelete(story.id)} 
                         className={`${styles.deleteBtn} ${(role !== 'SUPERADMIN' && role !== 'ADMIN') ? styles.disabledBtn : ''}`}
-                        disabled={role !== 'SUPERADMIN' && role !== 'ADMIN'}
+                        disabled={isSaving || (role !== 'SUPERADMIN' && role !== 'ADMIN')}
                         title={role !== 'SUPERADMIN' && role !== 'ADMIN' ? 'Only administrators can delete articles' : 'Delete Article'}
                       >
                         <Trash2 size={14} />

@@ -231,17 +231,19 @@ export default function AdminReports() {
   const handleDelete = async (id: number) => {
     // eslint-disable-next-line no-alert
     if (!confirm('Are you sure you want to permanently delete this report brief?')) return;
-
+    setIsSaving(true);
     try {
       const res = await fetch(`/api/reports/${id}`, {
         method: 'DELETE'
       });
 
       if (!res.ok) throw new Error('Failed to delete');
-      fetchReports();
+      await fetchReports();
     } catch (err) {
       // eslint-disable-next-line no-alert
       alert('Error deleting report');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -390,6 +392,7 @@ export default function AdminReports() {
                     <div className={styles.actionCell}>
                       <button
                         onClick={() => handleEdit(report)}
+                        disabled={isSaving}
                         className={styles.editBtn}
                         title="Edit Report Details"
                       >
@@ -398,7 +401,7 @@ export default function AdminReports() {
                       <button
                         onClick={() => handleDelete(report.id)}
                         className={`${styles.deleteBtn} ${(role !== 'SUPERADMIN' && role !== 'ADMIN') ? styles.disabledBtn : ''}`}
-                        disabled={role !== 'SUPERADMIN' && role !== 'ADMIN'}
+                        disabled={isSaving || (role !== 'SUPERADMIN' && role !== 'ADMIN')}
                         title={role !== 'SUPERADMIN' && role !== 'ADMIN' ? 'Only administrators can delete reports' : 'Delete Report'}
                       >
                         <Trash2 size={14} />

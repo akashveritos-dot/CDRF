@@ -68,7 +68,7 @@ export default function AdminAlerts() {
   const handleDelete = async (id: number) => {
     // eslint-disable-next-line no-alert
     if (!confirm('Are you sure you want to permanently delete this ticker alert entry?')) return;
-
+    setIsSaving(true);
     try {
       const res = await fetch(`/api/admin/alerts/${id}`, {
         method: 'DELETE'
@@ -78,10 +78,12 @@ export default function AdminAlerts() {
         const errData = await res.json();
         throw new Error(errData.error || 'Failed to delete');
       }
-      fetchAlerts();
+      await fetchAlerts();
     } catch (err: any) {
       // eslint-disable-next-line no-alert
       alert(getFriendlyError(err, 'Error deleting ticker alert. Please try again.'));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -173,6 +175,7 @@ export default function AdminAlerts() {
                     <div className={styles.actionCell}>
                       <button 
                         onClick={() => handleEdit(item)} 
+                        disabled={isSaving}
                         className={styles.editBtn}
                         title="Edit Alert"
                       >
@@ -180,6 +183,7 @@ export default function AdminAlerts() {
                       </button>
                       <button 
                         onClick={() => handleDelete(item.id)} 
+                        disabled={isSaving}
                         className={styles.deleteBtn}
                         title="Delete Alert"
                       >

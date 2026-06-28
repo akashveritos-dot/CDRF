@@ -439,6 +439,34 @@ CREATE INDEX idx_memberships_status ON memberships (status);
 CREATE INDEX idx_event_reg_email ON event_registrations (email);
 CREATE INDEX idx_event_reg_status ON event_registrations (status);
 
+-- Composite index for CMS Pages ordering
+CREATE INDEX idx_cms_pages_display_order ON cms_pages (display_order, category, title);
+
+-- Composite index for Page Sections lookup and ordering
+CREATE INDEX idx_cms_page_sections_slug_order ON cms_page_sections (page_slug, display_order ASC);
+
+-- Composite index for Page Cards lookup and ordering
+CREATE INDEX idx_cms_page_cards_section_order ON cms_page_cards (section_id, display_order ASC);
+
+-- Composite indexes for news query filtering and ordering
+CREATE INDEX idx_news_filter_order ON news (is_manual, display_order, published_date DESC, id DESC);
+CREATE INDEX idx_news_category_filter_order ON news (category, is_manual, display_order, published_date DESC, id DESC);
+
+-- Composite indexes for reports query filtering and ordering
+CREATE INDEX idx_reports_filter_order ON reports (display_order, year DESC, id DESC);
+CREATE INDEX idx_reports_category_filter_order ON reports (category, display_order, year DESC, id DESC);
+
+-- Index for contact message creation order
+CREATE INDEX idx_contact_messages_created ON contact_messages (created_at DESC);
+
+-- Index for subscriptions creation order
+CREATE INDEX idx_subscriptions_created ON subscriptions (created_at DESC);
+
+-- Composite indexes for councils active status and display order
+CREATE INDEX idx_councils_display_order ON councils (display_order ASC);
+CREATE INDEX idx_councils_active_order ON councils (is_active, display_order ASC);
+
+
 
 
 

@@ -181,7 +181,7 @@ export default function AdminScrapeQueue() {
   const handleReject = async (id: number) => {
     // eslint-disable-next-line no-alert
     if (!confirm('Are you sure you want to reject this item? It will be removed from the review queue.')) return;
-
+    setIsProcessing(true);
     try {
       const res = await fetch('/api/admin/scrape/publish', {
         method: 'POST',
@@ -193,17 +193,19 @@ export default function AdminScrapeQueue() {
       });
 
       if (!res.ok) throw new Error('Failed to reject');
-      fetchQueue();
+      await fetchQueue();
     } catch (err) {
       // eslint-disable-next-line no-alert
       alert('Error rejecting queue item.');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
   const handleUnpublish = async (id: number) => {
     // eslint-disable-next-line no-alert
     if (!confirm('Are you sure you want to unpublish this item? It will be removed from the live website and restored to the review queue.')) return;
-
+    setIsProcessing(true);
     try {
       const res = await fetch('/api/admin/scrape/publish', {
         method: 'POST',
@@ -215,14 +217,17 @@ export default function AdminScrapeQueue() {
       });
 
       if (!res.ok) throw new Error('Failed to unpublish');
-      fetchQueue();
+      await fetchQueue();
     } catch (err) {
       // eslint-disable-next-line no-alert
       alert('Error unpublishing item.');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
   const handleRestore = async (id: number) => {
+    setIsProcessing(true);
     try {
       const res = await fetch('/api/admin/scrape/publish', {
         method: 'POST',
@@ -234,17 +239,19 @@ export default function AdminScrapeQueue() {
       });
 
       if (!res.ok) throw new Error('Failed to restore');
-      fetchQueue();
+      await fetchQueue();
     } catch (err) {
       // eslint-disable-next-line no-alert
       alert('Error restoring item.');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
   const handleDeletePermanently = async (id: number) => {
     // eslint-disable-next-line no-alert
     if (!confirm('Are you sure you want to permanently delete this item from the database? This action is irreversible.')) return;
-
+    setIsProcessing(true);
     try {
       const res = await fetch('/api/admin/scrape/publish', {
         method: 'POST',
@@ -256,10 +263,12 @@ export default function AdminScrapeQueue() {
       });
 
       if (!res.ok) throw new Error('Failed to delete');
-      fetchQueue();
+      await fetchQueue();
     } catch (err) {
       // eslint-disable-next-line no-alert
       alert('Error deleting item.');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -365,6 +374,7 @@ export default function AdminScrapeQueue() {
                     <>
                       <button 
                         onClick={() => handleReject(item.id)} 
+                        disabled={isProcessing}
                         className={styles.rejectBtn}
                         title="Reject and discard"
                       >
@@ -372,6 +382,7 @@ export default function AdminScrapeQueue() {
                       </button>
                       <button 
                         onClick={() => handleOpenPublish(item)} 
+                        disabled={isProcessing}
                         className={styles.approveBtn}
                         title="Publish to Live feeds"
                       >
@@ -383,6 +394,7 @@ export default function AdminScrapeQueue() {
                   {activeTab === 'Published' && (
                     <button 
                       onClick={() => handleUnpublish(item.id)} 
+                      disabled={isProcessing}
                       className={styles.rejectBtn}
                       title="Unpublish item and restore to queue"
                     >
@@ -394,6 +406,7 @@ export default function AdminScrapeQueue() {
                     <>
                       <button 
                         onClick={() => handleDeletePermanently(item.id)} 
+                        disabled={isProcessing}
                         className={styles.rejectBtn}
                         title="Delete permanently from database"
                       >
@@ -401,6 +414,7 @@ export default function AdminScrapeQueue() {
                       </button>
                       <button 
                         onClick={() => handleRestore(item.id)} 
+                        disabled={isProcessing}
                         className={styles.approveBtn}
                         title="Restore to pending review queue"
                       >

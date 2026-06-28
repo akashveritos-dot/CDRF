@@ -390,13 +390,13 @@ export default function AdminHeroPage() {
                   <span className={styles.statOrder}>Order: {stat.display_order}</span>
                 </div>
                 <div className={styles.statActions}>
-                  <button onClick={() => handleEditStat(stat)} className={styles.editBtn} aria-label={`Edit ${stat.label}`}>
+                  <button onClick={() => handleEditStat(stat)} disabled={submitting} className={styles.editBtn} aria-label={`Edit ${stat.label}`}>
                     <Edit3 size={14} />
                   </button>
                   <button
                     onClick={() => handleDeleteStat(stat.id!, stat.label)}
                     className={`${styles.deleteBtn} ${(role !== 'SUPERADMIN' && role !== 'ADMIN') ? styles.disabledBtn : ''}`}
-                    disabled={role !== 'SUPERADMIN' && role !== 'ADMIN'}
+                    disabled={submitting || role !== 'SUPERADMIN' && role !== 'ADMIN'}
                     title={role !== 'SUPERADMIN' && role !== 'ADMIN' ? 'Only administrators can delete stats' : `Delete ${stat.label}`}
                     aria-label={`Delete ${stat.label}`}
                   >

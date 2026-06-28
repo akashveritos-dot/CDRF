@@ -99,6 +99,7 @@
 
 .textarea {
   resize: vertical;
+  min-height: 120px;
 }
 
 .hint {
@@ -303,7 +304,7 @@
   border-radius: var(--radius-md);
   padding: 28px;
   width: 100%;
-  max-width: 440px;
+  max-width: 600px;
   box-shadow: var(--shadow-lg);
   animation: slideUp 0.2s ease-out;
 }

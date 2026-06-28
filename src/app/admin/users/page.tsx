@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Users, UserPlus, Edit2, Trash2, Lock, Check, X, Shield } from 'lucide-react';
+import { Users, UserPlus, Edit2, Trash2, Lock, Check, X, Shield, Loader2 } from 'lucide-react';
 import styles from './page.module.css';
 
 function getFriendlyError(err: any, fallback: string): string {
@@ -30,6 +30,7 @@ export default function UsersManagementPage() {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [currentUserRole, setCurrentUserRole] = useState<string>('');
   const [error, setError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -125,12 +126,14 @@ export default function UsersManagementPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsSaving(true);
 
     // Validate password for new users
     if (!editingUser && formData.password) {
       const validation = validatePassword(formData.password);
       if (!validation.valid) {
         setError(validation.message);
+        setIsSaving(false);
         return;
       }
     }
@@ -158,6 +161,8 @@ export default function UsersManagementPage() {
       fetchUsers();
     } catch (err: any) {
       setError(getFriendlyError(err, 'Failed to save user. Please try again.'));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -356,11 +361,11 @@ export default function UsersManagementPage() {
 
       {/* Create/Edit User Modal */}
       {showModal && (
-        <div className={styles.modalOverlay} onClick={() => setShowModal(false)}>
+        <div className={styles.modalOverlay} onClick={() => !isSaving && setShowModal(false)}>
           <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <h2>{editingUser ? 'Edit User' : 'Create New User'}</h2>
-              <button onClick={() => setShowModal(false)}>×</button>
+              <button onClick={() => !isSaving && setShowModal(false)} disabled={isSaving}>×</button>
             </div>
             <form onSubmit={handleSubmit}>
               <div className={styles.formGroup}>
@@ -368,6 +373,7 @@ export default function UsersManagementPage() {
                 <input
                   type="text"
                   required
+                  disabled={isSaving}
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
@@ -377,6 +383,7 @@ export default function UsersManagementPage() {
                 <input
                   type="email"
                   required
+                  disabled={isSaving}
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 />
@@ -387,6 +394,7 @@ export default function UsersManagementPage() {
                   <input
                     type="password"
                     required
+                    disabled={isSaving}
                     minLength={8}
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -401,6 +409,7 @@ export default function UsersManagementPage() {
                 <label>Role</label>
                 <select
                   value={formData.role}
+                  disabled={isSaving}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
                 >
                   <option value="SUPERADMIN">SUPERADMIN</option>
@@ -414,17 +423,25 @@ export default function UsersManagementPage() {
                   <input
                     type="checkbox"
                     checked={formData.is_active}
+                    disabled={isSaving}
                     onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
                   />
                   <span>Active User</span>
                 </label>
               </div>
               <div className={styles.modalActions}>
-                <button type="button" onClick={() => setShowModal(false)} className={styles.cancelBtn}>
+                <button type="button" onClick={() => setShowModal(false)} disabled={isSaving} className={styles.cancelBtn}>
                   Cancel
                 </button>
-                <button type="submit" className={styles.submitBtn}>
-                  {editingUser ? 'Update User' : 'Create User'}
+                <button type="submit" disabled={isSaving} className={styles.submitBtn}>
+                  {isSaving ? (
+                    <>
+                      <Loader2 size={14} className={styles.spinner} />
+                      {editingUser ? 'Updating...' : 'Creating...'}
+                    </>
+                  ) : (
+                    editingUser ? 'Update User' : 'Create User'
+                  )}
                 </button>
               </div>
             </form>
@@ -434,11 +451,11 @@ export default function UsersManagementPage() {
 
       {/* Password Change Modal */}
       {showPasswordModal && (
-        <div className={styles.modalOverlay} onClick={() => setShowPasswordModal(false)}>
+        <div className={styles.modalOverlay} onClick={() => !isSaving && setShowPasswordModal(false)}>
           <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <h2>Change Password</h2>
-              <button onClick={() => setShowPasswordModal(false)}>×</button>
+              <button onClick={() => !isSaving && setShowPasswordModal(false)} disabled={isSaving}>×</button>
             </div>
             <form onSubmit={handlePasswordChange}>
               <div className={styles.formGroup}>
@@ -446,6 +463,7 @@ export default function UsersManagementPage() {
                 <input
                   type="password"
                   required
+                  disabled={isSaving}
                   minLength={8}
                   value={passwordData.newPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
@@ -460,6 +478,7 @@ export default function UsersManagementPage() {
                 <input
                   type="password"
                   required
+                  disabled={isSaving}
                   minLength={8}
                   value={passwordData.confirmPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
@@ -467,11 +486,18 @@ export default function UsersManagementPage() {
                 />
               </div>
               <div className={styles.modalActions}>
-                <button type="button" onClick={() => setShowPasswordModal(false)} className={styles.cancelBtn}>
+                <button type="button" onClick={() => setShowPasswordModal(false)} disabled={isSaving} className={styles.cancelBtn}>
                   Cancel
                 </button>
-                <button type="submit" className={styles.submitBtn}>
-                  Update Password
+                <button type="submit" disabled={isSaving} className={styles.submitBtn}>
+                  {isSaving ? (
+                    <>
+                      <Loader2 size={14} className={styles.spinner} />
+                      Updating...
+                    </>
+                  ) : (
+                    'Update Password'
+                  )}
                 </button>
               </div>
             </form>

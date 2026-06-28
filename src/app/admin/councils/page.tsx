@@ -181,7 +181,7 @@ export default function AdminCouncils() {
   const handleDelete = async (id: string) => {
     // eslint-disable-next-line no-alert
     if (!confirm('Are you sure you want to permanently delete this council member?')) return;
-
+    setIsSaving(true);
     try {
       const res = await fetch(`/api/admin/councils/${id}`, {
         method: 'DELETE'
@@ -191,10 +191,12 @@ export default function AdminCouncils() {
         const errData = await res.json();
         throw new Error(errData.error || 'Failed to delete');
       }
-      fetchMembers();
+      await fetchMembers();
     } catch (err: any) {
       // eslint-disable-next-line no-alert
       alert(getFriendlyError(err, 'Error deleting council member. Please try again.'));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -372,6 +374,7 @@ export default function AdminCouncils() {
                     <div className={styles.actionCell}>
                       <button 
                         onClick={() => handleEdit(member)} 
+                        disabled={isSaving}
                         className={styles.editBtn}
                         title="Edit Member"
                       >
@@ -379,6 +382,7 @@ export default function AdminCouncils() {
                       </button>
                       <button 
                         onClick={() => handleDelete(member.id)} 
+                        disabled={isSaving}
                         className={styles.deleteBtn}
                         title="Delete Member"
                       >
