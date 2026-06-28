@@ -16,5 +16,12 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /home/user/dcrs
+            
+            # Pull latest code first (includes deploy.sh)
+            git pull origin main
+            
+            # Make deploy script executable
             chmod +x deploy.sh
+            
+            # Run deployment
             ./deploy.sh
