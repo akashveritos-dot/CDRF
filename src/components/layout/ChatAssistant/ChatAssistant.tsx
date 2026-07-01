@@ -987,9 +987,7 @@ export default function ChatAssistant() {
       {!isOpen && showTooltip && (
         <div className={styles.greetingTooltip} onClick={() => setIsOpen(true)}>
           <div className={styles.tooltipContent}>
-            <div className={styles.aiIconWrapper}>
-              <Sparkles size={11} className={styles.aiIcon} />
-            </div>
+            <Sparkles size={14} className={styles.aiIcon} />
             <span className={styles.tooltipText}>Need help? Ask about memberships or conclave passes!</span>
           </div>
           <button

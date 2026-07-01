@@ -390,13 +390,13 @@
   right: 62px;
   bottom: 8px; /* Perfectly aligned to the side of the FAB */
   width: max-content;
-  max-width: 330px;
+  max-width: 380px;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(153, 27, 27, 0.15);
   border-radius: 30px; /* Sleek pill shape */
-  padding: 6px 12px 6px 8px;
+  padding: 6px 14px 6px 12px;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 16px -6px rgba(0, 0, 0, 0.04);
   display: flex;
   align-items: center;
@@ -445,7 +445,9 @@
 }
 
 .aiIcon {
+  color: var(--wine-red-primary);
   animation: pulseIcon 2.2s infinite ease-in-out;
+  flex-shrink: 0;
 }
 
 @keyframes pulseIcon {
@@ -454,9 +456,9 @@
 }
 
 .tooltipText {
-  font-size: 11.5px;
-  color: var(--navy-primary);
-  font-weight: 700;
+  font-size: 10.5px;
+  color: var(--text-default);
+  font-weight: 600;
   line-height: 1.25;
   white-space: nowrap; /* Single line view on desktop */
   font-family: var(--font-body), system-ui, sans-serif;
