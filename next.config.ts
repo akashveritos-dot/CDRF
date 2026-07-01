@@ -3,12 +3,19 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* Standalone output for Hostinger Node.js deployment */
   output: 'standalone',
-  
+
+  allowedDevOrigins: [
+    'concerned-mangle-proud.ngrok-free.dev',
+    '*.ngrok-free.dev',
+    '*.ngrok-free.app',
+    '*.loca.lt'
+  ],
+
   /* Disable resource-heavy type-checking during production build */
   typescript: {
     ignoreBuildErrors: true,
   },
-  
+
   /* Restrict resource usage by limiting threads and concurrency */
   experimental: {
     cpus: 1,
@@ -113,19 +120,29 @@ const nextConfig: NextConfig = {
       }
     ];
   },
-  
+
   /* Image optimization for external sources */
   images: {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'images.unsplash.com',
+        hostname: '**',
       },
       {
-        protocol: 'https',
-        hostname: 'api.open-meteo.com',
+        protocol: 'http',
+        hostname: '**',
       }
     ],
+  },
+
+  /* Server-side rewrite rule for dynamic uploaded file serving */
+  async rewrites() {
+    return [
+      {
+        source: '/uploads/:path*',
+        destination: '/api/files/uploads/:path*',
+      },
+    ];
   }
 };
 

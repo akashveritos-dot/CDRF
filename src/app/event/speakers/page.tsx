@@ -35,7 +35,7 @@ export default async function SpeakersPage() {
 
       {/* Back button */}
       <div className={styles.backContainer}>
-        <Link href="/event" className={styles.backBtn}>
+        <Link href="/event/dcrc-26" className={styles.backBtn}>
           <ArrowLeft size={16} />
           <span>Back to Conclave</span>
         </Link>
@@ -44,7 +44,7 @@ export default async function SpeakersPage() {
       <ScrollReveal direction="down">
         <PageHero
           theme="events"
-          eyebrow="Dcrc ’26 Conclave Panelists"
+          eyebrow="DCRC ’26 Conclave Panelists"
           line1="DISTINGUISHED"
           line2="SPEAKERS"
           subtitle="Meet the policy advisors, scientific researchers, corporate ESG leads, and disaster management executives steering the resilience dialogues."

@@ -35,12 +35,14 @@ export async function POST(req: NextRequest) {
 
     const cleanEmail = email.toLowerCase().trim();
 
-    // Fetch the plan duration so we can calculate expires_at
+    // Fetch the plan details so we can calculate expires_at and fill the welcome template dynamically
     const planRows = await query<any[]>(
-      'SELECT duration_months FROM membership_plans WHERE name = ? LIMIT 1',
+      'SELECT price, price_sub_text as priceSubText, duration_months FROM membership_plans WHERE name = ? LIMIT 1',
       [tier]
     );
     const durationMonths: number = planRows[0]?.duration_months ?? 12;
+    const planPrice = planRows[0]?.price ?? 0;
+    const planSubText = planRows[0]?.priceSubText ?? '';
 
     // Compute membership validity period
     const startsAt = new Date();
@@ -110,12 +112,14 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const extraData = JSON.stringify(body);
+
     // Insert new active membership row
     const result = await query<any>(
       `INSERT INTO memberships 
        (name, email, organization, title, tier, message, status, pay_status, payment_details, 
-        membership_status, starts_at, expires_at, is_current)
-       VALUES (?, ?, ?, ?, ?, ?, 'Approved', 'Paid', ?, 'Active', ?, ?, 1)`,
+        membership_status, starts_at, expires_at, is_current, extra_data)
+       VALUES (?, ?, ?, ?, ?, ?, 'Approved', 'Paid', ?, 'Active', ?, ?, 1, ?)`,
       [
         name,
         cleanEmail,
@@ -126,6 +130,7 @@ export async function POST(req: NextRequest) {
         paymentDetails,
         formatDatetime(startsAt),
         expiresAt ? formatDatetime(expiresAt) : null,
+        extraData
       ]
     );
 
@@ -157,6 +162,8 @@ export async function POST(req: NextRequest) {
           newTier: tier,
           expiresAt: expiresAt ? expiresAt.toISOString() : '',
           paymentId,
+          price: planPrice,
+          priceSubText: planSubText
         })
       : welcomeEmail({
           name,
@@ -164,6 +171,10 @@ export async function POST(req: NextRequest) {
           startsAt: startsAt.toISOString(),
           expiresAt: expiresAt ? expiresAt.toISOString() : '',
           paymentId,
+          price: planPrice,
+          priceSubText: planSubText,
+          organization,
+          title
         });
 
     sendEmail({ to: cleanEmail, subject: emailSubject, html: emailHtml }).catch((err) => {

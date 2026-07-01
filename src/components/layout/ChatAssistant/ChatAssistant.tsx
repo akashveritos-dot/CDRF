@@ -13,7 +13,7 @@ interface Message {
 
 const SUGGESTIONS = [
   { label: 'Join DCRF', query: 'How do I apply to join the DCRF federation?' },
-  { label: 'Dcrc ’26 Conclave', query: 'Tell me about the Dcrc 2026 Conclave.' },
+  { label: 'DCRC ’26 Conclave', query: 'Tell me about the DCRC 2026 Conclave.' },
   { label: 'Latest News', query: 'What is the latest disaster news from the website?' },
   { label: 'Subscribe', query: 'How do I subscribe to the newsletter?' }
 ];
@@ -846,7 +846,7 @@ export default function ChatAssistant() {
     if (path.startsWith('/about/mission-vision')) return 'Mission & Vision';
     if (path.startsWith('/about')) return 'About DCRF';
     if (path.startsWith('/event/monthly-webinars')) return 'Monthly Webinars';
-    if (path.startsWith('/event/dcrc-26')) return 'Dcrc Conclave 2026';
+    if (path.startsWith('/event/dcrc-26')) return 'DCRC Conclave 2026';
     if (path.startsWith('/event')) return 'Events';
     if (path.startsWith('/insights/map')) return 'Hazard Map';
     if (path.startsWith('/insights/event-videos')) return 'Event Videos';

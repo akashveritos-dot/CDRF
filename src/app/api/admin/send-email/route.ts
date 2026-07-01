@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
 import { logAction } from '@/lib/audit';
+import { sendEmail } from '@/lib/email';
 
 export async function POST(req: NextRequest) {
   try {
@@ -26,26 +27,43 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Print simulated email transmission details to server stdout
-    console.log('------------------------------------------------------------');
-    console.log(`[SIMULATED EMAIL SENT BY ${session.email}]:`);
-    console.log(`To: ${to}`);
-    console.log(`Subject: ${subject}`);
-    console.log(`Body: \n${body}`);
-    console.log('------------------------------------------------------------');
+    const recipients = Array.isArray(to) ? to : [to];
+
+    if (recipients.length === 0) {
+      return NextResponse.json({ error: 'No recipients provided' }, { status: 400 });
+    }
+
+    // Trigger sending asynchronously in the background so we do not block Next.js response cycle
+    (async () => {
+      console.log(`[BACKGROUND SENDING STARTED] Sending ${recipients.length} emails. Subject: "${subject}"`);
+      for (const email of recipients) {
+        try {
+          const target = email.trim();
+          if (!target) continue;
+          await sendEmail({
+            to: target,
+            subject,
+            html: body
+          });
+        } catch (err: any) {
+          console.error(`Failed to send background email to ${email}:`, err.message || err);
+        }
+      }
+      console.log(`[BACKGROUND SENDING FINISHED] Completed dispatch to ${recipients.length} recipients.`);
+    })();
 
     // Audit the email sending action
     await logAction(
       req,
       session,
       'OTHER',
-      'AI Chatbot',
-      `Sent email via Chatbot assistant to "${to}" | Subject: "${subject}"`
+      'Email Sender',
+      `Dispatched bulk emails to ${recipients.length} recipients | Subject: "${subject}"`
     );
 
     return NextResponse.json({
       success: true,
-      message: `Email to ${to} has been compiled and sent successfully.`
+      message: `Email dispatch initiated for ${recipients.length} recipients in the background.`
     });
   } catch (error: any) {
     console.error('Send email API error:', error);

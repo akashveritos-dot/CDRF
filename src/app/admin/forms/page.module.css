@@ -1,0 +1,355 @@
+.container {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+.header {
+  margin-bottom: 28px;
+}
+
+.title {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-default);
+  margin-bottom: 6px;
+  letter-spacing: -0.5px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.tabsRow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1px;
+}
+
+.tabBtn {
+  background: transparent;
+  border: none;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s ease;
+}
+
+.tabBtn:hover {
+  color: var(--text-default);
+}
+
+.tabBtnActive {
+  color: var(--wine-red-primary);
+}
+
+.tabBtnActive::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--wine-red-primary);
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+}
+
+@media (max-width: 992px) {
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mainPanel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+
+.sidePanel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  height: fit-content;
+  position: sticky;
+  top: 24px;
+}
+
+.panelTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-default);
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.table td {
+  padding: 12px;
+  font-size: 13px;
+  color: var(--text-default);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.draggableRow {
+  cursor: grab;
+  transition: background-color 0.15s ease;
+}
+
+.draggableRow:hover {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.dragHandle {
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.badgeRequired {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.15);
+}
+
+.badgeOptional {
+  background-color: rgba(148, 163, 184, 0.1);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.btnGroup {
+  display: flex;
+  gap: 6px;
+}
+
+.actionBtn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.actionBtn:hover {
+  color: var(--text-default);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.deleteBtn:hover {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
+  background-color: rgba(239, 68, 68, 0.05);
+}
+
+.formGroup {
+  margin-bottom: 14px;
+}
+
+.label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.input, .select, .textarea {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  color: var(--text-default);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.input:focus, .select:focus, .textarea:focus {
+  border-color: var(--wine-red-primary);
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  margin-bottom: 18px;
+}
+
+.checkbox {
+  cursor: pointer;
+}
+
+.submitBtn {
+  width: 100%;
+  background: var(--wine-red-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  color: #fff;
+  padding: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: opacity 0.2s ease;
+}
+
+.submitBtn:hover {
+  opacity: 0.9;
+}
+
+.submitBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cancelBtn {
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-default);
+  padding: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.cancelBtn:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.emptyState {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-muted);
+}
+
+.statusMessage {
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.statusSuccess {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.15);
+}
+
+.statusError {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.15);
+}
+
+.settingsCard {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.settingsRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.settingsDescription {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.disabledBanner {
+  background: var(--bg-surface);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.disabledBannerIcon {
+  margin: 0 auto 16px;
+  opacity: 0.4;
+  color: var(--wine-red-primary);
+}
+
+.disabledBannerTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-default);
+  margin-bottom: 8px;
+}
+
+.disabledBannerText {
+  font-size: 13px;
+  max-width: 500px;
+  margin: 0 auto;
+  line-height: 1.6;
+}

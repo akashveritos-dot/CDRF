@@ -169,6 +169,83 @@ const parseTitle = (rawText: string): WordConfig[] => {
   return configs;
 };
 
+// Safe Image Helper with Fallback
+const SafeImage = ({ src, fallback, alt, className, width, height, style, priority }: any) => {
+  const [imgSrc, setImgSrc] = useState(src || fallback);
+  
+  useEffect(() => {
+    setImgSrc(src || fallback);
+  }, [src, fallback]);
+
+  return (
+    <Image
+      src={imgSrc}
+      alt={alt}
+      className={className}
+      width={width}
+      height={height}
+      style={style}
+      priority={priority}
+      onError={() => setImgSrc(fallback)}
+    />
+  );
+};
+
+// Council Card Component to prevent React rules of hooks violation in loop
+const CouncilMemberCard = ({ member, idx, isHighlight }: any) => {
+  const [imageError, setImageError] = useState(false);
+
+  return (
+    <ScrollReveal key={member.id} direction="up" delay={0.05 * idx}>
+      <div className={`${styles.councilCard} ${isHighlight ? styles.councilCardHighlight : ''}`}>
+        <div className={styles.councilProfileHeader}>
+          <div className={`${styles.councilAvatar} ${isHighlight ? styles.councilAvatarGold : ''}`}>
+            {member.profileImage && !imageError ? (
+              <Image
+                src={member.profileImage}
+                alt={member.name}
+                width={64}
+                height={64}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  borderRadius: '50%'
+                }}
+                onError={() => setImageError(true)}
+              />
+            ) : (
+              member.avatarInitials
+            )}
+          </div>
+          <div className={styles.councilIdentity}>
+            <h3>{member.name}</h3>
+            <span className={`${styles.councilBadge} ${member.roleBadgeColor === 'gold' ? styles.councilBadgeGold :
+              member.roleBadgeColor === 'finance' ? styles.councilBadgeFinance : ''
+              }`}>
+              {member.role}
+            </span>
+          </div>
+        </div>
+        <p className={styles.councilBio}>{member.bio}</p>
+        {member.linkedinUrl ? (
+          <a
+            href={member.linkedinUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.councilLinkedin}
+          >
+            <Linkedin size={12} fill="currentColor" stroke="none" />
+            LinkedIn Profile
+          </a>
+        ) : (
+          <span className={styles.councilOrgMuted}>{member.organization}</span>
+        )}
+      </div>
+    </ScrollReveal>
+  );
+};
+
 export default function HomeClient({
   initialNews,
   initialReports,
@@ -478,16 +555,15 @@ export default function HomeClient({
                 <ScrollReveal key={story.id} direction="up" delay={idx * 0.1}>
                   <div className={styles.feedCard}>
                     <div className={styles.feedCardImgWrapper}>
-                      {/* Standard Image tag optimized with dimensions to prevent CLS and layout shifts */}
-                      <img
-                        src={story.image_url || fallbackImg}
+                      {/* Native Next.js optimized Image tag with dimensions to prevent CLS and layout shifts */}
+                      <SafeImage
+                        src={story.image_url}
+                        fallback={fallbackImg}
                         alt={story.headline}
                         className={styles.feedCardImg}
                         width={380}
                         height={220}
-                        loading="lazy"
                         style={{ objectFit: 'cover' }}
-                        onError={(e) => { (e.target as HTMLImageElement).src = fallbackImg; }}
                       />
                       <span className={styles.feedCardCategory}>
                         {story.category || 'Alert'}
@@ -687,60 +763,14 @@ export default function HomeClient({
         </ScrollReveal>
 
         <div className={styles.councilGrid}>
-          {councilMembers.map((member, idx) => {
-            const isHighlight = member.id === 'bm';
-            const [imageError, setImageError] = useState(false);
-
-            return (
-              <ScrollReveal key={member.id} direction="up" delay={0.05 * idx}>
-                <div className={`${styles.councilCard} ${isHighlight ? styles.councilCardHighlight : ''}`}>
-                  <div className={styles.councilProfileHeader}>
-                    <div className={`${styles.councilAvatar} ${isHighlight ? styles.councilAvatarGold : ''}`}>
-                      {member.profileImage && !imageError ? (
-                        <img
-                          src={member.profileImage}
-                          alt={member.name}
-                          width={64}
-                          height={64}
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                            borderRadius: '50%'
-                          }}
-                          onError={() => setImageError(true)}
-                        />
-                      ) : (
-                        member.avatarInitials
-                      )}
-                    </div>
-                    <div className={styles.councilIdentity}>
-                      <h3>{member.name}</h3>
-                      <span className={`${styles.councilBadge} ${member.roleBadgeColor === 'gold' ? styles.councilBadgeGold :
-                        member.roleBadgeColor === 'finance' ? styles.councilBadgeFinance : ''
-                        }`}>
-                        {member.role}
-                      </span>
-                    </div>
-                  </div>
-                  <p className={styles.councilBio}>{member.bio}</p>
-                  {member.linkedinUrl ? (
-                    <a
-                      href={member.linkedinUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={styles.councilLinkedin}
-                    >
-                      <Linkedin size={12} fill="currentColor" stroke="none" />
-                      LinkedIn Profile
-                    </a>
-                  ) : (
-                    <span className={styles.councilOrgMuted}>{member.organization}</span>
-                  )}
-                </div>
-              </ScrollReveal>
-            );
-          })}
+          {councilMembers.map((member, idx) => (
+            <CouncilMemberCard
+              key={member.id}
+              member={member}
+              idx={idx}
+              isHighlight={member.id === 'bm'}
+            />
+          ))}
         </div>
 
         <div style={{ textAlign: 'center', marginTop: '36px' }}>

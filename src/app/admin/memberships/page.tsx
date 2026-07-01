@@ -18,12 +18,18 @@ import {
   Bell,
   AlertTriangle,
   Calendar,
-  Shield
+  Shield,
+  Send
 } from 'lucide-react';
 import styles from './page.module.css';
 import ActionLoader from '@/components/ui/ActionLoader/ActionLoader';
+import { useToast } from '@/components/ui/Toast/ToastContext';
+import EmailSenderModal from '@/components/admin/EmailSenderModal';
 
 export default function AdminMemberships() {
+  const toast = useToast();
+  const [selectedEmails, setSelectedEmails] = useState<string[]>([]);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [registrations, setRegistrations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ total: 0, active: 0, expiringSoon: 0, expired: 0 });
@@ -378,8 +384,8 @@ export default function AdminMemberships() {
       )}
 
       {/* Filter and Search Dashboard */}
-      <div className={styles.controls}>
-        <div className={styles.searchWrapper}>
+      <div className={styles.controls} style={{ flexWrap: 'wrap', gap: '16px' }}>
+        <div className={styles.searchWrapper} style={{ flex: 1, minWidth: '280px' }}>
           <Search size={18} className={styles.searchIcon} />
           <input
             type="text"
@@ -389,6 +395,23 @@ export default function AdminMemberships() {
             className={styles.searchInput}
           />
         </div>
+        <button
+          onClick={() => setIsEmailModalOpen(true)}
+          className={styles.exportBtn}
+          style={{
+            background: 'var(--wine-red-primary)',
+            color: '#ffffff',
+            border: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            boxShadow: '0 2px 4px rgba(185, 28, 28, 0.15)',
+            height: '42px'
+          }}
+        >
+          <Send size={14} />
+          <span>Send Email ({selectedEmails.length})</span>
+        </button>
         <div className={styles.filters}>
           <div className={styles.filterGroup}>
             <label>Tier</label>
@@ -442,6 +465,20 @@ export default function AdminMemberships() {
           <table className={styles.table}>
             <thead>
               <tr>
+                <th style={{ width: '40px', paddingLeft: '16px' }}>
+                  <input
+                    type="checkbox"
+                    checked={registrations.length > 0 && selectedEmails.length === registrations.length}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedEmails(registrations.map(r => r.email).filter(Boolean));
+                      } else {
+                        setSelectedEmails([]);
+                      }
+                    }}
+                    style={{ cursor: 'pointer' }}
+                  />
+                </th>
                 <th>Applicant / Organization</th>
                 <th>Tier</th>
                 <th>Membership Status</th>
@@ -460,6 +497,20 @@ export default function AdminMemberships() {
 
                 return (
                   <tr key={item.id} className={styles.tableRow}>
+                    <td style={{ verticalAlign: 'middle', paddingLeft: '16px' }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedEmails.includes(item.email)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedEmails([...selectedEmails, item.email]);
+                          } else {
+                            setSelectedEmails(selectedEmails.filter(email => email !== item.email));
+                          }
+                        }}
+                        style={{ cursor: 'pointer' }}
+                      />
+                    </td>
                     <td>
                       <div className={styles.applicantInfo}>
                         <span className={styles.name}>{item.name}</span>
@@ -615,6 +666,13 @@ export default function AdminMemberships() {
         </div>
       )}
       <ActionLoader message={actionLoading} />
+      <EmailSenderModal
+        isOpen={isEmailModalOpen}
+        onClose={() => setIsEmailModalOpen(false)}
+        initialSelectedEmails={selectedEmails}
+        allRecipients={registrations.map(r => ({ name: r.name, email: r.email }))}
+        toast={toast}
+      />
     </div>
   );
 }

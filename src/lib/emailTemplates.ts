@@ -152,18 +152,28 @@ export function welcomeEmail(params: {
   startsAt: string;
   expiresAt: string;
   paymentId: string;
+  price?: number | string;
+  priceSubText?: string;
+  organization?: string;
+  title?: string;
 }): string {
-  const { name, tier, startsAt, expiresAt, paymentId } = params;
+  const { name, tier, startsAt, expiresAt, paymentId, price, priceSubText, organization, title } = params;
+
+  const formattedPrice = price !== undefined
+    ? (Number(price) === 0 ? 'Free / Complimentary' : `₹${Number(price).toLocaleString('en-IN')}`)
+    : '—';
+
+  const billingTerm = priceSubText ? priceSubText.replace('Per Annum — ', '') : 'Annual';
 
   const header = `
     ${DCRF_LOGO_HEADER}
-    <h1 class="email-title" style="margin:12px 0 6px;font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:700;color:#ffffff;letter-spacing:-0.3px">
+    <h1 class="email-title" style="margin:12px 0 6px;font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:700;color:#ffffff;letter-spacing:-0.3px">
       Membership Activated
     </h1>
     <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.75)">Welcome to the DCRF Resilience Network</p>`;
 
   const body = `
-    <h2 class="greeting" style="margin:0 0 10px;font-size:20px;color:#ffffff;font-weight:700">
+    <h2 class="greeting" style="margin:0 0 10px;font-size:18px;color:#ffffff;font-weight:700">
       Welcome, ${name}! 🎉
     </h2>
     <p style="margin:0 0 22px;font-size:14px;color:#94a3b8;line-height:1.7">
@@ -177,16 +187,20 @@ export function welcomeEmail(params: {
       style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;overflow:hidden;margin-bottom:22px">
       <tr>
         <td style="background:rgba(255,255,255,0.03);padding:12px 18px;border-bottom:1px solid rgba(255,255,255,0.06)">
-          <p style="margin:0;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.8px">Membership Summary</p>
+          <p style="margin:0;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.8px">Membership & Plan Details</p>
         </td>
       </tr>
       <tr>
         <td style="padding:0 18px">
           <table class="info-table" role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-            ${infoRow('Tier', tierBadge(tier))}
-            ${infoRow('Since', fmtDate(startsAt))}
+            ${infoRow('Member Name', name)}
+            ${organization ? infoRow('Organization', organization) : ''}
+            ${title ? infoRow('Designation', title) : ''}
+            ${infoRow('Membership Tier', tierBadge(tier))}
+            ${infoRow('Plan Pricing', `${formattedPrice} (${billingTerm})`)}
+            ${infoRow('Start Date', fmtDate(startsAt))}
             ${infoRow('Valid Until', tier === 'Basic' ? '<span style="color:#10b981;font-weight:700">Lifetime</span>' : `<span style="color:#f59e0b;font-weight:700">${fmtDate(expiresAt)}</span>`)}
-            ${infoRow('Payment ID', `<span style="font-size:12px;color:#94a3b8;word-break:break-all">${paymentId}</span>`)}
+            ${infoRow('Reference ID', `<span style="font-size:12px;color:#94a3b8;word-break:break-all">${paymentId}</span>`)}
           </table>
         </td>
       </tr>
@@ -211,7 +225,7 @@ export function welcomeEmail(params: {
         <td align="center">
           <a class="cta-btn" href="https://dcrfindia.org/membership"
             style="display:inline-block;background:linear-gradient(135deg,#b91c1c,#ef4444);color:#ffffff;text-decoration:none;font-size:14px;font-weight:700;padding:14px 36px;border-radius:8px;letter-spacing:0.3px">
-            Visit Your Member Dashboard →
+            Visit Member Portal →
           </a>
         </td>
       </tr>
@@ -220,7 +234,7 @@ export function welcomeEmail(params: {
     <p style="margin:0;font-size:12px;color:#475569;border-top:1px solid rgba(255,255,255,0.06);padding-top:18px">
       For any queries, contact us at
       <a href="mailto:info@dcrfindia.org" style="color:#ef4444;text-decoration:none">info@dcrfindia.org</a>.
-      Please keep your Payment ID for your records.
+      Please keep your Reference ID for your records.
     </p>`;
 
   return shell(header, body, 'This confirmation was sent automatically upon membership activation.');
@@ -235,18 +249,26 @@ export function upgradeConfirmationEmail(params: {
   newTier: string;
   expiresAt: string;
   paymentId: string;
+  price?: number | string;
+  priceSubText?: string;
 }): string {
-  const { name, oldTier, newTier, expiresAt, paymentId } = params;
+  const { name, oldTier, newTier, expiresAt, paymentId, price, priceSubText } = params;
+
+  const formattedPrice = price !== undefined
+    ? (Number(price) === 0 ? 'Free / Complimentary' : `₹${Number(price).toLocaleString('en-IN')}`)
+    : '—';
+
+  const billingTerm = priceSubText ? priceSubText.replace('Per Annum — ', '') : 'Annual';
 
   const header = `
     ${DCRF_LOGO_HEADER}
-    <h1 class="email-title" style="margin:12px 0 6px;font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:700;color:#ffffff">
+    <h1 class="email-title" style="margin:12px 0 6px;font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:700;color:#ffffff">
       Membership Upgraded ⬆
     </h1>
     <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.75)">Your plan has been successfully upgraded</p>`;
 
   const body = `
-    <h2 class="greeting" style="margin:0 0 10px;font-size:20px;color:#ffffff;font-weight:700">
+    <h2 class="greeting" style="margin:0 0 10px;font-size:18px;color:#ffffff;font-weight:700">
       Congratulations, ${name}! 🚀
     </h2>
     <p style="margin:0 0 22px;font-size:14px;color:#94a3b8;line-height:1.7">
@@ -259,16 +281,17 @@ export function upgradeConfirmationEmail(params: {
       style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;overflow:hidden;margin-bottom:22px">
       <tr>
         <td style="background:rgba(255,255,255,0.03);padding:12px 18px;border-bottom:1px solid rgba(255,255,255,0.06)">
-          <p style="margin:0;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.8px">Upgrade Summary</p>
+          <p style="margin:0;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.8px">Upgrade & Plan Details</p>
         </td>
       </tr>
       <tr>
         <td style="padding:0 18px">
           <table class="info-table" role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-            ${infoRow('From', `<span style="color:#64748b;text-decoration:line-through">${oldTier}</span>`)}
-            ${infoRow('To', tierBadge(newTier))}
-            ${infoRow('Expires', `<span style="color:#f59e0b;font-weight:700">${fmtDate(expiresAt)}</span>`)}
-            ${infoRow('Ref ID', `<span style="font-size:12px;color:#94a3b8;word-break:break-all">${paymentId}</span>`)}
+            ${infoRow('Previous Tier', `<span style="color:#64748b;text-decoration:line-through">${oldTier}</span>`)}
+            ${infoRow('New Tier', tierBadge(newTier))}
+            ${infoRow('New Price', `${formattedPrice} (${billingTerm})`)}
+            ${infoRow('New Expiration', `<span style="color:#f59e0b;font-weight:700">${fmtDate(expiresAt)}</span>`)}
+            ${infoRow('Reference ID', `<span style="font-size:12px;color:#94a3b8;word-break:break-all">${paymentId}</span>`)}
           </table>
         </td>
       </tr>

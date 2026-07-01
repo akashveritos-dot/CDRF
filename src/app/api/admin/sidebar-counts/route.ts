@@ -1,22 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
-import { verifyToken } from '@/lib/auth';
-import { cookies } from 'next/headers';
+import { withAdminAuth } from '@/lib/api-guard';
+import logger from '@/lib/logger';
 
-export async function GET(req: NextRequest) {
+export const GET = withAdminAuth(async (req, session) => {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('auth_token')?.value;
-
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const session = await verifyToken(token);
-    if (!session || (session.role !== 'ADMIN' && session.role !== 'SUPERADMIN')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
     // Run count queries in parallel
     const [
       queriesCountRes,
@@ -42,10 +30,11 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(counts);
   } catch (error: any) {
-    console.error('Sidebar counts API error:', error);
+    logger.error(error, 'Sidebar counts API error');
     return NextResponse.json(
       { error: 'Failed to retrieve sidebar counts' },
       { status: 500 }
     );
   }
-}
+});
+

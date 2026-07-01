@@ -1,48 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
-import { verifyToken } from '@/lib/auth';
-import { cookies } from 'next/headers';
+import { withAdminAuth } from '@/lib/api-guard';
 import { logAction } from '@/lib/audit';
+import { z } from 'zod';
+import logger from '@/lib/logger';
 
-const ALLOWED_TABLES = ['news', 'reports', 'gallery_items', 'councils', 'cms_pages'];
+const reorderSchema = z.object({
+  table: z.enum(['news', 'reports', 'gallery_items', 'councils', 'cms_pages']),
+  orderedIds: z.array(z.union([z.number(), z.string()]))
+});
 
-export async function PUT(req: NextRequest) {
+export const PUT = withAdminAuth(async (req, session) => {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('auth_token')?.value;
-
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON request body.' }, { status: 400 });
     }
 
-    const session = await verifyToken(token);
-    if (!session || (session.role !== 'ADMIN' && session.role !== 'SUPERADMIN')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const validationResult = reorderSchema.safeParse(body);
+    if (!validationResult.success) {
+      const errorMsg = validationResult.error.issues[0]?.message || 'Input validation failed.';
+      logger.warn({ errors: validationResult.error.format() }, 'Reorder payload validation failure');
+      return NextResponse.json({ error: errorMsg }, { status: 400 });
     }
 
-    const body = await req.json();
-    const { table, orderedIds } = body;
+    const { table, orderedIds } = validationResult.data;
 
-    if (!table || !Array.isArray(orderedIds)) {
-      return NextResponse.json(
-        { error: 'Table name and orderedIds array are required' },
-        { status: 400 }
-      );
-    }
-
-    if (!ALLOWED_TABLES.includes(table)) {
-      return NextResponse.json(
-        { error: `Reordering table "${table}" is not permitted` },
-        { status: 400 }
-      );
-    }
-
-    // Set display_order = index + 1 for each ID.
-    // This shifts reordered items to 1, 2, 3... while leaving new/un-ordered default items at 0 (top priority)
-    for (let i = 0; i < orderedIds.length; i++) {
-      const id = orderedIds[i];
-      await query(`UPDATE ${table} SET display_order = ? WHERE id = ?`, [i + 1, id]);
-    }
+    // Execute database updates in parallel over the pool to avoid serial request latency
+    const updatePromises = orderedIds.map((id, index) =>
+      query(`UPDATE \`${table}\` SET display_order = ? WHERE id = ?`, [index + 1, id])
+    );
+    await Promise.all(updatePromises);
 
     await logAction(
       req,
@@ -52,16 +42,19 @@ export async function PUT(req: NextRequest) {
       `Reordered ${orderedIds.length} items in table "${table}"`
     );
 
+    logger.info({ user: session.email, table, count: orderedIds.length }, 'Successfully reordered table items');
+
     return NextResponse.json({
       success: true,
       message: `Successfully reordered ${orderedIds.length} items in table "${table}".`
     });
 
   } catch (error: any) {
-    console.error('Reorder API Error:', error);
+    logger.error(error, 'Reorder API Error');
     return NextResponse.json(
       { error: 'Failed to complete reordering process' },
       { status: 500 }
     );
   }
-}
+});
+

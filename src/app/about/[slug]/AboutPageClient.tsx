@@ -102,7 +102,7 @@ const charterItems = [
   { number: 7, title: 'Coastal & Delta Resilience', body: 'Coordinate with coastal state governments to document traditional shelter architectures and integrate modern early warning systems.' },
   { number: 8, title: 'Academic Research Integration', body: 'Create formal research pipelines between TERI, CEEW, WRI, and IIT systems for applied disaster science peer-reviewed outputs.' },
   { number: 9, title: 'NGO-Corporate Matchmaking', body: 'Launch a structured platform matching corporate CSR leads with local NGOs and community bodies for co-deployed resilience projects.' },
-  { number: 10, title: 'Dcrc Annual Conclave', body: 'Convene an annual multi-stakeholder summit for policy launches, disaster-tech startups, and DCRF Recognition Awards.' },
+  { number: 10, title: 'DCRC Annual Conclave', body: 'Convene an annual multi-stakeholder summit for policy launches, disaster-tech startups, and DCRF Recognition Awards.' },
 ];
 
 // ── WORKING GROUP kanban columns ─────────────────────────────────────

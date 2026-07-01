@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Loader2, Trash2, MailOpen, AlertTriangle } from 'lucide-react';
+import { Loader2, Trash2, MailOpen, AlertTriangle, Send } from 'lucide-react';
 import styles from './page.module.css';
+import { useToast } from '@/components/ui/Toast/ToastContext';
+import EmailSenderModal from '@/components/admin/EmailSenderModal';
 
 interface ContactMessage {
   id: number;
@@ -14,6 +16,9 @@ interface ContactMessage {
 }
 
 export default function AdminContactsViewer() {
+  const toast = useToast();
+  const [selectedEmails, setSelectedEmails] = useState<string[]>([]);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -82,9 +87,31 @@ export default function AdminContactsViewer() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <h1 className={styles.title}>Contact Queries Log</h1>
-        <p className={styles.subtitle}>Review simple query submissions and support requests filed by website visitors.</p>
+      <div className={styles.header} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <div>
+          <h1 className={styles.title}>Contact Queries Log</h1>
+          <p className={styles.subtitle}>Review simple query submissions and support requests filed by website visitors.</p>
+        </div>
+        <button
+          onClick={() => setIsEmailModalOpen(true)}
+          style={{
+            background: 'var(--wine-red-primary)',
+            color: '#ffffff',
+            border: 'none',
+            borderRadius: '8px',
+            padding: '8px 16px',
+            fontSize: '13px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            boxShadow: '0 2px 4px rgba(185, 28, 28, 0.15)'
+          }}
+        >
+          <Send size={14} />
+          <span>Send Email ({selectedEmails.length})</span>
+        </button>
       </div>
 
       {messages.length === 0 ? (
@@ -104,6 +131,20 @@ export default function AdminContactsViewer() {
             <table className={styles.table}>
               <thead>
                 <tr>
+                  <th style={{ width: '40px', paddingLeft: '8px' }}>
+                    <input
+                      type="checkbox"
+                      checked={messages.length > 0 && selectedEmails.length === messages.length}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedEmails(messages.map(m => m.email).filter(Boolean));
+                        } else {
+                          setSelectedEmails([]);
+                        }
+                      }}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  </th>
                   <th>Date</th>
                   <th>Sender</th>
                   <th>Subject</th>
@@ -123,6 +164,20 @@ export default function AdminContactsViewer() {
                       onClick={() => setSelectedMessage(msg)}
                       className={selectedMessage?.id === msg.id ? styles.rowActive : ''}
                     >
+                      <td onClick={(e) => e.stopPropagation()} style={{ width: '40px', verticalAlign: 'middle', textAlign: 'center', paddingLeft: '8px' }}>
+                        <input
+                          type="checkbox"
+                          checked={selectedEmails.includes(msg.email)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedEmails([...selectedEmails, msg.email]);
+                            } else {
+                              setSelectedEmails(selectedEmails.filter(email => email !== msg.email));
+                            }
+                          }}
+                          style={{ cursor: 'pointer' }}
+                        />
+                      </td>
                       <td className={styles.date}>{dateStr}</td>
                       <td>
                         <strong>{msg.name}</strong>
@@ -180,6 +235,14 @@ export default function AdminContactsViewer() {
           )}
         </div>
       )}
+
+      <EmailSenderModal
+        isOpen={isEmailModalOpen}
+        onClose={() => setIsEmailModalOpen(false)}
+        initialSelectedEmails={selectedEmails}
+        allRecipients={messages.map(m => ({ name: m.name, email: m.email }))}
+        toast={toast}
+      />
     </div>
   );
 }

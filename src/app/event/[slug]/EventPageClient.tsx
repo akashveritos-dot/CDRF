@@ -30,7 +30,7 @@ interface EventPageClientProps {
 
 const roleOptions = [
   { value: 'Delegate', label: 'Corporate Delegate', description: 'Accredited industry executive pass' },
-  { value: 'Speaker', label: 'Panelist / Speaker', description: 'Dcrc panel speaker invitee' },
+  { value: 'Speaker', label: 'Panelist / Speaker', description: 'DCRC panel speaker invitee' },
   { value: 'Sponsor', label: 'Sponsor Partner', description: 'Corporate summit sponsor pass' },
   { value: 'Researcher', label: 'Academic Advisor', description: 'Policy researcher / scholar pass' },
   { value: 'Government', label: 'State Official', description: 'Municipal / government authority pass' },
@@ -48,12 +48,15 @@ const getFallbackImage = (slug: string) => {
 };
 
 export default function EventPageClient({ slug, pageData }: EventPageClientProps) {
-  // Form states
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [company, setCompany] = useState('');
-  const [designation, setDesignation] = useState('');
-  const [role, setRole] = useState('Delegate');
+  const renderFormattedValue = (text?: string) => {
+    if (!text) return null;
+    return text.replace(/,([^ ])/g, ', $1');
+  };
+
+  // Form states (dynamic)
+  const [formValues, setFormValues] = useState<Record<string, string>>({});
+  const [fields, setFields] = useState<any[]>([]);
+  const [fieldsLoading, setFieldsLoading] = useState(true);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -82,6 +85,67 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
   const [lightboxCaptions, setLightboxCaptions] = useState<string[]>([]);
   const [activeLightboxIdx, setActiveLightboxIdx] = useState<number | null>(null);
 
+  const defaultFields = [
+    { name: 'name', label: 'Full Name', type: 'text', isRequired: true },
+    { name: 'email', label: 'Email Address', type: 'email', isRequired: true },
+    { name: 'company', label: 'Company / Organisation', type: 'text', isRequired: true },
+    { name: 'designation', label: 'Designation', type: 'text', isRequired: false },
+    { name: 'role', label: 'Attendance Mode', type: 'select', isRequired: true, options: ['Delegate', 'Speaker', 'Sponsor', 'Researcher', 'Government'] }
+  ];
+
+  // Hash scroll listener for smooth scroll to Conclave Agenda section
+  useEffect(() => {
+    const handleHashScroll = () => {
+      const hash = window.location.hash;
+      if (hash === '#agenda-gallery') {
+        const element = document.getElementById('agenda-gallery');
+        if (element) {
+          setTimeout(() => {
+            element.scrollIntoView({ behavior: 'smooth' });
+          }, 100);
+        }
+      }
+    };
+
+    handleHashScroll();
+    window.addEventListener('hashchange', handleHashScroll);
+    return () => window.removeEventListener('hashchange', handleHashScroll);
+  }, []);
+
+  useEffect(() => {
+    async function loadFields() {
+      try {
+        const res = await fetch('/api/forms/fields?type=event_register');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && Array.isArray(data.fields) && data.fields.length > 0) {
+            setFields(data.fields);
+            const initialValues: Record<string, string> = {};
+            data.fields.forEach((f: any) => {
+              if (f.name === 'role') initialValues[f.name] = 'Delegate';
+              else initialValues[f.name] = '';
+            });
+            setFormValues(initialValues);
+            setFieldsLoading(false);
+            return;
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load dynamic event_register fields:', err);
+      }
+      setFields(defaultFields);
+      const initialValues: Record<string, string> = {};
+      defaultFields.forEach((f: any) => {
+        if (f.name === 'role') initialValues[f.name] = 'Delegate';
+        else initialValues[f.name] = '';
+      });
+      setFormValues(initialValues);
+      setFieldsLoading(false);
+    }
+    loadFields();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const openLightbox = (images: string[], captions: string[], index: number) => {
     setLightboxImages(images);
     setLightboxCaptions(captions);
@@ -103,14 +167,61 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activeLightboxIdx, lightboxImages]);
 
-  // --- Agenda Email Download Gate State ---
+  // --- Agenda Email Download Gate State (Dynamic) ---
   const [showEmailGate, setShowEmailGate] = useState(false);
-  const [gateEmail, setGateEmail] = useState('');
-  const [gateName, setGateName] = useState('');
-  const [gateDesignation, setGateDesignation] = useState('');
-  const [gateMobile, setGateMobile] = useState('');
-  const [gateOrg, setGateOrg] = useState('');
-  const [gateEntityType, setGateEntityType] = useState('Individual');
+  const [gateValues, setGateValues] = useState<Record<string, string>>({});
+  const [gateFields, setGateFields] = useState<any[]>([]);
+  const [gateFieldsLoading, setGateFieldsLoading] = useState(true);
+  const [isGateEnabled, setIsGateEnabled] = useState(true);
+
+  const defaultGateFields = [
+    { name: 'email', label: 'Official Email', type: 'email', isRequired: true },
+    { name: 'name', label: 'Full Name', type: 'text', isRequired: true },
+    { name: 'mobile', label: 'Mobile Number', type: 'text', isRequired: true },
+    { name: 'designation', label: 'Designation', type: 'text', isRequired: true },
+    { name: 'organizationName', label: 'Organization Name', type: 'text', isRequired: true },
+    { name: 'entityType', label: 'Entity Type', type: 'select', isRequired: true, options: ['Individual', 'Organization'] }
+  ];
+
+  useEffect(() => {
+    async function loadGateFields() {
+      try {
+        const res = await fetch('/api/forms/fields?type=agenda_download');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success) {
+            if (data.gateEnabled !== undefined) {
+              setIsGateEnabled(data.gateEnabled);
+            }
+            if (Array.isArray(data.fields) && data.fields.length > 0) {
+              setGateFields(data.fields);
+              const initialValues: Record<string, string> = {};
+              data.fields.forEach((f: any) => {
+                if (f.name === 'entityType') initialValues[f.name] = 'Individual';
+                else initialValues[f.name] = '';
+              });
+              setGateValues(initialValues);
+              setGateFieldsLoading(false);
+              return;
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load dynamic agenda_download fields:', err);
+      }
+      setGateFields(defaultGateFields);
+      const initialValues: Record<string, string> = {};
+      defaultGateFields.forEach((f: any) => {
+        if (f.name === 'entityType') initialValues[f.name] = 'Individual';
+        else initialValues[f.name] = '';
+      });
+      setGateValues(initialValues);
+      setGateFieldsLoading(false);
+    }
+    loadGateFields();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const [gateSubmitting, setGateSubmitting] = useState(false);
   const [gateError, setGateError] = useState('');
   const [pendingDownloadUrl, setPendingDownloadUrl] = useState('');
@@ -148,18 +259,19 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
     setIsSubmitting(true);
 
     try {
+      const activeFields = fields.length > 0 ? fields : defaultFields;
+      for (const field of activeFields) {
+        if (field.isRequired && !formValues[field.name]?.trim()) {
+          throw new Error(`${field.label} is required.`);
+        }
+      }
+
       const res = await fetch('/api/events/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          name,
-          email,
-          company,
-          designation,
-          role
-        })
+        body: JSON.stringify(formValues)
       });
 
       const data = await res.json();
@@ -170,15 +282,239 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
 
       setIsSuccess(true);
       setSuccessMsg(data.message || 'Your interest has been logged. Our secretariat will verify and approve your delegate pass.');
-      setName('');
-      setEmail('');
-      setCompany('');
-      setDesignation('');
+      
+      const resetValues: Record<string, string> = {};
+      activeFields.forEach((f: any) => {
+        if (f.name === 'role') resetValues[f.name] = 'Delegate';
+        else resetValues[f.name] = '';
+      });
+      setFormValues(resetValues);
     } catch (err: any) {
       setFormError(err.message || 'An unexpected error occurred.');
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const renderDynamicField = (field: any) => {
+    const value = formValues[field.name] || '';
+    const handleValueChange = (val: string) => {
+      setFormValues(prev => ({ ...prev, [field.name]: val }));
+    };
+
+    if (field.type === 'textarea') {
+      return (
+        <div className={styles.formGroup} key={field.name}>
+          <label className={styles.label}>{field.label}</label>
+          <textarea
+            className={styles.textarea}
+            placeholder={`Enter your ${field.label.toLowerCase()}...`}
+            value={value}
+            onChange={(e) => handleValueChange(e.target.value)}
+            required={field.isRequired}
+            disabled={isSubmitting}
+          />
+        </div>
+      );
+    }
+
+    if (field.name === 'role' && field.type === 'select') {
+      const currentRole = value || 'Delegate';
+      return (
+        <div className={`${styles.formGroup} ${styles.fieldFull}`} key={field.name}>
+          <label className={styles.label}>{field.label}</label>
+          <div className={styles.customDropdown} ref={dropdownRef}>
+            <button
+              type="button"
+              className={styles.dropdownTrigger}
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              aria-label={`Select ${field.label.toLowerCase()}`}
+              aria-expanded={dropdownOpen}
+              disabled={isSubmitting}
+            >
+              <div className={styles.dropdownSelected}>
+                <div className={styles.dropdownText}>
+                  <span className={styles.dropdownLabel}>
+                    {roleOptions.find(opt => opt.value === currentRole)?.label || currentRole}
+                  </span>
+                  <span className={styles.dropdownSubLabel}>
+                    {roleOptions.find(opt => opt.value === currentRole)?.description || `Selected ${currentRole}`}
+                  </span>
+                </div>
+              </div>
+              <ChevronDown
+                size={18}
+                className={`${styles.dropdownChevron} ${dropdownOpen ? styles.dropdownChevronOpen : ''}`}
+              />
+            </button>
+            {dropdownOpen && (
+              <div className={styles.dropdownMenu}>
+                {(field.options || ['Delegate', 'Speaker', 'Sponsor', 'Researcher', 'Government']).map((optVal: string) => {
+                  const matchedOpt = roleOptions.find(opt => opt.value === optVal) || {
+                    value: optVal,
+                    label: optVal,
+                    description: `Accredited ${optVal} pass`
+                  };
+                  return (
+                    <button
+                      key={optVal}
+                      type="button"
+                      className={`${styles.dropdownOption} ${currentRole === optVal ? styles.dropdownOptionActive : ''}`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleValueChange(optVal);
+                        setDropdownOpen(false);
+                      }}
+                    >
+                      <div className={styles.dropdownText}>
+                        <span className={styles.dropdownLabel}>{matchedOpt.label}</span>
+                        <span className={styles.dropdownSubLabel}>{matchedOpt.description}</span>
+                      </div>
+                      {currentRole === optVal && (
+                        <Check size={16} className={styles.dropdownCheck} />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    if (field.type === 'select') {
+      return (
+        <div className={styles.formGroup} key={field.name}>
+          <label className={styles.label}>{field.label}</label>
+          <select
+            className={styles.input}
+            style={{ width: '100%', height: '42px', padding: '0 12px', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', color: '#fff', borderRadius: 'var(--radius-md)' }}
+            value={value}
+            onChange={(e) => handleValueChange(e.target.value)}
+            required={field.isRequired}
+            disabled={isSubmitting}
+          >
+            <option value="" style={{ background: '#1c1917', color: '#fff' }}>{`Select ${field.label}...`}</option>
+            {field.options && field.options.map((opt: string) => (
+              <option key={opt} value={opt} style={{ background: '#1c1917', color: '#fff' }}>{opt}</option>
+            ))}
+          </select>
+        </div>
+      );
+    }
+
+    if (field.type === 'checkbox') {
+      return (
+        <div className={styles.formGroup} key={field.name} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '14px', marginBottom: '14px' }}>
+          <input
+            type="checkbox"
+            id={`chk-${field.name}`}
+            checked={value === 'true'}
+            onChange={(e) => handleValueChange(e.target.checked ? 'true' : 'false')}
+            required={field.isRequired}
+            disabled={isSubmitting}
+            style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+          />
+          <label htmlFor={`chk-${field.name}`} className={styles.label} style={{ margin: 0, cursor: 'pointer', display: 'inline', color: '#e2e8f0' }}>
+            {field.label}
+          </label>
+        </div>
+      );
+    }
+
+    return (
+      <div className={styles.formGroup} key={field.name}>
+        <label className={styles.label}>{field.label}</label>
+        <input
+          type={field.type}
+          className={styles.input}
+          placeholder={`Enter your ${field.label.toLowerCase()}...`}
+          value={value}
+          onChange={(e) => handleValueChange(e.target.value)}
+          required={field.isRequired}
+          disabled={isSubmitting}
+        />
+      </div>
+    );
+  };
+
+  const renderGateDynamicField = (field: any) => {
+    const value = gateValues[field.name] || '';
+    const handleValueChange = (val: string) => {
+      setGateValues(prev => ({ ...prev, [field.name]: val }));
+    };
+
+    if (field.type === 'textarea') {
+      return (
+        <div className={styles.formGroup} key={field.name}>
+          <label className={styles.label}>{field.label}</label>
+          <textarea
+            className={styles.textarea}
+            placeholder={`Enter your ${field.label.toLowerCase()}...`}
+            value={value}
+            onChange={(e) => handleValueChange(e.target.value)}
+            required={field.isRequired}
+            disabled={gateSubmitting}
+          />
+        </div>
+      );
+    }
+
+    if (field.type === 'select') {
+      return (
+        <div className={styles.formGroup} key={field.name}>
+          <label className={styles.label}>{field.label}</label>
+          <select
+            className={styles.input}
+            style={{ width: '100%', height: '42px', padding: '0 12px', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', color: '#fff', borderRadius: 'var(--radius-md)' }}
+            value={value}
+            onChange={(e) => handleValueChange(e.target.value)}
+            required={field.isRequired}
+            disabled={gateSubmitting}
+          >
+            <option value="" style={{ background: '#1c1917', color: '#fff' }}>{`Select ${field.label}...`}</option>
+            {field.options && field.options.map((opt: string) => (
+              <option key={opt} value={opt} style={{ background: '#1c1917', color: '#fff' }}>{opt}</option>
+            ))}
+          </select>
+        </div>
+      );
+    }
+
+    if (field.type === 'checkbox') {
+      return (
+        <div className={styles.formGroup} key={field.name} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '14px', marginBottom: '14px' }}>
+          <input
+            type="checkbox"
+            id={`gate-chk-${field.name}`}
+            checked={value === 'true'}
+            onChange={(e) => handleValueChange(e.target.checked ? 'true' : 'false')}
+            required={field.isRequired}
+            disabled={gateSubmitting}
+            style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+          />
+          <label htmlFor={`gate-chk-${field.name}`} className={styles.label} style={{ margin: 0, cursor: 'pointer', display: 'inline', color: '#e2e8f0' }}>
+            {field.label}
+          </label>
+        </div>
+      );
+    }
+
+    return (
+      <div className={styles.formGroup} key={field.name}>
+        <label className={styles.label}>{field.label}</label>
+        <input
+          type={field.type}
+          className={styles.input}
+          placeholder={`Enter your ${field.label.toLowerCase()}...`}
+          value={value}
+          onChange={(e) => handleValueChange(e.target.value)}
+          required={field.isRequired}
+          disabled={gateSubmitting}
+        />
+      </div>
+    );
   };
 
   const displayImage = pageData.imageUrl || (!pageData.videoUrl ? getFallbackImage(slug) : undefined);
@@ -187,7 +523,7 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
   if (slug === 'dcrc-26') {
     const bannerSection = pageData?.sections?.find((s: any) => s.title === 'Banner Images');
     const actionButtonsSection = pageData?.sections?.find((s: any) => s.title === 'Action Buttons');
-    const agendaSection = pageData?.sections?.find((s: any) => s.title === 'Agenda Images');
+    const agendaSection = pageData?.sections?.find((s: any) => s.title === 'Agenda Images' || s.title === 'Conclave Agenda');
     const speakersSection = pageData?.sections?.find((s: any) => s.title === 'Speakers');
     const partnersSection = pageData?.sections?.find((s: any) => s.title === 'Partners');
     const glimpseSection = pageData?.sections?.find((s: any) => s.title === 'Glimpse');
@@ -208,6 +544,28 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
     const speakerCards = speakersSection?.cards || [];
     const partnerCards = partnersSection?.cards || [];
     const aboutCards = aboutSection?.cards || [];
+
+    const getDynamicEyebrow = () => {
+      if (pageData.eyebrow) return pageData.eyebrow;
+      if (dateCard && locationCard) {
+        const formatDate = (dStr: string) => {
+          if (!dStr) return '';
+          return dStr
+            .replace(/January/i, 'Jan')
+            .replace(/February/i, 'Feb')
+            .replace(/March/i, 'Mar')
+            .replace(/April/i, 'Apr')
+            .replace(/August/i, 'Aug')
+            .replace(/September/i, 'Sept')
+            .replace(/October/i, 'Oct')
+            .replace(/November/i, 'Nov')
+            .replace(/December/i, 'Dec');
+        };
+        const locationCity = locationCard.description.split(',').pop()?.trim() || '';
+        return `${formatDate(dateCard.description)} · ${locationCity}`;
+      }
+      return '';
+    };
 
     // Slide auto-play for top banner
     useEffect(() => {
@@ -253,10 +611,20 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
       return () => clearInterval(interval);
     }, [videoCards, isVideoDragging]);
 
-    // Agenda download flow — direct open, no gate
+    // Agenda download flow — dynamic gate
     const handleAgendaDownloadClick = (e: React.MouseEvent, url: string) => {
       e.preventDefault();
-      window.open(url, '_blank');
+      if (!isGateEnabled) {
+        window.open(url, '_blank');
+        return;
+      }
+      const storedEmail = localStorage.getItem('agenda_downloader_email');
+      if (storedEmail) {
+        window.open(url, '_blank');
+      } else {
+        setPendingDownloadUrl(url);
+        setShowEmailGate(true);
+      }
     };
 
     const handleGateSubmit = async (e: React.FormEvent) => {
@@ -264,22 +632,23 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
       setGateError('');
       setGateSubmitting(true);
       try {
+        const activeFields = gateFields.length > 0 ? gateFields : defaultGateFields;
+        for (const field of activeFields) {
+          if (field.isRequired && !gateValues[field.name]?.trim()) {
+            throw new Error(`${field.label} is required.`);
+          }
+        }
+
         const res = await fetch('/api/events/agenda-download', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: gateEmail,
-            name: gateName,
-            designation: gateDesignation,
-            mobile: gateMobile,
-            organizationName: gateOrg,
-            entityType: gateEntityType
-          })
+          body: JSON.stringify(gateValues)
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Failed to submit download authorization.');
 
-        localStorage.setItem('agenda_downloader_email', gateEmail);
+        const emailVal = gateValues.email || '';
+        localStorage.setItem('agenda_downloader_email', emailVal);
         setShowEmailGate(false);
         window.open(pendingDownloadUrl, '_blank');
       } catch (err: any) {
@@ -383,6 +752,16 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                       e.preventDefault();
                       document.getElementById('register')?.scrollIntoView({ behavior: 'smooth' });
                     };
+                  } else if (btn.linkUrl === '#agenda-gallery' || btn.title?.toLowerCase() === 'agenda') {
+                    onClickHandler = (e: React.MouseEvent) => {
+                      e.preventDefault();
+                      const el = document.getElementById('agenda-gallery');
+                      if (el) {
+                        const yOffset = -80;
+                        const y = el.getBoundingClientRect().top + window.scrollY + yOffset;
+                        window.scrollTo({ top: y, behavior: 'smooth' });
+                      }
+                    };
                   } else if (isDownload) {
                     onClickHandler = (e: React.MouseEvent) => {
                       handleAgendaDownloadClick(e, downloadUrl);
@@ -410,10 +789,22 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                   );
                 }) || (
                   <>
-                    <a href="#agenda-gallery" className={styles.actionCard}>
+                    <a 
+                      href="#agenda-gallery" 
+                      className={styles.actionCard}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const el = document.getElementById('agenda-gallery');
+                        if (el) {
+                          const yOffset = -80;
+                          const y = el.getBoundingClientRect().top + window.scrollY + yOffset;
+                          window.scrollTo({ top: y, behavior: 'smooth' });
+                        }
+                      }}
+                    >
                       <div className={styles.actionCardIconBox}><Download size={20} /></div>
                       <h4 className={styles.actionCardTitle}>Agenda</h4>
-                      <p className={styles.actionCardSubtitle}>Download PDF Document</p>
+                      <p className={styles.actionCardSubtitle}>Explore Timelines & Details</p>
                     </a>
                     <a href="#register" className={styles.actionCard}>
                       <div className={styles.actionCardIconBox}><Users size={20} /></div>
@@ -447,7 +838,7 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                     </div>
                     <div className={styles.detailsText}>
                       <span className={styles.detailsLabel}>{dateCard?.title || 'Date'}</span>
-                      <span className={styles.detailsValue}>{dateCard?.description || 'November 26–27, 2026'}</span>
+                      <span className={styles.detailsValue}>{renderFormattedValue(dateCard?.description || 'November 26–27, 2026')}</span>
                     </div>
                   </div>
                   <div className={styles.detailsCard}>
@@ -456,7 +847,7 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                     </div>
                     <div className={styles.detailsText}>
                       <span className={styles.detailsLabel}>{venueCard?.title || 'Venue'}</span>
-                      <span className={styles.detailsValue}>{venueCard?.description || 'Stein Auditorium, IHC'}</span>
+                      <span className={styles.detailsValue}>{renderFormattedValue(venueCard?.description || 'Stein Auditorium, IHC')}</span>
                     </div>
                   </div>
                   <div className={styles.detailsCard}>
@@ -465,7 +856,7 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                     </div>
                     <div className={styles.detailsText}>
                       <span className={styles.detailsLabel}>{locationCard?.title || 'Location'}</span>
-                      <span className={styles.detailsValue}>{locationCard?.description || 'Lodhi Road, New Delhi'}</span>
+                      <span className={styles.detailsValue}>{renderFormattedValue(locationCard?.description || 'Lodhi Road, New Delhi')}</span>
                     </div>
                   </div>
                 </div>
@@ -473,7 +864,7 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
 
               <ScrollReveal direction="up">
                 <div className={styles.descriptionBlock}>
-                  <h2 className={styles.sectionTitle}>About Dcrc 2026</h2>
+                  <h2 className={styles.sectionTitle}>About DCRC 2026</h2>
                   <div className={styles.aboutContentDiv}>
                     {descriptionCard?.description && <p className={styles.aboutMainDescription}>{descriptionCard.description}</p>}
                     
@@ -494,6 +885,7 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
           );
 
         case 'Agenda Images':
+        case 'Conclave Agenda':
           return agendaCards.length > 0 ? (
             <section key={section.id || idx} id="agenda-gallery" className={styles.eventSection}>
               <ScrollReveal direction="up">
@@ -515,10 +907,15 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                               src={agenda.imageUrl}
                               alt={agenda.title}
                               className={styles.agendaImage}
-                              onClick={() => window.open(agenda.imageUrl, '_blank')}
+                              onClick={() => setActiveCardDetails({ ...agenda, sectionName: 'Agenda' })}
+                              style={{ cursor: 'pointer' }}
                             />
                           </div>
-                          <div className={styles.agendaCaption}>
+                          <div 
+                            className={styles.agendaCaption}
+                            onClick={() => setActiveCardDetails({ ...agenda, sectionName: 'Agenda' })}
+                            style={{ cursor: 'pointer' }}
+                          >
                             <h3>{agenda.title}</h3>
                           </div>
                         </div>
@@ -564,43 +961,13 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                 </div>
               </ScrollReveal>
 
-              {/* Three Separate Agenda Actions */}
+              {/* Dynamic Agenda Actions */}
               <div className={styles.agendaActionsContainer}>
-                <button
-                  type="button"
-                  className={styles.agendaActionBtnSecondary}
-                  onClick={() => {
-                    const url = agendaCards[0]?.extraData?.downloadUrl || '/uploads/conclave_agenda.pdf';
-                    window.open(url, '_blank');
-                  }}
-                >
-                  <Eye size={16} />
-                  <span>View Agenda PDF</span>
-                </button>
-
-                <button
-                  type="button"
-                  className={styles.agendaActionBtnSecondary}
-                  onClick={() => {
-                    const url = agendaCards[0]?.extraData?.downloadUrl || '/uploads/conclave_agenda.pdf';
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.setAttribute('download', 'Dcrc_Conclave_Agenda.pdf');
-                    link.style.display = 'none';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                  }}
-                >
-                  <Download size={16} />
-                  <span>Download Agenda PDF</span>
-                </button>
-
                 <button
                   type="button"
                   className={styles.agendaActionBtnPrimary}
                   onClick={(e) => {
-                    const url = agendaCards[0]?.extraData?.downloadUrl || '/uploads/conclave_agenda.pdf';
+                    const url = agendaCards[0]?.extraData?.downloadUrl || agendaCards[0]?.linkUrl || '/uploads/conclave_agenda.pdf';
                     handleAgendaDownloadClick(e, url);
                   }}
                 >
@@ -720,7 +1087,7 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
             <div key={section.id || idx} className={styles.sectionGlowWrapper}>
               <section className={styles.eventSection}>
                 <ScrollReveal direction="up">
-                  <h2 className={styles.sectionTitle}>Glimpse of Dcrc</h2>
+                  <h2 className={styles.sectionTitle}>Glimpse of DCRC</h2>
                   <p className={styles.sectionSub}>A snapshot of early warning sensor deployments, cool-roof campaigns, and conclave action panels.</p>
                 </ScrollReveal>
 
@@ -934,9 +1301,9 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
         <ScrollReveal direction="down">
           <PageHero
             theme="events"
-            eyebrow={pageData.eyebrow || "Nov 26–27, 2026 · New Delhi"}
+            eyebrow={getDynamicEyebrow()}
             line1="DCRF"
-            line2="Dcrc ’26 Conclave"
+            line2="DCRC ’26 Conclave"
             subtitle=""
           />
         </ScrollReveal>
@@ -962,116 +1329,14 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
               </div>
             ) : (
               <>
-                <h3 className={styles.regFormTitle}>Register Interest for Dcrc ’26</h3>
+                <h3 className={styles.regFormTitle}>Register Interest for DCRC ’26</h3>
                 <p className={styles.regFormSubtitle}>
                   Submit credentials to apply for accreditation. Selected delegates will receive passes via email.
                 </p>
 
                 <form onSubmit={handleSubmit} className={styles.form}>
                   <div className={styles.formGrid}>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>Full Name</label>
-                      <input
-                        type="text"
-                        className={styles.input}
-                        placeholder="e.g. Priyanjali Sen"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                        disabled={isSubmitting}
-                      />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>Email Address</label>
-                      <input
-                        type="email"
-                        className={styles.input}
-                        placeholder="name@organization.org"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        disabled={isSubmitting}
-                      />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>Organization / Institution</label>
-                      <input
-                        type="text"
-                        className={styles.input}
-                        placeholder="e.g. TCU Impact Foundation"
-                        value={company}
-                        onChange={(e) => setCompany(e.target.value)}
-                        required
-                        disabled={isSubmitting}
-                      />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>Designation (Optional)</label>
-                      <input
-                        type="text"
-                        className={styles.input}
-                        placeholder="e.g. Chief Risk Officer"
-                        value={designation}
-                        onChange={(e) => setDesignation(e.target.value)}
-                        disabled={isSubmitting}
-                      />
-                    </div>
-
-                    <div className={`${styles.formGroup} ${styles.fieldFull}`}>
-                      <label className={styles.label}>Delegate Stream</label>
-                      <div className={styles.customDropdown} ref={dropdownRef}>
-                        <button
-                          type="button"
-                          className={styles.dropdownTrigger}
-                          onClick={() => setDropdownOpen(!dropdownOpen)}
-                          aria-label="Select delegate stream"
-                          aria-expanded={dropdownOpen}
-                          disabled={isSubmitting}
-                        >
-                          <div className={styles.dropdownSelected}>
-                            <div className={styles.dropdownText}>
-                              <span className={styles.dropdownLabel}>
-                                {roleOptions.find(opt => opt.value === role)?.label}
-                              </span>
-                              <span className={styles.dropdownSubLabel}>
-                                {roleOptions.find(opt => opt.value === role)?.description}
-                              </span>
-                            </div>
-                          </div>
-                          <ChevronDown
-                            size={18}
-                            className={`${styles.dropdownChevron} ${dropdownOpen ? styles.dropdownChevronOpen : ''}`}
-                          />
-                        </button>
-                        {dropdownOpen && (
-                          <div className={styles.dropdownMenu}>
-                            {roleOptions.map((option) => (
-                              <button
-                                key={option.value}
-                                type="button"
-                                className={`${styles.dropdownOption} ${role === option.value ? styles.dropdownOptionActive : ''}`}
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  setRole(option.value);
-                                  setDropdownOpen(false);
-                                }}
-                              >
-                                <div className={styles.dropdownText}>
-                                  <span className={styles.dropdownLabel}>{option.label}</span>
-                                  <span className={styles.dropdownSubLabel}>{option.description}</span>
-                                </div>
-                                {role === option.value && (
-                                  <Check size={16} className={styles.dropdownCheck} />
-                                )}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                    {fields.map(field => renderDynamicField(field))}
                   </div>
 
                   {formError && (
@@ -1119,71 +1384,7 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                 Please authorize download by entering your official coordinates. The PDF will open automatically.
               </p>
               <form onSubmit={handleGateSubmit} className={styles.modalForm}>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Official Email</label>
-                  <input
-                    type="email"
-                    required
-                    placeholder="name@organization.org"
-                    className={styles.input}
-                    value={gateEmail}
-                    onChange={(e) => setGateEmail(e.target.value)}
-                    disabled={gateSubmitting}
-                  />
-                </div>
-
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Full Name</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Priyanjali Sen"
-                    className={styles.input}
-                    value={gateName}
-                    onChange={(e) => setGateName(e.target.value)}
-                    disabled={gateSubmitting}
-                  />
-                </div>
-
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Mobile Number (10 digits)</label>
-                  <input
-                    type="tel"
-                    required
-                    pattern="\d{10}"
-                    placeholder="e.g. 9876543210"
-                    className={styles.input}
-                    value={gateMobile}
-                    onChange={(e) => setGateMobile(e.target.value)}
-                    disabled={gateSubmitting}
-                  />
-                </div>
-
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Designation</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Climate Finance Lead"
-                    className={styles.input}
-                    value={gateDesignation}
-                    onChange={(e) => setGateDesignation(e.target.value)}
-                    disabled={gateSubmitting}
-                  />
-                </div>
-
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Organization</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. TCU Impact Foundation"
-                    className={styles.input}
-                    value={gateOrg}
-                    onChange={(e) => setGateOrg(e.target.value)}
-                    disabled={gateSubmitting}
-                  />
-                </div>
+                {gateFields.map(field => renderGateDynamicField(field))}
 
                 {gateError && (
                   <div className={styles.errorText}>
@@ -1246,7 +1447,7 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
         {/* ── CARD DETAILS MODAL (READ MORE IN OVERLAY) ── */}
         {activeCardDetails && (
           <div className={styles.modalOverlay} onClick={() => setActiveCardDetails(null)}>
-            <div className={styles.modalContent} onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px' }}>
+            <div className={styles.modalContent} onClick={(e) => e.stopPropagation()} style={{ maxWidth: activeCardDetails.imageUrl ? '850px' : '550px', width: '90%', padding: '32px' }}>
               <button
                 type="button"
                 className={styles.modalClose}
@@ -1256,21 +1457,65 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                 <X size={18} />
               </button>
               
-              <div className={styles.modalDetailsHeader}>
-                <span className={styles.modalDetailsBadge} style={{ display: 'inline-block', backgroundColor: 'var(--wine-red-pale)', color: 'var(--wine-red-primary)', fontSize: '10px', fontWeight: '700', textTransform: 'uppercase', padding: '3px 8px', borderRadius: '4px', letterSpacing: '0.5px' }}>
-                  {activeCardDetails.sectionName}
-                </span>
-                <h3 className={styles.modalTitle} style={{ marginTop: '8px', marginBottom: '16px' }}>{activeCardDetails.title}</h3>
-              </div>
+              <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '28px', alignItems: 'flex-start', marginTop: '10px' }}>
+                {/* Left Column (Image) */}
+                {activeCardDetails.imageUrl && (
+                  <div 
+                    className={styles.modalDetailsImageWrap} 
+                    style={{ 
+                      flex: '1 1 320px',
+                      maxWidth: '100%',
+                      height: activeCardDetails.sectionName === 'Agenda' ? '480px' : '340px', 
+                      borderRadius: '12px', 
+                      overflow: 'hidden', 
+                      backgroundColor: activeCardDetails.sectionName === 'Agenda' ? 'rgba(255,255,255,0.03)' : 'transparent',
+                      border: '1px solid var(--border-color)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: activeCardDetails.sectionName === 'Agenda' ? '8px' : '0',
+                      marginBottom: 0
+                    }}
+                  >
+                    <img 
+                      src={activeCardDetails.imageUrl} 
+                      alt={activeCardDetails.title} 
+                      style={{ 
+                        maxWidth: '100%', 
+                        maxHeight: '100%', 
+                        width: 'auto', 
+                        height: 'auto', 
+                        objectFit: activeCardDetails.sectionName === 'Agenda' ? 'contain' : 'cover'
+                      }} 
+                    />
+                  </div>
+                )}
 
-              {activeCardDetails.imageUrl && (
-                <div className={styles.modalDetailsImageWrap} style={{ width: '100%', height: '260px', borderRadius: '12px', overflow: 'hidden', marginBottom: '20px' }}>
-                  <img src={activeCardDetails.imageUrl} alt={activeCardDetails.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                {/* Right Column (Text details) */}
+                <div style={{ flex: '1.2 1 320px', minWidth: '280px', display: 'flex', flexDirection: 'column' }}>
+                  <div className={styles.modalDetailsHeader}>
+                    <span className={styles.modalDetailsBadge} style={{ display: 'inline-block', backgroundColor: 'var(--wine-red-pale)', color: 'var(--wine-red-primary)', fontSize: '10px', fontWeight: '700', textTransform: 'uppercase', padding: '3px 8px', borderRadius: '4px', letterSpacing: '0.5px' }}>
+                      {activeCardDetails.sectionName}
+                    </span>
+                    <h3 className={styles.modalTitle} style={{ marginTop: '12px', marginBottom: '16px', fontSize: '22px', fontWeight: '800', lineHeight: '1.3' }}>
+                      {activeCardDetails.title}
+                    </h3>
+                  </div>
+
+                  <div 
+                    className={styles.modalDetailsDesc} 
+                    style={{ 
+                      fontSize: '14px', 
+                      lineHeight: '1.7', 
+                      color: 'var(--text-muted)', 
+                      maxHeight: activeCardDetails.sectionName === 'Agenda' ? '380px' : '260px', 
+                      overflowY: 'auto', 
+                      paddingRight: '12px' 
+                    }}
+                  >
+                    {activeCardDetails.description || 'No description available.'}
+                  </div>
                 </div>
-              )}
-
-              <div className={styles.modalDetailsDesc} style={{ fontSize: '14px', lineHeight: '1.6', color: 'var(--text-default)', maxHeight: '200px', overflowY: 'auto', paddingRight: '8px' }}>
-                {activeCardDetails.description}
               </div>
             </div>
           </div>
@@ -1398,8 +1643,8 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                           type="text"
                           className={styles.input}
                           placeholder="e.g. Priyanjali Sen"
-                          value={name}
-                          onChange={(e) => setName(e.target.value)}
+                          value={formValues.name || ''}
+                          onChange={(e) => setFormValues(prev => ({ ...prev, name: e.target.value }))}
                           required
                         />
                       </div>
@@ -1410,8 +1655,8 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                           type="email"
                           className={styles.input}
                           placeholder="name@organization.org"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
+                          value={formValues.email || ''}
+                          onChange={(e) => setFormValues(prev => ({ ...prev, email: e.target.value }))}
                           required
                         />
                       </div>
@@ -1422,8 +1667,8 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                           type="text"
                           className={styles.input}
                           placeholder="e.g. TCU Impact Foundation"
-                          value={company}
-                          onChange={(e) => setCompany(e.target.value)}
+                          value={formValues.company || ''}
+                          onChange={(e) => setFormValues(prev => ({ ...prev, company: e.target.value }))}
                           required
                         />
                       </div>
@@ -1434,8 +1679,8 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                           type="text"
                           className={styles.input}
                           placeholder="e.g. Lead Climate Advisor"
-                          value={designation}
-                          onChange={(e) => setDesignation(e.target.value)}
+                          value={formValues.designation || ''}
+                          onChange={(e) => setFormValues(prev => ({ ...prev, designation: e.target.value }))}
                         />
                       </div>
 
@@ -1547,104 +1792,7 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                   </p>
 
                   <form onSubmit={handleSubmit} className={styles.form}>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>Full Name</label>
-                      <input
-                        type="text"
-                        className={styles.input}
-                        placeholder="e.g. Priyanjali Sen"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                      />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>Email Address</label>
-                      <input
-                        type="email"
-                        className={styles.input}
-                        placeholder="name@organization.org"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                      />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>Organization / Institution</label>
-                      <input
-                        type="text"
-                        className={styles.input}
-                        placeholder="e.g. TCU Impact Foundation"
-                        value={company}
-                        onChange={(e) => setCompany(e.target.value)}
-                        required
-                      />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>Designation (Optional)</label>
-                      <input
-                        type="text"
-                        className={styles.input}
-                        placeholder="e.g. Chief Risk Officer"
-                        value={designation}
-                        onChange={(e) => setDesignation(e.target.value)}
-                      />
-                    </div>
-
-                    <div className={`${styles.formGroup} ${styles.dropdownGroup}`}>
-                      <label className={styles.label}>Delegate Stream</label>
-                      <div className={styles.customDropdown} ref={dropdownRef}>
-                        <button
-                          type="button"
-                          className={styles.dropdownTrigger}
-                          onClick={() => setDropdownOpen(!dropdownOpen)}
-                          aria-label="Select delegate stream"
-                          aria-expanded={dropdownOpen}
-                        >
-                          <div className={styles.dropdownSelected}>
-                            <div className={styles.dropdownText}>
-                              <span className={styles.dropdownLabel}>
-                                {roleOptions.find(opt => opt.value === role)?.label}
-                              </span>
-                              <span className={styles.dropdownSubLabel}>
-                                {roleOptions.find(opt => opt.value === role)?.description}
-                              </span>
-                            </div>
-                          </div>
-                          <ChevronDown
-                            size={18}
-                            className={`${styles.dropdownChevron} ${dropdownOpen ? styles.dropdownChevronOpen : ''}`}
-                          />
-                        </button>
-                        {dropdownOpen && (
-                          <div className={styles.dropdownMenu}>
-                            {roleOptions.map((option) => (
-                              <button
-                                key={option.value}
-                                type="button"
-                                className={`${styles.dropdownOption} ${role === option.value ? styles.dropdownOptionActive : ''}`}
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  setRole(option.value);
-                                  setDropdownOpen(false);
-                                }}
-                              >
-                                <div className={styles.dropdownText}>
-                                  <span className={styles.dropdownLabel}>{option.label}</span>
-                                  <span className={styles.dropdownSubLabel}>{option.description}</span>
-                                </div>
-                                {role === option.value && (
-                                  <Check size={16} className={styles.dropdownCheck} />
-                                )}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                    {fields.map(field => renderDynamicField(field))}
 
                     {formError && (
                       <div className={styles.errorText}>

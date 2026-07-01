@@ -17,7 +17,7 @@ export const tickerAlerts: TickerAlert[] = [
   { id: '4', text: 'Uttarakhand landslide: 6 districts on high alert, 200+ roads blocked' },
   { id: '5', text: 'Delhi AQI crosses 350 — DCRF air quality panel to convene this week' },
   { id: '6', text: 'IMD issues red alert for heavy rainfall in Maharashtra and Gujarat coast' },
-  { id: '7', text: 'Dcrc ’26 registrations open — 26–27 November 2026, New Delhi' }
+  { id: '7', text: 'DCRC ’26 registrations open — 26–27 November 2026, New Delhi' }
 ];
 
 export const heroStats: StatItem[] = [
@@ -324,7 +324,7 @@ export const membershipFeatures = [
   'News & analytical information sharing',
   'Capacity building programmes',
   'Stakeholder engagements',
-  'Event participation (Dcrc)',
+  'Event participation (DCRC)',
   'National Delegation participation',
   'International Delegation participation',
   'Advisory Committee membership'
@@ -339,7 +339,7 @@ export const membershipTiers: MembershipTier[] = [
       'News & analytical information sharing': true,
       'Capacity building programmes': true,
       'Stakeholder engagements': false,
-      'Event participation (Dcrc)': false,
+      'Event participation (DCRC)': false,
       'National Delegation participation': false,
       'International Delegation participation': false,
       'Advisory Committee membership': false
@@ -353,7 +353,7 @@ export const membershipTiers: MembershipTier[] = [
       'News & analytical information sharing': true,
       'Capacity building programmes': true,
       'Stakeholder engagements': false,
-      'Event participation (Dcrc)': true,
+      'Event participation (DCRC)': true,
       'National Delegation participation': false,
       'International Delegation participation': false,
       'Advisory Committee membership': false
@@ -367,7 +367,7 @@ export const membershipTiers: MembershipTier[] = [
       'News & analytical information sharing': true,
       'Capacity building programmes': true,
       'Stakeholder engagements': true,
-      'Event participation (Dcrc)': true,
+      'Event participation (DCRC)': true,
       'National Delegation participation': true,
       'International Delegation participation': true,
       'Advisory Committee membership': false
@@ -382,7 +382,7 @@ export const membershipTiers: MembershipTier[] = [
       'News & analytical information sharing': true,
       'Capacity building programmes': true,
       'Stakeholder engagements': true,
-      'Event participation (Dcrc)': true,
+      'Event participation (DCRC)': true,
       'National Delegation participation': true,
       'International Delegation participation': true,
       'Advisory Committee membership': true

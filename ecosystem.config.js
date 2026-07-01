@@ -3,7 +3,7 @@ module.exports = {
     name: 'dcrs',
     script: '.next/standalone/server-wrapper.js',  // Use your custom server wrapper
     args: '',  // No args needed
-    instances: 2,  // Run at least 2 instances for zero-downtime
+    instances: 1,  // Run 1 instance to reduce memory usage
     exec_mode: 'cluster',
     
     // Zero-downtime reload settings

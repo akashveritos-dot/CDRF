@@ -8,11 +8,17 @@ import {
   Loader2,
   AlertCircle,
   Calendar,
-  User
+  User,
+  Send
 } from 'lucide-react';
 import styles from '../memberships/page.module.css';
+import { useToast } from '@/components/ui/Toast/ToastContext';
+import EmailSenderModal from '@/components/admin/EmailSenderModal';
 
 export default function AdminSubscriptions() {
+  const toast = useToast();
+  const [selectedEmails, setSelectedEmails] = useState<string[]>([]);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -173,7 +179,7 @@ export default function AdminSubscriptions() {
       )}
 
       {/* Filter and Search Dashboard */}
-      <div className={styles.controls}>
+      <div className={styles.controls} style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
         {/* Search */}
         <div className={styles.searchWrapper} style={{ flex: 1 }}>
           <Search size={18} className={styles.searchIcon} />
@@ -185,6 +191,22 @@ export default function AdminSubscriptions() {
             className={styles.searchInput}
           />
         </div>
+        <button
+          onClick={() => setIsEmailModalOpen(true)}
+          className={styles.exportBtn}
+          style={{
+            background: 'var(--wine-red-primary)',
+            color: '#ffffff',
+            border: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            boxShadow: '0 2px 4px rgba(185, 28, 28, 0.15)'
+          }}
+        >
+          <Send size={14} />
+          <span>Send Email ({selectedEmails.length})</span>
+        </button>
       </div>
 
       {/* Database Output List */}
@@ -198,6 +220,20 @@ export default function AdminSubscriptions() {
           <table className={styles.table}>
             <thead>
               <tr>
+                <th style={{ width: '40px', paddingLeft: '16px' }}>
+                  <input
+                    type="checkbox"
+                    checked={filteredSubscriptions.length > 0 && selectedEmails.length === filteredSubscriptions.length}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedEmails(filteredSubscriptions.map(s => s.email).filter(Boolean));
+                      } else {
+                        setSelectedEmails([]);
+                      }
+                    }}
+                    style={{ cursor: 'pointer' }}
+                  />
+                </th>
                 <th>Subscriber Details</th>
                 <th>Subscribed Date (IST)</th>
                 <th>Last Updated (IST)</th>
@@ -207,6 +243,20 @@ export default function AdminSubscriptions() {
             <tbody>
               {filteredSubscriptions.map((item) => (
                 <tr key={item.id} className={styles.tableRow}>
+                  <td style={{ verticalAlign: 'middle', paddingLeft: '16px' }}>
+                    <input
+                      type="checkbox"
+                      checked={selectedEmails.includes(item.email)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedEmails([...selectedEmails, item.email]);
+                        } else {
+                          setSelectedEmails(selectedEmails.filter(email => email !== item.email));
+                        }
+                      }}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  </td>
                   <td>
                     <div className={styles.applicantInfo}>
                       <span className={styles.name} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -267,6 +317,14 @@ export default function AdminSubscriptions() {
           <p>Modify search filters or subscribe via the public website forms.</p>
         </div>
       )}
+
+      <EmailSenderModal
+        isOpen={isEmailModalOpen}
+        onClose={() => setIsEmailModalOpen(false)}
+        initialSelectedEmails={selectedEmails}
+        allRecipients={subscriptions.map(s => ({ name: s.name, email: s.email }))}
+        toast={toast}
+      />
     </div>
   );
 }

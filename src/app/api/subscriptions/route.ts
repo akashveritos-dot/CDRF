@@ -3,6 +3,13 @@ import { query, transactionalDelete } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
 import { logAction } from '@/lib/audit';
+import { z } from 'zod';
+import logger from '@/lib/logger';
+
+const subscriptionSchema = z.object({
+  email: z.string().email({ message: 'Invalid email address.' }).trim(),
+  name: z.string().optional().nullable().transform(val => val && val.trim() ? val.trim() : null)
+});
 
 // Helper function to get current date/time in Indian Standard Time (IST)
 function getISTDatetime(): string {
@@ -52,18 +59,22 @@ export async function GET(req: NextRequest) {
 // POST /api/subscriptions - Submit email/name to subscribe (Public)
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { email, name } = body;
-
-    if (!email || !email.trim()) {
-      return NextResponse.json(
-        { error: 'Email address is required' },
-        { status: 400 }
-      );
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON request body.' }, { status: 400 });
     }
 
-    const cleanEmail = email.toLowerCase().trim();
-    const cleanName = name && name.trim() ? name.trim() : null;
+    const validationResult = subscriptionSchema.safeParse(body);
+    if (!validationResult.success) {
+      const errorMsg = validationResult.error.issues[0]?.message || 'Input validation failed.';
+      logger.warn({ errors: validationResult.error.format() }, 'Subscription form validation failure');
+      return NextResponse.json({ error: errorMsg }, { status: 400 });
+    }
+
+    const { email, name } = validationResult.data;
+    const cleanEmail = email.toLowerCase();
     const currentIst = getISTDatetime();
 
     // Check if already subscribed
@@ -79,6 +90,7 @@ export async function POST(req: NextRequest) {
     );
 
     if (existingSub.length > 0 || existingMember.length > 0) {
+      logger.info({ email: cleanEmail }, 'Subscription attempt: already subscribed/member');
       return NextResponse.json({
         success: true,
         alreadyExists: true,
@@ -86,22 +98,46 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Insert or update on duplicate key (if name is supplied, update it, otherwise keep old name)
+    // Insert or update on duplicate key
     await query(
       `INSERT INTO subscriptions (name, email, created_at, updated_at)
        VALUES (?, ?, ?, ?)
        ON DUPLICATE KEY UPDATE
          name = IF(VALUES(name) IS NOT NULL, VALUES(name), name),
          updated_at = VALUES(updated_at)`,
-      [cleanName, cleanEmail, currentIst, currentIst]
+      [name, cleanEmail, currentIst, currentIst]
     );
+
+    logger.info({ email: cleanEmail, name }, 'New public subscription registered');
+
+    // Trigger non-blocking background subscription confirmation email
+    (async () => {
+      try {
+        const templates = await query<any[]>('SELECT subject, body FROM email_templates WHERE template_key = "subscriber_confirmation"');
+        if (templates.length > 0) {
+          const { subject, body } = templates[0];
+          const displayName = name && name.trim() ? name.trim() : 'Subscriber';
+          const compiledSubject = subject.replace(/{{name}}/g, displayName).replace(/{{email}}/g, cleanEmail);
+          const compiledBody = body.replace(/{{name}}/g, displayName).replace(/{{email}}/g, cleanEmail);
+          
+          const { sendEmail } = require('@/lib/email');
+          await sendEmail({
+            to: cleanEmail,
+            subject: compiledSubject,
+            html: compiledBody
+          });
+        }
+      } catch (err) {
+        console.error('[API SUBSCRIPTIONS EMAIL ERROR]', err);
+      }
+    })();
 
     return NextResponse.json({
       success: true,
       message: 'Welcome to the DCRF Circle! Your subscription has been successfully activated. You will now receive policy briefs, hazard bulletins, and event updates directly.'
     });
   } catch (error: any) {
-    console.error('Subscribe error:', error);
+    logger.error(error, 'Subscribe error');
     return NextResponse.json(
       { error: 'Failed to subscribe' },
       { status: 500 }

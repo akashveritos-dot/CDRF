@@ -1,3 +1,4 @@
+import { getJwtSecret } from './env';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const webCrypto = (typeof crypto !== 'undefined' ? crypto : null) as any;
 
@@ -45,13 +46,13 @@ async function getHmacKey(secret: string): Promise<CryptoKey> {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function signToken(payload: any, secret: string = process.env.JWT_SECRET || 'dcrf_jwt_secret_key'): Promise<string> {
+export async function signToken(payload: any, secret?: string): Promise<string> {
   const header = { alg: 'HS256', typ: 'JWT' };
   const base64Header = arrayBufferToBase64Url(encoder.encode(JSON.stringify(header)).buffer);
   const base64Payload = arrayBufferToBase64Url(encoder.encode(JSON.stringify(payload)).buffer);
   const signatureInput = `${base64Header}.${base64Payload}`;
   
-  const key = await getHmacKey(secret);
+  const key = await getHmacKey(secret || getJwtSecret());
   const signature = await webCrypto.subtle.sign(
     'HMAC',
     key,
@@ -63,7 +64,7 @@ export async function signToken(payload: any, secret: string = process.env.JWT_S
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function verifyToken(token: string, secret: string = process.env.JWT_SECRET || 'dcrf_jwt_secret_key'): Promise<any> {
+export async function verifyToken(token: string, secret?: string): Promise<any> {
   if (!token) return null;
   const parts = token.split('.');
   if (parts.length !== 3) return null;
@@ -72,7 +73,7 @@ export async function verifyToken(token: string, secret: string = process.env.JW
   const signatureInput = `${headerB64}.${payloadB64}`;
   
   try {
-    const key = await getHmacKey(secret);
+    const key = await getHmacKey(secret || getJwtSecret());
     const signature = base64UrlToArrayBuffer(signatureB64);
     
     const isValid = await webCrypto.subtle.verify(

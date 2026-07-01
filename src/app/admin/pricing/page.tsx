@@ -24,7 +24,7 @@ const BENEFIT_LIST = [
   'News & analytical information sharing',
   'Capacity building programmes',
   'Stakeholder engagements',
-  'Event participation (Dcrc)',
+  'Event participation (DCRC)',
   'National Delegation participation',
   'International Delegation participation',
   'Advisory Committee membership'

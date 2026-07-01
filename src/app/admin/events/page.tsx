@@ -134,7 +134,7 @@ export default function AdminEvents() {
           <Calendar className={styles.headerIcon} size={28} />
           <div>
             <h1>Conclave Registrations</h1>
-            <p>Review delegate registrations for the Dcrc Conclave 2026, approve passes, and manage check-ins.</p>
+            <p>Review delegate registrations for the DCRC Conclave 2026, approve passes, and manage check-ins.</p>
           </div>
         </div>
       </div>

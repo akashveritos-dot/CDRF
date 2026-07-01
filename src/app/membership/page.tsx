@@ -72,17 +72,9 @@ const TIER_CONFIG = {
   },
 } as const;
 
-// Tier options for custom dropdown
-const tierOptions = [
-  { value: 'Basic', label: 'Basic', subLabel: 'Free individual / student', icon: <Shield size={16} />, color: '#64748b' },
-  { value: 'Prime', label: 'Prime', subLabel: '₹20,000/yr — NGO/Academia', icon: <Zap size={16} />, color: '#0e7a6b' },
-  { value: 'Premium', label: 'Premium', subLabel: '₹50,000/yr — Small SME', icon: <Star size={16} />, color: '#6d28d9' },
-  { value: 'Gold', label: 'Gold', subLabel: '₹1,00,000/yr — Corporate / Enterprise', icon: <Crown size={16} />, color: '#b45309' },
-];
-
 export default function MembershipPage() {
   const { success, warning, error: toastError } = useToast();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<Record<string, string>>({
     name: '',
     email: '',
     organization: '',
@@ -90,6 +82,53 @@ export default function MembershipPage() {
     title: '',
     message: ''
   });
+  const [fields, setFields] = useState<any[]>([]);
+  const [fieldsLoading, setFieldsLoading] = useState(true);
+
+  const defaultFields = [
+    { name: 'name', label: 'Full Name', type: 'text', isRequired: true },
+    { name: 'email', label: 'Email Address', type: 'email', isRequired: true },
+    { name: 'organization', label: 'Organisation / Institution', type: 'text', isRequired: true },
+    { name: 'title', label: 'Professional Title', type: 'text', isRequired: false },
+    { name: 'tier', label: 'Membership Tier', type: 'select', isRequired: true },
+    { name: 'message', label: 'Additional Notes / Purpose', type: 'textarea', isRequired: false }
+  ];
+
+  const fieldIcons: Record<string, React.ReactNode> = {
+    name: <User className={styles.inputIcon} size={18} />,
+    email: <Mail className={styles.inputIcon} size={18} />,
+    organization: <Building className={styles.inputIcon} size={18} />,
+    title: <Award className={styles.inputIcon} size={18} />,
+    message: <MessageSquare className={styles.textareaIcon} size={18} />
+  };
+
+  useEffect(() => {
+    async function loadFields() {
+      try {
+        const res = await fetch('/api/forms/fields?type=membership');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && Array.isArray(data.fields) && data.fields.length > 0) {
+            setFields(data.fields);
+            const initialValues: Record<string, string> = { tier: 'Basic' };
+            data.fields.forEach((f: any) => {
+              if (f.name !== 'tier') initialValues[f.name] = '';
+            });
+            setFormData(prev => ({ ...prev, ...initialValues }));
+            setFieldsLoading(false);
+            return;
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load dynamic membership fields:', err);
+      }
+      setFields(defaultFields);
+      setFieldsLoading(false);
+    }
+    loadFields();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const [flowStep, setFlowStep] = useState<'form' | 'payment' | 'success'>('form');
   const [applicationId, setApplicationId] = useState<number | null>(null);
   const [razorpayOrderId, setRazorpayOrderId] = useState<string>('');
@@ -193,6 +232,16 @@ export default function MembershipPage() {
     }
     return `₹${t.price.toLocaleString('en-IN')}/yr — ${subTextClean}`;
   };
+
+  const tierOptions = React.useMemo(() => {
+    return [
+      { value: 'Basic', label: 'Basic', subLabel: getTierSubLabel('Basic'), icon: <Shield size={16} />, color: '#64748b' },
+      { value: 'Prime', label: 'Prime', subLabel: getTierSubLabel('Prime'), icon: <Zap size={16} />, color: '#0e7a6b' },
+      { value: 'Premium', label: 'Premium', subLabel: getTierSubLabel('Premium'), icon: <Star size={16} />, color: '#6d28d9' },
+      { value: 'Gold', label: 'Gold', subLabel: getTierSubLabel('Gold'), icon: <Crown size={16} />, color: '#b45309' },
+    ];
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tiers, currentTime]);
 
   // Tier rank map for upgrade UI filtering
   const TIER_RANK: Record<string, number> = { Basic: 0, Prime: 1, Premium: 2, Gold: 3 };
@@ -316,8 +365,16 @@ export default function MembershipPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.name && formData.email && formData.organization) {
-      setIsSubmitting(true);
+
+    const activeFields = fields.length > 0 ? fields : defaultFields;
+    for (const f of activeFields) {
+      if (f.isRequired && !formData[f.name]?.trim()) {
+        toastError('Validation Error', `${f.label} is required.`);
+        return;
+      }
+    }
+
+    setIsSubmitting(true);
       try {
         const isPaidTier = formData.tier !== 'Basic';
 
@@ -406,7 +463,181 @@ export default function MembershipPage() {
       } finally {
         setIsSubmitting(false);
       }
+  };
+
+  const renderDynamicField = (field: any) => {
+    const value = formData[field.name] || '';
+    const handleValueChange = (val: string) => {
+      setFormData(prev => ({ ...prev, [field.name]: val }));
+      if (field.name === 'email') {
+        setEmailCheckResult(null);
+      }
+    };
+
+    const icon = fieldIcons[field.name] || <Award className={styles.inputIcon} size={18} />;
+
+    if (field.type === 'textarea') {
+      return (
+        <div className={`${styles.formGroup} ${styles.fieldFull}`} key={field.name}>
+          <label className={styles.label}>{field.label}</label>
+          <div className={styles.textareaWrapper}>
+            <MessageSquare className={styles.textareaIcon} size={18} />
+            <textarea
+              name={field.name}
+              rows={4}
+              placeholder={`Briefly describe your ${field.label.toLowerCase()}...`}
+              className={styles.textarea}
+              value={value}
+              onChange={(e) => handleValueChange(e.target.value)}
+              required={field.isRequired}
+            />
+          </div>
+        </div>
+      );
     }
+
+    if (field.name === 'tier' && field.type === 'select') {
+      if (emailCheckResult?.hasMembership && !emailCheckResult.isExpired) return null;
+
+      return (
+        <div className={`${styles.formGroup} ${styles.fieldFull}`} key={field.name}>
+          <label className={styles.label}>{field.label}</label>
+          <div className={styles.customDropdown} ref={dropdownRef}>
+            <button
+              type="button"
+              className={styles.dropdownTrigger}
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              aria-label="Select membership tier"
+              aria-expanded={dropdownOpen}
+            >
+              <div className={styles.dropdownSelected}>
+                <span className={styles.dropdownIcon} style={{ color: tierOptionsFiltered.find(t => t.value === formData.tier)?.color || tierOptions.find(t => t.value === formData.tier)?.color }}>
+                  {tierOptionsFiltered.find(t => t.value === formData.tier)?.icon || tierOptions.find(t => t.value === formData.tier)?.icon}
+                </span>
+                <div className={styles.dropdownText}>
+                  <span className={styles.dropdownLabel}>
+                    {tierOptions.find(t => t.value === formData.tier)?.label}
+                  </span>
+                  <span className={styles.dropdownSubLabel}>
+                    {getTierSubLabel(formData.tier)}
+                  </span>
+                </div>
+              </div>
+              <ChevronDown
+                size={18}
+                className={`${styles.dropdownChevron} ${dropdownOpen ? styles.dropdownChevronOpen : ''}`}
+              />
+            </button>
+            {isMounted && dropdownOpen && (
+              <div className={styles.dropdownMenu}>
+                {tierOptionsFiltered.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    className={`${styles.dropdownOption} ${formData.tier === option.value ? styles.dropdownOptionActive : ''}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleValueChange(option.value);
+                      setTimeout(() => setDropdownOpen(false), 100);
+                    }}
+                  >
+                    <span className={styles.dropdownIcon} style={{ color: option.color }}>
+                      {option.icon}
+                    </span>
+                    <div className={styles.dropdownText}>
+                      <span className={styles.dropdownLabel}>{option.label}</span>
+                      <span className={styles.dropdownSubLabel}>{getTierSubLabel(option.value)}</span>
+                    </div>
+                    {formData.tier === option.value && (
+                      <Check size={16} className={styles.dropdownCheck} />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    if (field.type === 'select') {
+      return (
+        <div className={styles.formGroup} key={field.name}>
+          <label className={styles.label}>{field.label}</label>
+          <div className={styles.inputWrapper}>
+            {icon}
+            <select
+              name={field.name}
+              className={styles.input}
+              style={{ width: '100%', height: '42px', paddingLeft: '40px', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', color: '#fff', borderRadius: 'var(--radius-md)' }}
+              value={value}
+              onChange={(e) => handleValueChange(e.target.value)}
+              required={field.isRequired}
+            >
+              <option value="" style={{ background: '#1c1917', color: '#fff' }}>{`Select ${field.label}...`}</option>
+              {field.options && field.options.split(',').map((opt: string) => (
+                <option key={opt.trim()} value={opt.trim()} style={{ background: '#1c1917', color: '#fff' }}>{opt.trim()}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      );
+    }
+
+    if (field.type === 'checkbox') {
+      return (
+        <div className={styles.formGroup} key={field.name} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '14px', marginBottom: '14px' }}>
+          <input
+            type="checkbox"
+            id={`chk-${field.name}`}
+            checked={value === 'true'}
+            onChange={(e) => handleValueChange(e.target.checked ? 'true' : 'false')}
+            required={field.isRequired}
+            style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+          />
+          <label htmlFor={`chk-${field.name}`} className={styles.label} style={{ margin: 0, cursor: 'pointer', display: 'inline', color: '#e2e8f0' }}>
+            {field.label}
+          </label>
+        </div>
+      );
+    }
+
+    return (
+      <div className={styles.formGroup} key={field.name}>
+        <label className={styles.label}>{field.label}</label>
+        <div className={styles.inputWrapper}>
+          {icon}
+          <input
+            type={field.type}
+            name={field.name}
+            className={styles.input}
+            placeholder={`Enter your ${field.label.toLowerCase()}...`}
+            value={value}
+            onChange={(e) => handleValueChange(e.target.value)}
+            required={field.isRequired}
+          />
+        </div>
+        {field.name === 'email' && emailCheckLoading && (
+          <div style={{ marginTop: '8px', fontSize: '12px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⟳</span> Checking membership...
+          </div>
+        )}
+        {field.name === 'email' && emailCheckResult?.hasMembership && emailCheckResult.isExpired && (
+          <div style={{
+            marginTop: '10px',
+            background: 'rgba(59,130,246,0.06)',
+            border: '1px solid rgba(59,130,246,0.18)',
+            borderRadius: '10px',
+            padding: '12px 16px',
+            fontSize: '12px',
+            color: '#94a3b8'
+          }}>
+            <span style={{ color: '#60a5fa', fontWeight: 600 }}>↻ Your {emailCheckResult.tier} membership has expired.</span> Select a plan below to renew or upgrade.
+          </div>
+        )}
+      </div>
+    );
   };
 
   const handlePayment = async () => {
@@ -1266,130 +1497,7 @@ export default function MembershipPage() {
               </p>
 
               <div className={styles.formGrid}>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Full Name</label>
-                  <div className={styles.inputWrapper}>
-                    <User className={styles.inputIcon} size={18} />
-                    <input type="text" name="name" required placeholder="Dr./Mr./Ms. Name" className={styles.input} value={formData.name} onChange={handleInputChange} />
-                  </div>
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Corporate Email</label>
-                  <div className={styles.inputWrapper}>
-                    <Mail className={styles.inputIcon} size={18} />
-                    <input
-                      type="email"
-                      name="email"
-                      required
-                      placeholder="name@organization.org"
-                      className={styles.input}
-                      value={formData.email}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  {/* Loading spinner */}
-                  {emailCheckLoading && (
-                    <div style={{ marginTop: '8px', fontSize: '12px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⟳</span> Checking membership...
-                    </div>
-                  )}
-                  {/* Expired member notice */}
-                  {emailCheckResult?.hasMembership && emailCheckResult.isExpired && (
-                    <div style={{
-                      marginTop: '10px',
-                      background: 'rgba(59,130,246,0.06)',
-                      border: '1px solid rgba(59,130,246,0.18)',
-                      borderRadius: '10px',
-                      padding: '12px 16px',
-                      fontSize: '12px',
-                      color: '#94a3b8'
-                    }}>
-                      <span style={{ color: '#60a5fa', fontWeight: 600 }}>↻ Your {emailCheckResult.tier} membership has expired.</span> Select a plan below to renew or upgrade.
-                    </div>
-                  )}
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Organization / Institution</label>
-                  <div className={styles.inputWrapper}>
-                    <Building className={styles.inputIcon} size={18} />
-                    <input type="text" name="organization" required placeholder="Full Company Name" className={styles.input} value={formData.organization} onChange={handleInputChange} />
-                  </div>
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>Job Title / Designation</label>
-                  <div className={styles.inputWrapper}>
-                    <Award className={styles.inputIcon} size={18} />
-                    <input type="text" name="title" placeholder="e.g. Director Sustainability" className={styles.input} value={formData.title} onChange={handleInputChange} />
-                  </div>
-                </div>
-                {/* Tier dropdown — only shown when no active membership detected */}
-                {!(emailCheckResult?.hasMembership && !emailCheckResult.isExpired) && (
-                <div className={`${styles.formGroup} ${styles.fieldFull}`}>
-                  <label className={styles.label}>Select Target Membership Tier</label>
-                  <div className={styles.customDropdown} ref={dropdownRef}>
-                    <button
-                      type="button"
-                      className={styles.dropdownTrigger}
-                      onClick={() => setDropdownOpen(!dropdownOpen)}
-                      aria-label="Select membership tier"
-                      aria-expanded={dropdownOpen}
-                    >
-                      <div className={styles.dropdownSelected}>
-                        <span className={styles.dropdownIcon} style={{ color: tierOptionsFiltered.find(t => t.value === formData.tier)?.color || tierOptions.find(t => t.value === formData.tier)?.color }}>
-                          {tierOptionsFiltered.find(t => t.value === formData.tier)?.icon || tierOptions.find(t => t.value === formData.tier)?.icon}
-                        </span>
-                        <div className={styles.dropdownText}>
-                          <span className={styles.dropdownLabel}>
-                            {tierOptions.find(t => t.value === formData.tier)?.label}
-                          </span>
-                          <span className={styles.dropdownSubLabel}>
-                            {getTierSubLabel(formData.tier)}
-                          </span>
-                        </div>
-                      </div>
-                      <ChevronDown
-                        size={18}
-                        className={`${styles.dropdownChevron} ${dropdownOpen ? styles.dropdownChevronOpen : ''}`}
-                      />
-                    </button>
-                    {isMounted && dropdownOpen && (
-                      <div className={styles.dropdownMenu}>
-                        {tierOptionsFiltered.map((option) => (
-                          <button
-                            key={option.value}
-                            type="button"
-                            className={`${styles.dropdownOption} ${formData.tier === option.value ? styles.dropdownOptionActive : ''}`}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              setFormData(prev => ({ ...prev, tier: option.value }));
-                              setTimeout(() => setDropdownOpen(false), 100);
-                            }}
-                          >
-                            <span className={styles.dropdownIcon} style={{ color: option.color }}>
-                              {option.icon}
-                            </span>
-                            <div className={styles.dropdownText}>
-                              <span className={styles.dropdownLabel}>{option.label}</span>
-                              <span className={styles.dropdownSubLabel}>{getTierSubLabel(option.value)}</span>
-                            </div>
-                            {formData.tier === option.value && (
-                              <Check size={16} className={styles.dropdownCheck} />
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                )}
-                <div className={`${styles.formGroup} ${styles.fieldFull}`}>
-                  <label className={styles.label}>Resilience Focus / Brief Description</label>
-                  <div className={styles.textareaWrapper}>
-                    <MessageSquare className={styles.textareaIcon} size={18} />
-                    <textarea name="message" rows={4} placeholder="Briefly describe your interest in DCRF working groups..." className={styles.textarea} value={formData.message} onChange={handleInputChange} />
-                  </div>
-                </div>
+                {fields.map(field => renderDynamicField(field))}
 
                 {/* ── Premium Inline Upgrade Panel ─────────────────────────── */}
                 {emailCheckResult?.hasMembership && !emailCheckResult.isExpired ? (() => {

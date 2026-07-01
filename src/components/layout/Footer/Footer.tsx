@@ -103,7 +103,7 @@ export default function Footer() {
         <div className={styles.col}>
           <h5>Partners & Links</h5>
           <div className={styles.linksList}>
-            <Link href="/event">Dcrc ’26 Conclave</Link>
+            <Link href="/event/dcrc-26">DCRC ’26 Conclave</Link>
             <a href="https://thecsruniverse.com" target="_blank" rel="noopener noreferrer">
               TheCSRUniverse ↗
             </a>

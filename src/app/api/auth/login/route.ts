@@ -3,27 +3,42 @@ import { query } from '@/lib/db';
 import { verifyPassword } from '@/lib/auth-node';
 import { signToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
+import { z } from 'zod';
+import logger from '@/lib/logger';
+
+const loginSchema = z.object({
+  email: z.string().email({ message: 'Invalid email address.' }).trim(),
+  password: z.string().min(1, { message: 'Password is required.' })
+});
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, password } = await req.json();
-
-    if (!email || !password) {
-      return NextResponse.json(
-        { error: 'Email and password are required' },
-        { status: 400 }
-      );
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON request body.' }, { status: 400 });
     }
 
+    const validationResult = loginSchema.safeParse(body);
+    if (!validationResult.success) {
+      const errorMsg = validationResult.error.issues[0]?.message || 'Invalid input validation.';
+      logger.warn({ errors: validationResult.error.format() }, 'Invalid login payload');
+      return NextResponse.json({ error: errorMsg }, { status: 400 });
+    }
+
+    const { email, password } = validationResult.data;
+
     // Query the database for the user
-    console.log('[DEBUG AUTH] Database login attempt:', { email });
+    logger.info({ email }, 'Database login attempt');
     const users = await query<any[]>(
       'SELECT id, email, password_hash, name, role, is_active FROM users WHERE email = ? LIMIT 1',
       [email]
     );
-    console.log('[DEBUG AUTH] Users found:', users.map(u => ({ id: u.id, email: u.email, role: u.role })));
+    logger.debug({ count: users.length }, 'Users queried from DB');
 
     if (users.length === 0) {
+      logger.warn({ email }, 'Login failure: User not found');
       return NextResponse.json(
         { error: 'Invalid email or password' },
         { status: 401 }
@@ -34,7 +49,7 @@ export async function POST(req: NextRequest) {
 
     // Verify role is ADMIN or SUPERADMIN (no login/signup for regular users)
     if (user.role !== 'ADMIN' && user.role !== 'SUPERADMIN') {
-      console.log('[DEBUG AUTH] Access denied for non-admin role:', user.role);
+      logger.warn({ email, role: user.role }, 'Access denied: Non-admin role login attempt');
       return NextResponse.json(
         { error: 'Access denied. Administrator privileges required.' },
         { status: 403 }
@@ -43,7 +58,7 @@ export async function POST(req: NextRequest) {
 
     // Check if user is active
     if (!user.is_active) {
-      console.log('[DEBUG AUTH] Access denied for inactive user:', user.email);
+      logger.warn({ email }, 'Access denied: Inactive user account');
       return NextResponse.json(
         { error: 'Account is inactive. Please contact support.' },
         { status: 403 }
@@ -54,6 +69,7 @@ export async function POST(req: NextRequest) {
     const isPasswordValid = verifyPassword(password, user.password_hash);
 
     if (!isPasswordValid) {
+      logger.warn({ email }, 'Login failure: Incorrect password');
       return NextResponse.json(
         { error: 'Invalid email or password' },
         { status: 401 }
@@ -80,6 +96,8 @@ export async function POST(req: NextRequest) {
       maxAge: 60 * 60 * 24 // 24 hours
     });
 
+    logger.info({ email, userId: user.id, role: user.role }, 'User successfully authenticated');
+
     return NextResponse.json({
       success: true,
       user: {
@@ -91,7 +109,7 @@ export async function POST(req: NextRequest) {
     });
 
   } catch (error: any) {
-    console.error('Login error:', error);
+    logger.error(error, 'Login operation failed');
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

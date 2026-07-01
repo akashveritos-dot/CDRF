@@ -10,11 +10,17 @@ import {
   User,
   FileText,
   Calendar,
-  Filter
+  Filter,
+  Send
 } from 'lucide-react';
 import styles from './page.module.css';
+import { useToast } from '@/components/ui/Toast/ToastContext';
+import EmailSenderModal from '@/components/admin/EmailSenderModal';
 
 export default function AdminReportDownloads() {
+  const toast = useToast();
+  const [selectedEmails, setSelectedEmails] = useState<string[]>([]);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [downloads, setDownloads] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -191,8 +197,8 @@ export default function AdminReportDownloads() {
       )}
 
       {/* Controls */}
-      <div className={styles.controls}>
-        <div className={styles.searchWrapper}>
+      <div className={styles.controls} style={{ flexWrap: 'wrap', gap: '16px' }}>
+        <div className={styles.searchWrapper} style={{ flex: 1, minWidth: '280px' }}>
           <Search size={16} className={styles.searchIcon} />
           <input
             type="text"
@@ -202,6 +208,23 @@ export default function AdminReportDownloads() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
+        <button
+          onClick={() => setIsEmailModalOpen(true)}
+          className={styles.exportBtn}
+          style={{
+            background: 'var(--wine-red-primary)',
+            color: '#ffffff',
+            border: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            boxShadow: '0 2px 4px rgba(185, 28, 28, 0.15)',
+            height: '40px'
+          }}
+        >
+          <Send size={14} />
+          <span>Send Email ({selectedEmails.length})</span>
+        </button>
         <div className={styles.filterWrapper}>
           <Filter size={14} className={styles.filterIcon} />
           <select
@@ -230,6 +253,20 @@ export default function AdminReportDownloads() {
           <table className={styles.table}>
             <thead>
               <tr>
+                <th style={{ width: '40px', paddingLeft: '16px' }}>
+                  <input
+                    type="checkbox"
+                    checked={filteredDownloads.length > 0 && selectedEmails.length === filteredDownloads.length}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedEmails(filteredDownloads.map(d => d.email).filter(Boolean));
+                      } else {
+                        setSelectedEmails([]);
+                      }
+                    }}
+                    style={{ cursor: 'pointer' }}
+                  />
+                </th>
                 <th style={{ width: '50px' }}>#</th>
                 <th>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -265,6 +302,20 @@ export default function AdminReportDownloads() {
             <tbody>
               {filteredDownloads.map((d, idx) => (
                 <tr key={d.id} className={styles.tableRow}>
+                  <td style={{ verticalAlign: 'middle', paddingLeft: '16px' }}>
+                    <input
+                      type="checkbox"
+                      checked={selectedEmails.includes(d.email)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedEmails([...selectedEmails, d.email]);
+                        } else {
+                          setSelectedEmails(selectedEmails.filter(email => email !== d.email));
+                        }
+                      }}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  </td>
                   <td className={styles.indexCell}>{idx + 1}</td>
                   <td>
                     <span className={styles.nameText}>{d.name}</span>
@@ -309,6 +360,14 @@ export default function AdminReportDownloads() {
           </p>
         </div>
       )}
+
+      <EmailSenderModal
+        isOpen={isEmailModalOpen}
+        onClose={() => setIsEmailModalOpen(false)}
+        initialSelectedEmails={selectedEmails}
+        allRecipients={downloads.map(d => ({ name: d.name, email: d.email }))}
+        toast={toast}
+      />
     </div>
   );
 }

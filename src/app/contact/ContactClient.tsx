@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Loader2, Mail, Phone, MapPin, Send, CheckCircle, AlertTriangle } from 'lucide-react';
 import styles from './page.module.css';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
@@ -23,16 +23,54 @@ interface ContactData {
 }
 
 export default function ContactClient({ contactData }: { contactData: ContactData }) {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [subject, setSubject] = useState('');
-  const [message, setMessage] = useState('');
+  const [formValues, setFormValues] = useState<Record<string, string>>({});
+  const [fields, setFields] = useState<any[]>([]);
+  const [fieldsLoading, setFieldsLoading] = useState(true);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [mapMode, setMapMode] = useState<'road' | 'satellite'>('road');
+
+  const defaultFields = [
+    { name: 'name', label: 'Full Name', type: 'text', isRequired: true },
+    { name: 'email', label: 'Email Address', type: 'email', isRequired: true },
+    { name: 'subject', label: 'Subject', type: 'text', isRequired: true },
+    { name: 'message', label: 'Message Details', type: 'textarea', isRequired: true }
+  ];
+
+  useEffect(() => {
+    async function loadFields() {
+      try {
+        const res = await fetch('/api/forms/fields?type=contact');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && Array.isArray(data.fields) && data.fields.length > 0) {
+            setFields(data.fields);
+            const initialValues: Record<string, string> = {};
+            data.fields.forEach((f: any) => {
+              initialValues[f.name] = '';
+            });
+            setFormValues(initialValues);
+            setFieldsLoading(false);
+            return;
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load dynamic contact fields:', err);
+      }
+      setFields(defaultFields);
+      const initialValues: Record<string, string> = {};
+      defaultFields.forEach((f: any) => {
+        initialValues[f.name] = '';
+      });
+      setFormValues(initialValues);
+      setFieldsLoading(false);
+    }
+    loadFields();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const emails = contactData.contacts.filter(c => c.type === 'email');
   const phones = contactData.contacts.filter(c => c.type === 'phone');
@@ -43,10 +81,17 @@ export default function ContactClient({ contactData }: { contactData: ContactDat
     setIsLoading(true);
 
     try {
+      const activeFields = fields.length > 0 ? fields : defaultFields;
+      for (const field of activeFields) {
+        if (field.isRequired && !formValues[field.name]?.trim()) {
+          throw new Error(`${field.label} is required.`);
+        }
+      }
+
       const res = await fetch('/api/contacts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, subject, message })
+        body: JSON.stringify(formValues)
       });
 
       const data = await res.json();
@@ -57,12 +102,91 @@ export default function ContactClient({ contactData }: { contactData: ContactDat
 
       setIsSuccess(true);
       setSuccessMsg(data.message || 'Thank you! Your query has been logged. Our secretariat will contact you shortly.');
-      setName(''); setEmail(''); setSubject(''); setMessage('');
+      
+      const resetValues: Record<string, string> = {};
+      activeFields.forEach((f: any) => {
+        resetValues[f.name] = '';
+      });
+      setFormValues(resetValues);
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred.');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const renderDynamicField = (field: any) => {
+    const value = formValues[field.name] || '';
+    const handleValueChange = (val: string) => {
+      setFormValues(prev => ({ ...prev, [field.name]: val }));
+    };
+
+    if (field.type === 'textarea') {
+      return (
+        <div className={styles.formGroup} key={field.name}>
+          <label className={styles.label}>{field.label}</label>
+          <textarea
+            className={styles.textarea}
+            placeholder={`Enter your ${field.label.toLowerCase()}...`}
+            value={value}
+            onChange={(e) => handleValueChange(e.target.value)}
+            required={field.isRequired}
+          />
+        </div>
+      );
+    }
+
+    if (field.type === 'select') {
+      return (
+        <div className={styles.formGroup} key={field.name}>
+          <label className={styles.label}>{field.label}</label>
+          <select
+            className={styles.input}
+            style={{ width: '100%', height: '42px', padding: '0 12px', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-color)', color: '#fff', borderRadius: 'var(--radius-md)' }}
+            value={value}
+            onChange={(e) => handleValueChange(e.target.value)}
+            required={field.isRequired}
+          >
+            <option value="" style={{ background: '#1c1917', color: '#fff' }}>{`Select ${field.label}...`}</option>
+            {field.options && field.options.map((opt: string) => (
+              <option key={opt} value={opt} style={{ background: '#1c1917', color: '#fff' }}>{opt}</option>
+            ))}
+          </select>
+        </div>
+      );
+    }
+
+    if (field.type === 'checkbox') {
+      return (
+        <div className={styles.formGroup} key={field.name} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '14px', marginBottom: '14px' }}>
+          <input
+            type="checkbox"
+            id={`chk-${field.name}`}
+            checked={value === 'true'}
+            onChange={(e) => handleValueChange(e.target.checked ? 'true' : 'false')}
+            required={field.isRequired}
+            style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+          />
+          <label htmlFor={`chk-${field.name}`} className={styles.label} style={{ margin: 0, cursor: 'pointer', display: 'inline', color: '#e2e8f0' }}>
+            {field.label}
+          </label>
+        </div>
+      );
+    }
+
+    return (
+      <div className={styles.formGroup} key={field.name}>
+        <label className={styles.label}>{field.label}</label>
+        <input
+          type={field.type}
+          className={styles.input}
+          placeholder={`Enter your ${field.label.toLowerCase()}...`}
+          value={value}
+          onChange={(e) => handleValueChange(e.target.value)}
+          required={field.isRequired}
+        />
+      </div>
+    );
   };
 
   return (
@@ -224,26 +348,7 @@ export default function ContactClient({ contactData }: { contactData: ContactDat
                   </p>
 
                   <form onSubmit={handleSubmit} className={styles.form}>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>Full Name</label>
-                      <input type="text" className={styles.input} placeholder="e.g. Vikramaditya Roy"
-                        value={name} onChange={(e) => setName(e.target.value)} required />
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>Email Address</label>
-                      <input type="email" className={styles.input} placeholder="name@organization.org"
-                        value={email} onChange={(e) => setEmail(e.target.value)} required />
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>Subject</label>
-                      <input type="text" className={styles.input} placeholder="e.g. DCRC Conclave Sponsorship"
-                        value={subject} onChange={(e) => setSubject(e.target.value)} required />
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>Message Details</label>
-                      <textarea className={styles.textarea} placeholder="Write your request or message here..."
-                        value={message} onChange={(e) => setMessage(e.target.value)} required />
-                    </div>
+                    {fields.map(field => renderDynamicField(field))}
 
                     {error && (
                       <div className={styles.errorText}>

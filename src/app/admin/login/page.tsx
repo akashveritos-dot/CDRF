@@ -94,6 +94,7 @@ export default function AdminLoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="superadmin@dcrf.org"
                 className={styles.input}
+                suppressHydrationWarning={true}
               />
             </div>
           </div>
@@ -110,11 +111,12 @@ export default function AdminLoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 className={styles.input}
+                suppressHydrationWarning={true}
               />
             </div>
           </div>
 
-          <button type="submit" disabled={isLoading} className={styles.submitBtn}>
+          <button type="submit" disabled={isLoading} className={styles.submitBtn} suppressHydrationWarning={true}>
             {isLoading ? (
               <>
                 <Loader2 size={16} className={styles.spinner} />

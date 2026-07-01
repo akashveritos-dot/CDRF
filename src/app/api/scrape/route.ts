@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { runScraper } from '@/lib/scraper';
 import { verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
+import { getCronSecret } from '@/lib/env';
 
 // GET/POST /api/scrape - Run the web scraper
 // Secured by either CRON secret or Admin Session Cookie
@@ -17,7 +18,7 @@ async function handleScrapeTrigger(req: NextRequest) {
   try {
     const url = new URL(req.url);
     const clientSecret = url.searchParams.get('secret');
-    const cronSecret = process.env.CRON_SECRET || 'dcrf_cron_secret_trigger';
+    const cronSecret = getCronSecret();
 
     let authorized = false;
 

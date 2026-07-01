@@ -29,10 +29,14 @@ import {
 } from 'lucide-react';
 import styles from './layout.module.css';
 import './admin-theme.css';
+import { useToast } from '@/components/ui/Toast/ToastContext';
+import EmailTemplatesModal from '@/components/admin/EmailTemplatesModal';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const toast = useToast();
+  const [isTemplatesModalOpen, setIsTemplatesModalOpen] = useState(false);
   const [adminUser, setAdminUser] = useState<any>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [sidebarCounts, setSidebarCounts] = useState<any>({
@@ -122,6 +126,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: 'Manage Hero Section', path: '/admin/hero', icon: <Sliders size={18} /> },
     { name: 'Manage Hazard Maps', path: '/admin/maps', icon: <MapPin size={18} /> },
     { name: 'Manage CMS Pages', path: '/admin/pages', icon: <BookOpen size={18} /> },
+    { name: 'Dynamic Forms', path: '/admin/forms', icon: <Sliders size={18} /> },
     { name: 'Manage Gallery', path: '/admin/gallery', icon: <Image size={18} /> },
     { name: 'Query Messages', path: '/admin/contacts', icon: <MessageSquare size={18} />, countKey: 'queries' },
     { name: 'Manage News', path: '/admin/news', icon: <Newspaper size={18} /> },
@@ -226,9 +231,58 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Main Content Area */}
       <main className={styles.content}>
         <div className={styles.contentInner}>
+          {/* Top Bar Control Desk */}
+          <div className="admin-top-bar" style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '24px',
+            background: 'rgba(10, 15, 29, 0.6)',
+            border: '1px solid rgba(255, 255, 255, 0.05)',
+            borderRadius: '12px',
+            padding: '12px 20px',
+            backdropFilter: 'blur(8px)',
+            boxSizing: 'border-box',
+            width: '100%',
+            gap: '12px',
+            flexWrap: 'wrap'
+          }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              <span style={{ fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>DCRF Control Desk</span>
+              <span style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff' }}>Active System Operations</span>
+            </div>
+            
+            <button
+              onClick={() => setIsTemplatesModalOpen(true)}
+              style={{
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.2)',
+                borderRadius: '8px',
+                padding: '8px 16px',
+                fontSize: '12px',
+                fontWeight: 600,
+                color: '#ef4444',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <FileText size={14} />
+              <span>Manage Templates</span>
+            </button>
+          </div>
+
           {children}
         </div>
       </main>
+
+      <EmailTemplatesModal
+        isOpen={isTemplatesModalOpen}
+        onClose={() => setIsTemplatesModalOpen(false)}
+        toast={toast}
+      />
     </div>
   );
 }
