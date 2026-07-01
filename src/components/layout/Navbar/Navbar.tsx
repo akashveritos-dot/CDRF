@@ -663,8 +663,8 @@ export default function Navbar() {
             className={`${styles.bottomTab} ${pathname === '/' && !activeSubmenu ? styles.bottomTabActive : ''}`}
             onClick={() => setActiveSubmenu(null)}
           >
-            <Home size={20} />
-            <span>Home</span>
+            <Home size={18} />
+            <span className={styles.bottomTabLabel}>Home</span>
           </Link>
 
           <Link
@@ -672,32 +672,25 @@ export default function Navbar() {
             className={`${styles.bottomTab} ${pathname === '/news' && !activeSubmenu ? styles.bottomTabActive : ''}`}
             onClick={() => setActiveSubmenu(null)}
           >
-            <Newspaper size={20} />
-            <span>News</span>
+            <Newspaper size={18} />
+            <span className={styles.bottomTabLabel}>News</span>
           </Link>
 
+          {/* Bell Alert Tab — mobile */}
           <button
-            className={`${styles.bottomTab} ${activeSubmenu === 'Events' ? styles.bottomTabActive : ''}`}
-            onClick={() => setActiveSubmenu(activeSubmenu === 'Events' ? null : 'Events')}
+            className={`${styles.bottomTab} ${showAlertPopup ? styles.bottomTabActive : ''}`}
+            onClick={() => { setShowAlertPopup(prev => !prev); setActiveSubmenu(null); }}
+            aria-label="Weather alerts"
           >
-            <Calendar size={20} />
-            <span>Events</span>
-          </button>
-
-          <button
-            className={`${styles.bottomTab} ${activeSubmenu === 'Insights' ? styles.bottomTabActive : ''}`}
-            onClick={() => setActiveSubmenu(activeSubmenu === 'Insights' ? null : 'Insights')}
-          >
-            <BookOpen size={20} />
-            <span>Insights</span>
-          </button>
-
-          <button
-            className={`${styles.bottomTab} ${activeSubmenu === 'More' ? styles.bottomTabActive : ''}`}
-            onClick={() => setActiveSubmenu(activeSubmenu === 'More' ? null : 'More')}
-          >
-            <Menu size={20} />
-            <span>More</span>
+            <span className={styles.bellTabWrap}>
+              <Bell size={18} />
+              {activeAlerts.some(a => a.type === 'storm' || a.type === 'flood' || a.type === 'heat') && (
+                <span className={styles.bellBadgeMobile}>
+                  {activeAlerts.filter(a => a.type === 'storm' || a.type === 'flood' || a.type === 'heat').length}
+                </span>
+              )}
+            </span>
+            <span className={styles.bottomTabLabel}>Alerts</span>
           </button>
 
           <button
@@ -707,31 +700,22 @@ export default function Navbar() {
               setActiveSubmenu(null);
             }}
           >
-            <MessageSquare size={20} />
-            <span>Chat</span>
+            <MessageSquare size={18} />
+            <span className={styles.bottomTabLabel}>Chat</span>
           </button>
 
-          {/* Bell Alert Tab — mobile */}
           <button
-            className={`${styles.bottomTab} ${showAlertPopup ? styles.bottomTabActive : ''}`}
-            onClick={() => { setShowAlertPopup(prev => !prev); setActiveSubmenu(null); }}
-            aria-label="Weather alerts"
+            className={`${styles.bottomTab} ${activeSubmenu === 'More' ? styles.bottomTabActive : ''}`}
+            onClick={() => setActiveSubmenu(activeSubmenu === 'More' ? null : 'More')}
           >
-            <span className={styles.bellTabWrap}>
-              <Bell size={20} />
-              {activeAlerts.some(a => a.type === 'storm' || a.type === 'flood' || a.type === 'heat') && (
-                <span className={styles.bellBadgeMobile}>
-                  {activeAlerts.filter(a => a.type === 'storm' || a.type === 'flood' || a.type === 'heat').length}
-                </span>
-              )}
-            </span>
-            <span>Alerts</span>
+            <Menu size={18} />
+            <span className={styles.bottomTabLabel}>Menu</span>
           </button>
         </div>
 
         {/* Floating Submenus Rendered Above */}
         <AnimatePresence>
-          {activeSubmenu && (
+          {activeSubmenu === 'More' && (
             <motion.div
               className={styles.bottomSubmenuWrapper}
               initial={{ opacity: 0, y: 15, scale: 0.95 }}
@@ -741,96 +725,88 @@ export default function Navbar() {
             >
               <div className={styles.bottomSubmenuCard}>
                 <div className={styles.submenuHeader}>
-                  <h4>{activeSubmenu === 'More' ? 'Menu' : activeSubmenu} Links</h4>
-                  <button onClick={() => setActiveSubmenu(null)} aria-label="Close submenu">
+                  <h4>Menu Links</h4>
+                  <button onClick={() => setActiveSubmenu(null)} aria-label="Close menu">
                     <X size={14} />
                   </button>
                 </div>
                 <div className={styles.submenuLinksList}>
-                  {activeSubmenu === 'Events' && (
-                    <>
-                      <Link href="/event/dcrc-26" className={pathname === '/event/dcrc-26' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>DCRC &apos;26 Conclave</Link>
-                      <Link href="/event/dcrc-26#agenda-gallery" className={pathname === '/event/dcrc-26' && hash === '#agenda-gallery' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Agenda</Link>
-                    </>
-                  )}
-                  {activeSubmenu === 'Insights' && (
-                    <>
-                      <Link href="/reports" className={pathname === '/reports' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Policy Reports</Link>
-                      <Link href="/insights/map" className={pathname === '/insights/map' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Hazard Map</Link>
-                      <Link href="/podcasts" className={pathname === '/podcasts' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Podcasts</Link>
-                      <Link href="/insights/event-videos" className={pathname === '/insights/event-videos' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Event Videos</Link>
-                    </>
-                  )}
-                  {activeSubmenu === 'More' && (
-                    <>
-                      <div className={styles.submenuSectionHeader}>About DCRF</div>
-                      <Link href="/about/mission-vision" className={pathname === '/about/mission-vision' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Mission & Vision</Link>
-                      <Link href="/about/charter-10-point-agenda" className={pathname === '/about/charter-10-point-agenda' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>10 Point Agenda</Link>
-                      <Link href="/about/governing-council" className={pathname === '/about/governing-council' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Governing Council</Link>
-                      <Link href="/about/advisory-council" className={pathname === '/about/advisory-council' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Advisory Council</Link>
-                      <Link href="/about/working-group" className={pathname === '/about/working-group' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Working Group</Link>
-                      
-                      <div className={styles.submenuSectionHeader} style={{ marginTop: '14px' }}>Federation</div>
-                      <Link href="/membership" className={pathname === '/membership' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Membership Tiers</Link>
-                      <Link href="/gallery" className={pathname === '/gallery' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Gallery</Link>
-                      <Link href="/contact" className={pathname === '/contact' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Contact Us</Link>
-                      
-                      <div className={styles.popupSocialDivider} />
-                      <div className={styles.popupSocialHeader}>Follow DCRF</div>
-                      <div className={styles.popupSocialLinks}>
-                        <a
-                          href="https://www.linkedin.com/company/disaster-and-climate-resilience-federation/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={styles.popupSocialLink}
-                        >
-                          <Linkedin size={14} />
-                          <span>LinkedIn</span>
-                        </a>
-                        <a
-                          href="https://www.facebook.com/thecsruniverse.official/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={styles.popupSocialLink}
-                        >
-                          <Facebook size={14} />
-                          <span>Facebook</span>
-                        </a>
-                        <a
-                          href="https://www.youtube.com/@thecsruniverse"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={styles.popupSocialLink}
-                        >
-                          <Youtube size={14} />
-                          <span>YouTube</span>
-                        </a>
-                      </div>
+                  <div className={styles.submenuSectionHeader}>Events</div>
+                  <Link href="/event/dcrc-26" className={pathname === '/event/dcrc-26' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>DCRC &apos;26 Conclave</Link>
+                  <Link href="/event/dcrc-26#agenda-gallery" className={pathname === '/event/dcrc-26' && hash === '#agenda-gallery' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Agenda</Link>
 
-                      <div className={styles.popupSocialDivider} />
-                      <div className={styles.popupSocialHeader}>Telemetry</div>
-                      <button
-                        onClick={() => {
-                          setShowAlertPopup(true);
-                          setActiveSubmenu(null);
-                        }}
-                        className={styles.submenuAlertBtn}
-                      >
-                        <Bell size={12} style={{ display: 'inline', marginRight: '6px' }} />
-                        Active Weather Alerts
-                      </button>
+                  <div className={styles.submenuSectionHeader} style={{ marginTop: '14px' }}>Insights</div>
+                  <Link href="/reports" className={pathname === '/reports' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Policy Reports</Link>
+                  <Link href="/insights/map" className={pathname === '/insights/map' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Hazard Map</Link>
+                  <Link href="/podcasts" className={pathname === '/podcasts' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Podcasts</Link>
+                  <Link href="/insights/event-videos" className={pathname === '/insights/event-videos' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Event Videos</Link>
 
-                      <button
-                        onClick={() => {
-                          setIsSubscribeOpen(true);
-                          setActiveSubmenu(null);
-                        }}
-                        className={styles.submenuSubscribeBtn}
-                      >
-                        Subscribe to Updates
-                      </button>
-                    </>
-                  )}
+                  <div className={styles.submenuSectionHeader} style={{ marginTop: '14px' }}>About DCRF</div>
+                  <Link href="/about/mission-vision" className={pathname === '/about/mission-vision' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Mission & Vision</Link>
+                  <Link href="/about/charter-10-point-agenda" className={pathname === '/about/charter-10-point-agenda' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>10 Point Agenda</Link>
+                  <Link href="/about/governing-council" className={pathname === '/about/governing-council' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Governing Council</Link>
+                  <Link href="/about/advisory-council" className={pathname === '/about/advisory-council' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Advisory Council</Link>
+                  <Link href="/about/working-group" className={pathname === '/about/working-group' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Working Group</Link>
+                  
+                  <div className={styles.submenuSectionHeader} style={{ marginTop: '14px' }}>Federation</div>
+                  <Link href="/membership" className={pathname === '/membership' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Membership Tiers</Link>
+                  <Link href="/gallery" className={pathname === '/gallery' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Gallery</Link>
+                  <Link href="/contact" className={pathname === '/contact' ? styles.activeSubLink : ''} onClick={() => setActiveSubmenu(null)}>Contact Us</Link>
+                  
+                  <div className={styles.popupSocialDivider} />
+                  <div className={styles.popupSocialHeader}>Follow DCRF</div>
+                  <div className={styles.popupSocialLinks}>
+                    <a
+                      href="https://www.linkedin.com/company/disaster-and-climate-resilience-federation/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.popupSocialLink}
+                    >
+                      <Linkedin size={12} />
+                      <span>LinkedIn</span>
+                    </a>
+                    <a
+                      href="https://www.facebook.com/thecsruniverse.official/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.popupSocialLink}
+                    >
+                      <Facebook size={12} />
+                      <span>Facebook</span>
+                    </a>
+                    <a
+                      href="https://www.youtube.com/@thecsruniverse"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.popupSocialLink}
+                    >
+                      <Youtube size={12} />
+                      <span>YouTube</span>
+                    </a>
+                  </div>
+
+                  <div className={styles.popupSocialDivider} />
+                  <div className={styles.popupSocialHeader}>Telemetry</div>
+                  <button
+                    onClick={() => {
+                      setShowAlertPopup(true);
+                      setActiveSubmenu(null);
+                    }}
+                    className={styles.submenuAlertBtn}
+                  >
+                    <Bell size={12} style={{ display: 'inline', marginRight: '6px' }} />
+                    Active Weather Alerts
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setIsSubscribeOpen(true);
+                      setActiveSubmenu(null);
+                    }}
+                    className={styles.submenuSubscribeBtn}
+                  >
+                    Subscribe to Updates
+                  </button>
                 </div>
               </div>
             </motion.div>

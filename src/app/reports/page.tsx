@@ -9,7 +9,7 @@ export default async function ReportsPage() {
   try {
     const rawReports = await query<any[]>('SELECT * FROM reports ORDER BY year DESC, id DESC');
     if (Array.isArray(rawReports)) {
-      reports = rawReports;
+      reports = JSON.parse(JSON.stringify(rawReports));
     }
   } catch (err) {
     console.error('Failed to load reports server-side:', err);

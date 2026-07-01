@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
 import PageHero from '@/components/ui/PageHero/PageHero';
 
 const categories = ['All', 'Breaking', 'Environment', 'Health Crisis', 'Climate', 'Disasters', 'Sustainability'];
@@ -31,11 +32,19 @@ const getFallbackImg = (story: any): string => {
 
 interface NewsPageClientProps {
   initialStories: any[];
+  currentPage: number;
+  totalPages: number;
+  currentCategory: string;
 }
 
-export default function NewsPageClient({ initialStories }: NewsPageClientProps) {
-  const [activeTab, setActiveTab] = useState('All');
-  const [stories] = useState<any[]>(initialStories);
+export default function NewsPageClient({
+  initialStories,
+  currentPage,
+  totalPages,
+  currentCategory
+}: NewsPageClientProps) {
+  const router = useRouter();
+  const stories = initialStories;
 
   const renderReadButton = (story: any, label: string = 'Read story') => {
     return (
@@ -67,33 +76,9 @@ export default function NewsPageClient({ initialStories }: NewsPageClientProps) 
     }
   };
 
-  const sortedStories = React.useMemo(() => {
-    return [...stories].sort((a, b) => {
-      const dateA = new Date(a.published_date || a.date).getTime();
-      const dateB = new Date(b.published_date || b.date).getTime();
-      if (dateB !== dateA) {
-        return dateB - dateA;
-      }
-      return (b.id || 0) - (a.id || 0);
-    });
-  }, [stories]);
-
-  const filteredStories = React.useMemo(() => {
-    if (activeTab === 'All') return sortedStories;
-    return sortedStories.filter(story => {
-      const tag = story.tag?.toLowerCase();
-      const cat = story.category?.toLowerCase();
-      const active = activeTab.toLowerCase();
-      if (tag === active || cat === active) return true;
-      if (active === 'health crisis' && (cat === 'health' || tag === 'health')) return true;
-      return false;
-    });
-  }, [sortedStories, activeTab]);
-
-  const featuredStory = sortedStories[0] || null;
-  const gridStories = featuredStory
-    ? filteredStories.filter(story => story.id !== featuredStory.id || activeTab !== 'All')
-    : filteredStories;
+  const showFeatured = currentCategory === 'All' && currentPage === 1;
+  const featuredStory = showFeatured ? stories[0] || null : null;
+  const gridStories = featuredStory ? stories.slice(1) : stories;
 
   return (
     <div className={styles.page}>
@@ -113,8 +98,8 @@ export default function NewsPageClient({ initialStories }: NewsPageClientProps) 
           {categories.map((cat) => (
             <button
               key={cat}
-              className={`${styles.filterBtn} ${activeTab === cat ? styles.activeFilter : ''}`}
-              onClick={() => setActiveTab(cat)}
+              className={`${styles.filterBtn} ${currentCategory === cat ? styles.activeFilter : ''}`}
+              onClick={() => router.push(`/news?page=1&category=${encodeURIComponent(cat)}`)}
             >
               {cat}
             </button>
@@ -122,8 +107,8 @@ export default function NewsPageClient({ initialStories }: NewsPageClientProps) 
         </div>
       </ScrollReveal>
 
-      {/* Featured Big Story Card (Only on 'All' tab) */}
-      {activeTab === 'All' && featuredStory && (
+      {/* Featured Big Story Card (Only on 'All' tab, first page) */}
+      {showFeatured && featuredStory && (
         <ScrollReveal direction="up" delay={0.2}>
           <div className={styles.featured}>
             <div className={`${styles.featImgContainer} ${getTagAccentColorClass(featuredStory.tag)}`}>
@@ -192,6 +177,55 @@ export default function NewsPageClient({ initialStories }: NewsPageClientProps) 
           </ScrollReveal>
         ))}
       </div>
+
+      {/* Centered Pagination controls */}
+      {totalPages > 1 && (
+        <div className={styles.pagination}>
+          <button
+            className={`${styles.pageBtn} ${currentPage === 1 ? styles.disabledBtn : ''}`}
+            disabled={currentPage === 1}
+            onClick={() => router.push(`/news?page=${currentPage - 1}&category=${encodeURIComponent(currentCategory)}`)}
+          >
+            <ChevronLeft size={16} style={{ marginRight: '4px' }} />
+            Prev
+          </button>
+
+          {(() => {
+            const pages = [];
+            const blockIndex = Math.floor((currentPage - 1) / 3);
+            const startPage = blockIndex * 3 + 1;
+            const endPage = Math.min(totalPages, startPage + 2);
+
+            for (let i = startPage; i <= endPage; i++) {
+              pages.push(i);
+            }
+
+            return (
+              <>
+                {pages.map((p) => (
+                  <button
+                    key={p}
+                    className={`${styles.pageBtn} ${currentPage === p ? styles.activePageBtn : ''}`}
+                    onClick={() => router.push(`/news?page=${p}&category=${encodeURIComponent(currentCategory)}`)}
+                  >
+                    {p}
+                  </button>
+                ))}
+                {totalPages > endPage && <span className={styles.dots}>...</span>}
+              </>
+            );
+          })()}
+
+          <button
+            className={`${styles.pageBtn} ${currentPage === totalPages ? styles.disabledBtn : ''}`}
+            disabled={currentPage === totalPages}
+            onClick={() => router.push(`/news?page=${currentPage + 1}&category=${encodeURIComponent(currentCategory)}`)}
+          >
+            Next
+            <ChevronRight size={16} style={{ marginLeft: '4px' }} />
+          </button>
+        </div>
+      )}
 
       {/* Partners Attribution Bar */}
       <ScrollReveal direction="up">

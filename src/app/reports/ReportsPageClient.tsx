@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
 import ScrollReveal from '@/components/ui/ScrollReveal/ScrollReveal';
-import { Search, Download, BookOpen, Thermometer, Waves, Compass, Mountain, X, Loader2, AlertTriangle } from 'lucide-react';
+import { Search, Download, BookOpen, Thermometer, Waves, Compass, Mountain, X, Loader2, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
 
 import PageHero from '@/components/ui/PageHero/PageHero';
 
@@ -48,7 +48,13 @@ export default function ReportsPageClient({ initialReports }: ReportsPageClientP
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
   const [reportsList] = useState<any[]>(initialReports);
+
+  // Reset pagination to page 1 when search or tab filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, searchQuery]);
 
   // ── Modal state ─────────────────────────────────────────────────────
   const [modalReport, setModalReport] = useState<any>(null);
@@ -161,6 +167,13 @@ export default function ReportsPageClient({ initialReports }: ReportsPageClientP
     });
   }, [sortedReports, activeTab, searchQuery]);
 
+  const totalPages = Math.ceil(filteredReports.length / 20);
+  const displayedReports = React.useMemo(() => {
+    const limit = 20;
+    const offset = (currentPage - 1) * limit;
+    return filteredReports.slice(offset, offset + limit);
+  }, [filteredReports, currentPage]);
+
   return (
     <div className={styles.page}>
       <ScrollReveal direction="down">
@@ -204,9 +217,10 @@ export default function ReportsPageClient({ initialReports }: ReportsPageClientP
       </ScrollReveal>
 
       {/* Reports Grid */}
+      {/* Reports Grid */}
       <div className={styles.grid}>
-        {filteredReports.length > 0 ? (
-          filteredReports.map((report, idx) => (
+        {displayedReports.length > 0 ? (
+          displayedReports.map((report, idx) => (
             <ScrollReveal
               key={report.id}
               direction="up"
@@ -268,6 +282,55 @@ export default function ReportsPageClient({ initialReports }: ReportsPageClientP
           </ScrollReveal>
         )}
       </div>
+
+      {/* Centered Pagination controls */}
+      {totalPages > 1 && (
+        <div className={styles.pagination}>
+          <button
+            className={`${styles.pageBtn} ${currentPage === 1 ? styles.disabledBtn : ''}`}
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+          >
+            <ChevronLeft size={16} style={{ marginRight: '4px' }} />
+            Prev
+          </button>
+
+          {(() => {
+            const pages = [];
+            const blockIndex = Math.floor((currentPage - 1) / 3);
+            const startPage = blockIndex * 3 + 1;
+            const endPage = Math.min(totalPages, startPage + 2);
+
+            for (let i = startPage; i <= endPage; i++) {
+              pages.push(i);
+            }
+
+            return (
+              <>
+                {pages.map((p) => (
+                  <button
+                    key={p}
+                    className={`${styles.pageBtn} ${currentPage === p ? styles.activePageBtn : ''}`}
+                    onClick={() => setCurrentPage(p)}
+                  >
+                    {p}
+                  </button>
+                ))}
+                {totalPages > endPage && <span className={styles.dots}>...</span>}
+              </>
+            );
+          })()}
+
+          <button
+            className={`${styles.pageBtn} ${currentPage === totalPages ? styles.disabledBtn : ''}`}
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+          >
+            Next
+            <ChevronRight size={16} style={{ marginLeft: '4px' }} />
+          </button>
+        </div>
+      )}
 
       {/* ── Name & Email Popup Modal ────────────────────────────────────── */}
       {modalReport && (

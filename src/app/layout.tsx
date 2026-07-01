@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter, Playfair_Display } from 'next/font/google';
+import Script from 'next/script';
 import './globals.css';
 import { ToastProvider } from '@/components/ui/Toast/ToastContext';
 import { TelemetryProvider } from '@/context/TelemetryContext';
@@ -30,9 +31,9 @@ export const metadata: Metadata = {
   keywords: 'Disaster Management, Climate Resilience, India Climate Index, India Disaster Dashboard, CSR Climate Adaptation, DCRC Conclave',
   authors: [{ name: 'DCRF Secretariat' }],
   icons: {
-    icon: '/dcrf orginal logo.png',
-    shortcut: '/dcrf orginal logo.png',
-    apple: '/dcrf orginal logo.png',
+    icon: '/icon.png',
+    shortcut: '/icon.png',
+    apple: '/icon.png',
   },
   openGraph: {
     title: 'Disaster & Climate Resilience Federation (DCRF)',
@@ -50,6 +51,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`} suppressHydrationWarning>
+      <head>
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9798737451337349"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body suppressHydrationWarning>
         <ToastProvider>
           <TelemetryProvider>
