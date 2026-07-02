@@ -20,14 +20,15 @@ export async function POST(req: NextRequest) {
     let finalPrice = originalPrice;
 
     // Check for active discount
-    const discountRes = await query<any[]>('SELECT percentage, start_date, end_date FROM membership_discounts WHERE tier_name = ?', [tier]);
+    const discountRes = await query<any[]>('SELECT percentage, start_date, end_date, is_active FROM membership_discounts WHERE tier_name = ?', [tier]);
     if (discountRes && discountRes.length > 0) {
       const d = discountRes[0];
       const today = new Date();
       const start = new Date(d.start_date);
       const end = new Date(d.end_date);
+      const isActive = d.is_active === 1 || d.is_active === true || d.is_active === null;
 
-      if (today >= start && today <= end) {
+      if (isActive && today >= start && today <= end) {
         finalPrice = originalPrice - (originalPrice * (d.percentage / 100));
       }
     }

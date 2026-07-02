@@ -3,13 +3,24 @@ import { query } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
-// Tier rank for upgrade/downgrade detection
-const TIER_RANK: Record<string, number> = {
-  Basic: 0,
-  Prime: 1,
-  Premium: 2,
-  Gold: 3,
-};
+// Tier rank helper for upgrade/downgrade detection
+async function getDynamicTierRanks(): Promise<Record<string, number>> {
+  try {
+    const plans = await query<any[]>('SELECT name, price FROM membership_plans ORDER BY price ASC');
+    const ranks: Record<string, number> = {};
+    plans.forEach((p, idx) => {
+      ranks[p.name] = idx;
+    });
+    // Ensure basic fallback rank
+    if (!ranks['Basic']) {
+      ranks['Basic'] = 0;
+    }
+    return ranks;
+  } catch (err) {
+    console.error('[getDynamicTierRanks] Failed to query plans:', err);
+    return { Basic: 0, Prime: 1, Premium: 2, Gold: 3 };
+  }
+}
 
 async function findExistingMembership(cleanEmail: string): Promise<any | null> {
   try {
@@ -123,6 +134,7 @@ export async function POST(req: NextRequest) {
       const isExpired = expiresAt ? expiresAt < now : false;
 
       if (!isExpired && existing.membership_status !== 'Cancelled') {
+        const TIER_RANK = await getDynamicTierRanks();
         const existingRank = TIER_RANK[existing.tier] ?? -1;
         const requestedRank = TIER_RANK[tier] ?? -1;
 

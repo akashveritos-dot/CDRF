@@ -47,6 +47,7 @@ interface Discount {
   percentage: number;
   startDate: string;
   endDate: string;
+  isActive: boolean | number;
 }
 
 export default function AdminPricingPage() {
@@ -74,7 +75,8 @@ export default function AdminPricingPage() {
     title: '',
     percentage: 10,
     startDate: '',
-    endDate: ''
+    endDate: '',
+    isActive: true
   });
 
   const [isSaving, setIsSaving] = useState(false);
@@ -192,7 +194,8 @@ export default function AdminPricingPage() {
       title: 'Early Bird Sale',
       percentage: 10,
       startDate: formatDateForDatetimeLocal(new Date().toISOString()),
-      endDate: formatDateForDatetimeLocal(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString())
+      endDate: formatDateForDatetimeLocal(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()),
+      isActive: true
     });
     setError('');
     setSuccessMsg('');
@@ -207,7 +210,8 @@ export default function AdminPricingPage() {
       title: discount.title,
       percentage: discount.percentage,
       startDate: formatDateForDatetimeLocal(discount.startDate),
-      endDate: formatDateForDatetimeLocal(discount.endDate)
+      endDate: formatDateForDatetimeLocal(discount.endDate),
+      isActive: discount.isActive === 1 || discount.isActive === true || discount.isActive === null
     });
     setError('');
     setSuccessMsg('');
@@ -221,10 +225,16 @@ export default function AdminPricingPage() {
     setIsSaving(true);
     setActionLoading('Saving discount campaign...');
     try {
+      const payload = {
+        ...discountForm,
+        startDate: new Date(discountForm.startDate).toISOString(),
+        endDate: new Date(discountForm.endDate).toISOString()
+      };
+
       const res = await fetch('/api/admin/pricing', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(discountForm)
+        body: JSON.stringify(payload)
       });
 
       const data = await res.json();
@@ -265,8 +275,11 @@ export default function AdminPricingPage() {
     }
   };
 
-  // Check Discount Status (Active, Upcoming, Expired)
+  // Check Discount Status (Active, Upcoming, Expired, Inactive)
   const getDiscountStatus = (discount: Discount) => {
+    if (discount.isActive === 0 || discount.isActive === false) {
+      return { text: 'Inactive', style: styles.statusExpired };
+    }
     const today = new Date();
     const start = new Date(discount.startDate);
     const end = new Date(discount.endDate);
@@ -688,6 +701,21 @@ export default function AdminPricingPage() {
                       className={styles.inputField}
                     />
                   </div>
+                </div>
+
+                {/* Active Toggle Checkbox */}
+                <div className={styles.checkboxGroup} style={{ marginTop: '12px', marginBottom: '12px' }}>
+                  <input
+                    type="checkbox"
+                    id="isActiveDiscount"
+                    name="isActive"
+                    checked={discountForm.isActive}
+                    onChange={(e) => setDiscountForm(prev => ({ ...prev, isActive: e.target.checked }))}
+                    className={styles.checkboxField}
+                  />
+                  <label htmlFor="isActiveDiscount" style={{ textTransform: 'uppercase', fontSize: '11px', fontWeight: 700, color: '#64748b', cursor: 'pointer' }}>
+                    Campaign is Active
+                  </label>
                 </div>
 
                 {/* Live Preview Console Box */}

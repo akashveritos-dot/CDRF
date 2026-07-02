@@ -3,12 +3,23 @@ import { query } from '@/lib/db';
 import { sendEmail } from '@/lib/email';
 import { welcomeEmail, upgradeConfirmationEmail } from '@/lib/emailTemplates';
 
-const TIER_RANK: Record<string, number> = {
-  Basic: 0,
-  Prime: 1,
-  Premium: 2,
-  Gold: 3,
-};
+// Tier rank helper for upgrade detection
+async function getDynamicTierRanks(): Promise<Record<string, number>> {
+  try {
+    const plans = await query<any[]>('SELECT name, price FROM membership_plans ORDER BY price ASC');
+    const ranks: Record<string, number> = {};
+    plans.forEach((p, idx) => {
+      ranks[p.name] = idx;
+    });
+    if (!ranks['Basic']) {
+      ranks['Basic'] = 0;
+    }
+    return ranks;
+  } catch (err) {
+    console.error('[getDynamicTierRanks] Failed to query plans:', err);
+    return { Basic: 0, Prime: 1, Premium: 2, Gold: 3 };
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -74,6 +85,7 @@ export async function POST(req: NextRequest) {
     let previousId: number | null = null;
 
     if (existingRows.length > 0) {
+      const TIER_RANK = await getDynamicTierRanks();
       const existing = existingRows[0];
       const existingRank = TIER_RANK[existing.tier] ?? -1;
       const requestedRank = TIER_RANK[tier] ?? -1;

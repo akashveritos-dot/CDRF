@@ -20,8 +20,19 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized or Forbidden' }, { status: 403 });
     }
 
+    // Self-healing migration
+    try {
+      const colCheck = await query<any[]>("SELECT COUNT(*) AS cnt FROM information_schema.columns WHERE table_name = 'membership_discounts' AND column_name = 'is_active'");
+      const exists = colCheck && colCheck[0]?.cnt > 0;
+      if (!exists) {
+        await query("ALTER TABLE membership_discounts ADD COLUMN is_active TINYINT DEFAULT 1");
+      }
+    } catch (err: any) {
+      console.warn('[DB MIGRATION WARN] Failed to add is_active column:', err);
+    }
+
     const plans = await query<any[]>('SELECT id, name, price, price_sub_text as priceSubText, is_popular as isPopular, features_json as featuresJson, duration_months as durationMonths FROM membership_plans');
-    const discounts = await query<any[]>('SELECT id, tier_name as tierName, title, percentage, start_date as startDate, end_date as endDate FROM membership_discounts');
+    const discounts = await query<any[]>('SELECT id, tier_name as tierName, title, percentage, start_date as startDate, end_date as endDate, is_active as isActive FROM membership_discounts');
 
     const parsedPlans = plans.map(p => {
       let features = {};
@@ -75,21 +86,29 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { tierName, title, percentage, startDate, endDate } = body;
+    const { tierName, title, percentage, startDate, endDate, isActive } = body;
 
     if (!tierName || !title || percentage === undefined || !startDate || !endDate) {
       return NextResponse.json({ error: 'All discount fields are required' }, { status: 400 });
     }
 
-    const formattedStart = startDate.replace('T', ' ');
-    const formattedEnd = endDate.replace('T', ' ');
+    // Convert ISO string format to SQL datetime format
+    const toSqlDatetime = (isoStr: string) => {
+      if (!isoStr) return '';
+      const clean = isoStr.replace('Z', '').replace('T', ' ');
+      return clean.split('.')[0];
+    };
+
+    const formattedStart = toSqlDatetime(startDate);
+    const formattedEnd = toSqlDatetime(endDate);
+    const isActiveInt = (isActive === false || isActive === 0) ? 0 : 1;
 
     // Insert or update on duplicate key
     await query(
-      `INSERT INTO membership_discounts (tier_name, title, percentage, start_date, end_date) 
-       VALUES (?, ?, ?, ?, ?) 
-       ON DUPLICATE KEY UPDATE title = VALUES(title), percentage = VALUES(percentage), start_date = VALUES(start_date), end_date = VALUES(end_date)`,
-      [tierName, title, percentage, formattedStart, formattedEnd]
+      `INSERT INTO membership_discounts (tier_name, title, percentage, start_date, end_date, is_active) 
+       VALUES (?, ?, ?, ?, ?, ?) 
+       ON DUPLICATE KEY UPDATE title = VALUES(title), percentage = VALUES(percentage), start_date = VALUES(start_date), end_date = VALUES(end_date), is_active = VALUES(is_active)`,
+      [tierName, title, percentage, formattedStart, formattedEnd, isActiveInt]
     );
 
     return NextResponse.json({ success: true, message: `Discount for ${tierName} saved successfully` });

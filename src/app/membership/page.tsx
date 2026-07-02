@@ -824,6 +824,9 @@ export default function MembershipPage() {
       <div className={styles.tiersGrid}>
         {visibleTiers.map((tier, idx) => {
           const cfg = TIER_CONFIG[tier.name as keyof typeof TIER_CONFIG];
+          const discount = tier.discount;
+          const isDiscountActive = discount && (new Date(discount.startDate) <= currentTime) && (new Date(discount.endDate) >= currentTime);
+
           return (
             <ScrollReveal key={tier.name} direction="up" delay={0.06 * idx}>
               <div
@@ -836,20 +839,21 @@ export default function MembershipPage() {
                   '--tier-btn-hover': cfg.btnHover,
                 } as React.CSSProperties}
               >
-                {/* Top colour band */}
-                <div className={styles.tierBand} style={{ background: cfg.gradient }} />
-
                 {/* Icon badge */}
                 <div className={styles.tierIconWrap} style={{ background: cfg.accentPale, color: cfg.accentColor, border: `1px solid ${cfg.badgeBorder}` }}>
                   {cfg.icon}
                 </div>
 
-                {/* Popular ribbon */}
-                {tier.isPopular && (
+                {/* Top Right Ribbon (Discount gets priority, otherwise Most Popular) */}
+                {isDiscountActive && discount ? (
+                  <div className={styles.discountRibbon} style={{ background: '#dc2626' }}>
+                    {discount.percentage}% OFF
+                  </div>
+                ) : tier.isPopular ? (
                   <div className={styles.popularBadge} style={{ background: cfg.btnBg }}>
                     Most Popular
                   </div>
-                )}
+                ) : null}
 
                 {/* Name + price */}
                 <div className={styles.tierMeta}>
@@ -863,26 +867,20 @@ export default function MembershipPage() {
                       if (isDiscountActive && discount) {
                         const countdown = getCountdownString(discount.endDate);
                         return (
-                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                            <span style={{ fontSize: '13px', textDecoration: 'line-through', color: 'var(--text-muted)', fontWeight: 500 }}>
+                          <div className={styles.cardDiscountWrapper}>
+                            {tier.isPopular && (
+                              <span className={styles.popularPill}>
+                                Most Popular
+                              </span>
+                            )}
+                            <span className={styles.cardOriginalPrice}>
                               ₹{tier.price.toLocaleString('en-IN')}
                             </span>
-                            <span style={{ fontSize: '32px', fontWeight: 800 }}>
+                            <span className={styles.cardActivePrice}>
                               ₹{(tier.price - (tier.price * discount.percentage / 100)).toLocaleString('en-IN')}
                             </span>
-                            <span style={{
-                              fontSize: '10px',
-                              fontWeight: 700,
-                              padding: '3px 8px',
-                              borderRadius: '4px',
-                              backgroundColor: 'rgba(239, 68, 68, 0.08)',
-                              border: '1px solid rgba(239, 68, 68, 0.15)',
-                              color: 'var(--wine-red-primary)',
-                              textTransform: 'uppercase',
-                              letterSpacing: '0.5px',
-                              marginTop: '4px'
-                            }}>
-                              {discount.title} (-{discount.percentage}%)
+                            <span className={styles.cardDiscountTitle}>
+                              🔥 {discount.title}
                             </span>
                             {countdown && (
                               <div className={styles.countdownContainer}>
@@ -911,9 +909,16 @@ export default function MembershipPage() {
                         );
                       }
                       return (
-                        <span style={{ fontSize: '32px', fontWeight: 800 }}>
-                          {typeof tier.price === 'number' ? (tier.price === 0 ? 'Free' : `₹${tier.price.toLocaleString('en-IN')}`) : tier.price}
-                        </span>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                          {tier.isPopular && (
+                            <span className={styles.popularPill}>
+                              Most Popular
+                            </span>
+                          )}
+                          <span className={styles.cardActivePrice}>
+                            {typeof tier.price === 'number' ? (tier.price === 0 ? 'Free' : `₹${tier.price.toLocaleString('en-IN')}`) : tier.price}
+                          </span>
+                        </div>
                       );
                     })()}
                   </div>
@@ -1553,7 +1558,6 @@ export default function MembershipPage() {
                         }}>
                           Select upgrade plan
                         </p>
-
                         {upgradeTiers.length > 0 ? (
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px', marginBottom: '16px' }}>
                             {upgradeTiers.map(t => {
@@ -1566,65 +1570,105 @@ export default function MembershipPage() {
                                 ? t.price - (t.price * t.discount.percentage / 100)
                                 : t.price;
 
-                              return (
-                                <button
-                                  key={t.name}
-                                  type="button"
-                                  onClick={() => setFormData(prev => ({ ...prev, tier: t.name }))}
-                                  style={{
-                                    background: isSelected ? meta.pale : '#ffffff',
-                                    border: `2px solid ${isSelected ? meta.accent : '#e2e8f0'}`,
-                                    borderRadius: '10px',
-                                    padding: '12px 14px',
-                                    cursor: 'pointer',
-                                    textAlign: 'left',
-                                    transition: 'all 0.18s ease',
-                                    position: 'relative',
-                                    outline: 'none',
-                                    boxShadow: isSelected ? `0 0 0 3px ${meta.accent}18` : 'none',
-                                  }}
-                                >
-                                  {/* Selected checkmark */}
-                                  {isSelected && (
-                                    <span style={{
-                                      position: 'absolute', top: '8px', right: '8px',
-                                      width: '18px', height: '18px', borderRadius: '50%',
-                                      background: meta.accent,
-                                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    }}>
-                                      <Check size={10} strokeWidth={3} color="#fff" />
-                                    </span>
-                                  )}
+                                return (
+                                  <button
+                                    key={t.name}
+                                    type="button"
+                                    onClick={() => setFormData(prev => ({ ...prev, tier: t.name }))}
+                                    style={{
+                                      background: isSelected ? meta.pale : '#ffffff',
+                                      border: `2px solid ${isSelected ? meta.accent : '#e2e8f0'}`,
+                                      borderRadius: '10px',
+                                      padding: '12px 14px',
+                                      cursor: 'pointer',
+                                      textAlign: 'left',
+                                      transition: 'all 0.18s ease',
+                                      position: 'relative',
+                                      overflow: 'hidden',
+                                      outline: 'none',
+                                      boxShadow: isSelected ? `0 0 0 3px ${meta.accent}18` : 'none',
+                                    }}
+                                  >
+                                    {/* Top Right Discount Ribbon Tag */}
+                                    {isDiscountActive && t.discount && (
+                                      <div style={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        right: 0,
+                                        background: meta.accent,
+                                        color: '#ffffff',
+                                        fontSize: '8px',
+                                        fontWeight: 900,
+                                        padding: '3px 8px',
+                                        borderBottomLeftRadius: '8px',
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.5px',
+                                        zIndex: 5
+                                      }}>
+                                        {t.discount.percentage}% OFF
+                                      </div>
+                                    )}
 
-                                  {/* Icon + Name */}
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                                    <span style={{ color: meta.accent }}>{meta.icon}</span>
-                                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a' }}>{t.name}</span>
-                                  </div>
+                                    {/* Selected checkmark */}
+                                    {isSelected && (
+                                      <span style={{
+                                        position: 'absolute',
+                                        top: (isDiscountActive && t.discount) ? '24px' : '8px',
+                                        right: '8px',
+                                        width: '16px',
+                                        height: '16px',
+                                        borderRadius: '50%',
+                                        background: meta.accent,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        zIndex: 10
+                                      }}>
+                                        <Check size={9} strokeWidth={3.5} color="#fff" />
+                                      </span>
+                                    )}
 
-                                  {/* Price */}
-                                  {isDiscountActive && t.discount && (
-                                    <p style={{ margin: '0 0 1px', fontSize: '10px', textDecoration: 'line-through', color: '#94a3b8' }}>
-                                      ₹{t.price.toLocaleString('en-IN')}
+                                    {/* Icon + Name */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', paddingRight: '40px' }}>
+                                      <span style={{ color: meta.accent }}>{meta.icon}</span>
+                                      <span style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a' }}>{t.name}</span>
+                                    </div>
+
+                                    {/* Price */}
+                                    {isDiscountActive && t.discount && (
+                                      <p style={{ margin: '0 0 1px', fontSize: '10px', textDecoration: 'line-through', color: '#94a3b8' }}>
+                                        ₹{t.price.toLocaleString('en-IN')}
+                                      </p>
+                                    )}
+                                    <p style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: isDiscountActive ? '#059669' : meta.accent }}>
+                                      ₹{displayPrice.toLocaleString('en-IN')}{' '}
+                                      <span style={{ fontSize: '10px', fontWeight: 500, color: '#94a3b8' }}>/year</span>
                                     </p>
-                                  )}
-                                  <p style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: isDiscountActive ? '#059669' : meta.accent }}>
-                                    ₹{displayPrice.toLocaleString('en-IN')}
-                                  </p>
-                                  <p style={{ margin: '1px 0 0', fontSize: '10px', color: '#94a3b8' }}>/year</p>
 
-                                  {isDiscountActive && t.discount && (
-                                    <span style={{
-                                      display: 'inline-block', marginTop: '4px',
-                                      background: '#fef2f2', color: '#dc2626',
-                                      fontSize: '9px', fontWeight: 800,
-                                      padding: '2px 6px', borderRadius: '4px',
-                                      letterSpacing: '0.3px',
-                                    }}>
-                                      {t.discount.percentage}% OFF
-                                    </span>
-                                  )}
-                                </button>
+                                    {/* Micro Timer Box inside selected card */}
+                                    {isDiscountActive && t.discount && isSelected && (() => {
+                                      const countdown = getCountdownString(t.discount.endDate);
+                                      if (!countdown) return null;
+                                      return (
+                                        <div style={{
+                                          marginTop: '8px',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: '3px',
+                                          background: '#fef2f2',
+                                          border: '1px solid rgba(220, 38, 38, 0.15)',
+                                          padding: '2px 6px',
+                                          borderRadius: '5px',
+                                          alignSelf: 'flex-start'
+                                        }}>
+                                          <span style={{ fontSize: '8px', fontWeight: 800, color: '#dc2626', textTransform: 'uppercase', marginRight: '2px' }}>Ends:</span>
+                                          <span style={{ fontFamily: 'monospace', fontSize: '9px', fontWeight: 700, color: '#dc2626' }}>
+                                            {String(countdown.days).padStart(2, '0')}d {String(countdown.hours).padStart(2, '0')}h {String(countdown.minutes).padStart(2, '0')}m {String(countdown.seconds).padStart(2, '0')}s
+                                          </span>
+                                        </div>
+                                      );
+                                    })()}
+                                  </button>
                               );
                             })}
                           </div>

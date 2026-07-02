@@ -25,7 +25,8 @@ export function getDbPool(): mysql.Pool {
       waitForConnections: true,
       connectionLimit,
       queueLimit: 0,
-      ssl: process.env.DB_SSL === 'true' ? {} : undefined
+      ssl: process.env.DB_SSL === 'true' ? {} : undefined,
+      timezone: 'Z'
     });
 
     // Migrations removed from automatic startup

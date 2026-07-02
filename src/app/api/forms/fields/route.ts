@@ -46,7 +46,16 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    return NextResponse.json({ success: true, fields: formattedFields, gateEnabled });
+    return NextResponse.json(
+      { success: true, fields: formattedFields, gateEnabled },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        }
+      }
+    );
   } catch (error: any) {
     console.error('[API FORMS FIELDS GET] Error:', error);
     return NextResponse.json(

@@ -186,7 +186,7 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
   useEffect(() => {
     async function loadGateFields() {
       try {
-        const res = await fetch('/api/forms/fields?type=agenda_download');
+        const res = await fetch(`/api/forms/fields?type=agenda_download&t=${Date.now()}`, { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
           if (data.success) {
@@ -746,13 +746,17 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                   const isDownload = extra.isDownload;
                   const downloadUrl = extra.downloadUrl || btn.linkUrl || '/uploads/conclave_agenda.pdf';
 
+                  if (isDownload && !isGateEnabled) {
+                    return null;
+                  }
+
                   let onClickHandler = undefined;
                   if (extra.isRegistration) {
                     onClickHandler = (e: React.MouseEvent) => {
                       e.preventDefault();
                       document.getElementById('register')?.scrollIntoView({ behavior: 'smooth' });
                     };
-                  } else if (btn.linkUrl === '#agenda-gallery' || btn.title?.toLowerCase() === 'agenda') {
+                  } else if (btn.linkUrl === '#agenda-gallery' || btn.title?.trim().toLowerCase() === 'agenda') {
                     onClickHandler = (e: React.MouseEvent) => {
                       e.preventDefault();
                       const el = document.getElementById('agenda-gallery');
@@ -850,7 +854,7 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
                       <span className={styles.detailsValue}>{renderFormattedValue(venueCard?.description || 'Stein Auditorium, IHC')}</span>
                     </div>
                   </div>
-                  <div className={styles.detailsCard}>
+                  <div className={styles.detailsCard} style={{ flex: 1.8 }}>
                     <div className={styles.detailsIcon}>
                       <MapPin size={20} />
                     </div>
@@ -962,19 +966,21 @@ export default function EventPageClient({ slug, pageData }: EventPageClientProps
               </ScrollReveal>
 
               {/* Dynamic Agenda Actions */}
-              <div className={styles.agendaActionsContainer}>
-                <button
-                  type="button"
-                  className={styles.agendaActionBtnPrimary}
-                  onClick={(e) => {
-                    const url = agendaCards[0]?.extraData?.downloadUrl || agendaCards[0]?.linkUrl || '/uploads/conclave_agenda.pdf';
-                    handleAgendaDownloadClick(e, url);
-                  }}
-                >
-                  <Shield size={16} />
-                  <span>Download Full Agenda</span>
-                </button>
-              </div>
+              {isGateEnabled && (
+                <div className={styles.agendaActionsContainer}>
+                  <button
+                    type="button"
+                    className={styles.agendaActionBtnPrimary}
+                    onClick={(e) => {
+                      const url = agendaCards[0]?.extraData?.downloadUrl || agendaCards[0]?.linkUrl || '/uploads/conclave_agenda.pdf';
+                      handleAgendaDownloadClick(e, url);
+                    }}
+                  >
+                    <Shield size={16} />
+                    <span>Download Full Agenda</span>
+                  </button>
+                </div>
+              )}
             </section>
           ) : null;
 

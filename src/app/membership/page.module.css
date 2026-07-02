@@ -101,6 +101,21 @@
   transform: rotate(45deg);
 }
 
+.discountRibbon {
+  position: absolute;
+  top: 22px;
+  right: -28px;
+  color: #fff;
+  font-size: 9.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  padding: 4px 36px;
+  transform: rotate(45deg);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+}
+
 /* Tier meta (name + price) */
 .tierMeta {
   padding: 16px 20px 0;
@@ -121,6 +136,12 @@
   font-size: 34px;
   font-weight: 700;
   line-height: 1;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
 .priceSub {
@@ -177,7 +198,6 @@
   flex: 1;
 }
 
-/* CTA button */
 .cardAction {
   margin: 20px 20px 20px;
   padding: 11px 16px;
@@ -189,12 +209,13 @@
   font-weight: 700;
   cursor: pointer;
   text-align: center;
-  transition: background 150ms ease, transform 150ms ease;
+  transition: background 150ms ease, transform 150ms ease, box-shadow 150ms ease;
   flex-shrink: 0;
 }
 .cardAction:hover {
   background: var(--tier-btn-hover);
-  transform: translateY(-1px);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 4px 12px var(--tier-glow);
 }
 
 /* ─── Comparison Table ───────────────────────────────────────────── */
@@ -213,8 +234,17 @@
   border: 1px solid var(--border-color);
   border-radius: 16px;
   background: var(--bg-surface);
-  box-shadow: var(--shadow-md);
+  box-shadow: 
+    0 12px 30px -10px rgba(0, 0, 0, 0.05),
+    0 1px 3px rgba(0, 0, 0, 0.02);
   -webkit-overflow-scrolling: touch;
+  transition: box-shadow 300ms ease, border-color 300ms ease;
+}
+.tableWrapper:hover {
+  border-color: rgba(14, 122, 107, 0.25);
+  box-shadow: 
+    0 20px 40px -15px rgba(14, 122, 107, 0.08),
+    0 0 0 1px rgba(14, 122, 107, 0.1);
 }
 
 .table {
@@ -269,16 +299,17 @@
 
 /* Table body */
 .tdFeature {
-  padding: 15px 24px;
+  padding: 16px 24px;
   color: var(--text-default);
-  font-size: 13px;
+  font-size: 13.5px;
   border-bottom: 1px solid var(--border-color);
   background: var(--bg-surface);
   position: sticky;
   left: 0;
   z-index: 5;
   min-width: 220px;
-  font-weight: 500;
+  font-weight: 600;
+  letter-spacing: 0.1px;
 }
 
 .tdCheck {
@@ -301,7 +332,7 @@
 
 .table tr:hover .tdFeature,
 .table tr:hover .tdCheck {
-  background: var(--bg-surface-alt);
+  background: rgba(14, 122, 107, 0.04) !important;
 }
 
 /* Check pill */
@@ -309,10 +340,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
   font-weight: 700;
+  transition: transform 150ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.tdCheck:hover .checkPill {
+  transform: scale(1.22);
 }
 
 .dashIcon {
@@ -928,6 +963,7 @@
   
   .price {
     font-size: 26px;
+    min-height: auto;
   }
   
   .priceSub {
@@ -1519,10 +1555,12 @@
 .countdownContainer {
   margin-top: 10px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  gap: 6px;
   animation: pulseOpacity 2s infinite ease-in-out;
+  flex-wrap: wrap;
 }
 
 @keyframes pulseOpacity {
@@ -1536,6 +1574,7 @@
   text-transform: uppercase;
   color: var(--text-muted);
   letter-spacing: 0.8px;
+  margin-bottom: 0;
 }
 
 .countdownTimer {
@@ -1558,8 +1597,8 @@
 
 .countdownVal {
   font-family: var(--font-display), monospace;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 800;
   color: var(--wine-red-primary);
 }
 
@@ -1573,4 +1612,202 @@
 
 .countdownUnit:last-child .countdownUnitLabel {
   margin-right: 0;
+}
+
+.cardDiscountWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.cardOriginalPrice {
+  font-family: var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  text-decoration: line-through;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: 2px;
+  opacity: 0.85;
+}
+
+.cardActivePrice {
+  font-family: var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--tier-accent);
+}
+
+.cardDiscountTitle {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.08) 0%, rgba(220, 38, 38, 0.03) 100%);
+  border: 1px solid rgba(220, 38, 38, 0.16);
+  color: #dc2626;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-top: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 1px 2px rgba(220, 38, 38, 0.04);
+}
+
+.popularPill {
+  background: rgba(245, 158, 11, 0.08);
+  color: #b45309;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+
+/* Edge tag discount on registration form */
+.formDiscountTag {
+  position: absolute;
+  top: -1.5px;
+  right: -1.5px;
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 8px 18px;
+  border-top-right-radius: 22px;
+  border-bottom-left-radius: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  box-shadow: -2px 2px 8px rgba(220, 38, 38, 0.2);
+  z-index: 15;
+}
+
+/* Form Discount Widget */
+.formDiscountWidget {
+  background: var(--bg-surface-alt);
+  border: 1px solid rgba(220, 38, 38, 0.12);
+  border-left: 4px solid #dc2626;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.formDiscountWidgetHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.formDiscountWidgetBadge {
+  background: rgba(220, 38, 38, 0.08);
+  color: #dc2626;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.formDiscountWidgetTitle {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-default);
+}
+
+.formDiscountWidgetBody {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.formDiscountWidgetPrice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.formDiscountWidgetPriceLabel {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.formDiscountWidgetOriginal {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.formDiscountWidgetDiscounted {
+  font-size: 16px;
+  font-weight: 800;
+  color: #059669;
+}
+
+.formDiscountWidgetSaveBadge {
+  background: rgba(5, 150, 105, 0.08);
+  color: #059669;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+}
+
+.formDiscountWidgetCountdown {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.formDiscountWidgetCountdownLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.6px;
+}
+
+.formDiscountWidgetTimer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.formDiscountWidgetUnit {
+  display: flex;
+  align-items: baseline;
+  gap: 1px;
+}
+
+.formDiscountWidgetVal {
+  font-family: monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: #dc2626;
+}
+
+.formDiscountWidgetUnitLabel {
+  font-size: 9px;
+  color: var(--text-muted);
+  text-transform: lowercase;
+  margin-right: 2px;
 }

@@ -5,6 +5,15 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
+    // Check if agenda download is enabled
+    const settingsRows = await query<any[]>(
+      "SELECT setting_value FROM site_settings WHERE setting_key = 'agenda_download_gate_enabled'"
+    );
+    const isGateEnabled = settingsRows.length > 0 ? settingsRows[0].setting_value === 'true' : true;
+    if (!isGateEnabled) {
+      return NextResponse.json({ error: 'Agenda download is currently disabled by admin.' }, { status: 403 });
+    }
+
     let body: any;
     try {
       body = await req.json();

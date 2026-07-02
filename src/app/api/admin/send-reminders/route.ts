@@ -45,7 +45,15 @@ export async function POST(req: NextRequest) {
       []
     );
 
-    const TIER_RANK: Record<string, number> = { Basic: 0, Prime: 1, Premium: 2, Gold: 3 };
+    // Dynamic rankings
+    const plansForRanking = await query<any[]>('SELECT name, price FROM membership_plans ORDER BY price ASC');
+    const TIER_RANK: Record<string, number> = {};
+    plansForRanking.forEach((p, idx) => {
+      TIER_RANK[p.name] = idx;
+    });
+    if (!TIER_RANK['Basic']) {
+      TIER_RANK['Basic'] = 0;
+    }
 
     let sent30 = 0;
     let sent7 = 0;

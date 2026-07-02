@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import path from 'path';
 import fs from 'fs';
+import { query } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -79,6 +80,23 @@ export async function GET(
     const safeName = fileName.replace(/\.\./g, '').replace(/[\/\\]/g, '');
     if (!safeName || safeName !== fileName) {
       return new NextResponse(null, { status: 400 });
+    }
+
+    // Gating check for agenda files
+    if (safeName === 'conclave_agenda.pdf' || safeName.toLowerCase().includes('agenda')) {
+      const settingsRows = await query<any[]>(
+        "SELECT setting_value FROM site_settings WHERE setting_key = 'agenda_download_gate_enabled'"
+      );
+      const isGateEnabled = settingsRows.length > 0 ? settingsRows[0].setting_value === 'true' : true;
+      if (!isGateEnabled) {
+        return new NextResponse(
+          JSON.stringify({ error: 'Download access is disabled by admin.' }),
+          {
+            status: 403,
+            headers: { 'Content-Type': 'application/json' }
+          }
+        );
+      }
     }
 
     // -- Persistent upload directory (same logic as upload route) --------------
